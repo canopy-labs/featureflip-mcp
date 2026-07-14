@@ -63,3 +63,39 @@ describe('wrap_feature', () => {
     expect(text).toContain('npm install');
   });
 });
+
+describe('wrap_feature clientSideVisible', () => {
+  // Client SDKs only receive flags where clientSideVisible === true, so a flag
+  // created for one of these languages must opt in — otherwise it is silently
+  // invisible to the generated snippet even once enabled (issue #1854).
+  const CLIENT_LANGS = ['browser', 'react', 'swift'] as const;
+  const SERVER_LANGS = ['js', 'node', 'python', 'csharp', 'java', 'go', 'php', 'ruby'] as const;
+
+  async function createFor(language: string) {
+    const { api, calls } = mockApi([
+      {
+        method: 'POST',
+        path: /\/flags$/,
+        status: 201,
+        json: { key: 'new-flag', name: 'New flag', type: 'Boolean' },
+      },
+    ]);
+    const client = await connectClient({ api, org: ORG });
+    const result = await client.callTool({
+      name: 'wrap_feature',
+      arguments: { project: 'web', key: 'new-flag', language },
+    });
+    expect(result.isError, language).toBeFalsy();
+    return calls[0].body as Record<string, unknown>;
+  }
+
+  it.each(CLIENT_LANGS)('sets clientSideVisible: true for client language %s', async (language) => {
+    const body = await createFor(language);
+    expect(body, language).toMatchObject({ clientSideVisible: true });
+  });
+
+  it.each(SERVER_LANGS)('omits clientSideVisible for server language %s', async (language) => {
+    const body = await createFor(language);
+    expect(body.clientSideVisible, language).toBeUndefined();
+  });
+});

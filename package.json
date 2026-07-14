@@ -1,6 +1,6 @@
 {
   "name": "@featureflip/mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "MCP server for managing Featureflip feature flags from AI agents and editors",
   "license": "Apache-2.0",
   "repository": {

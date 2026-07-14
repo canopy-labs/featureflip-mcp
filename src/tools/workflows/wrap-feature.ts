@@ -3,7 +3,7 @@ import * as z from 'zod/v4';
 import { enc } from '../../client.js';
 import { okJson, run } from '../../errors.js';
 import type { ToolContext } from '../context.js';
-import { LANGUAGES, snippetFor } from './snippets.js';
+import { LANGUAGES, isClientSideLanguage, snippetFor } from './snippets.js';
 
 export function registerWrapFeatureTool(server: McpServer, ctx: ToolContext): void {
   server.registerTool(
@@ -31,7 +31,16 @@ export function registerWrapFeatureTool(server: McpServer, ctx: ToolContext): vo
           'POST',
           `/api/v1/orgs/${enc(ctx.org)}/projects/${enc(project)}/flags`,
           {
-            body: { key, name: name ?? key, type: 'Boolean', description, tags },
+            body: {
+              key,
+              name: name ?? key,
+              type: 'Boolean',
+              description,
+              tags,
+              // Client SDKs only receive flags where clientSideVisible === true;
+              // opt in for client-side snippets so the flag is actually evaluable.
+              ...(isClientSideLanguage(language) ? { clientSideVisible: true } : {}),
+            },
             idempotencyKey: idempotency_key,
           },
         );

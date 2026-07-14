@@ -4,6 +4,15 @@ export const LANGUAGES = [
 
 export type SnippetLanguage = (typeof LANGUAGES)[number];
 
+// Languages whose snippet targets a client-side SDK (uses a CLIENT-side key).
+// Client SDKs only receive flags where `clientSideVisible === true`, so any flag
+// created for these must opt in at creation or it stays invisible to the SDK.
+export const CLIENT_SIDE_LANGUAGES: readonly SnippetLanguage[] = ['browser', 'react', 'swift'];
+
+export function isClientSideLanguage(language: SnippetLanguage): boolean {
+  return CLIENT_SIDE_LANGUAGES.includes(language);
+}
+
 export interface Snippet {
   install: string;
   code: string;
