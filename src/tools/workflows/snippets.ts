@@ -122,8 +122,8 @@ if (enabled) {
       };
     case 'go':
       return {
-        install: 'go get github.com/canopy-labs/featureflip-go',
-        code: `import featureflip "github.com/canopy-labs/featureflip-go"
+        install: 'go get github.com/canopy-labs/featureflip-go/v2',
+        code: `import featureflip "github.com/canopy-labs/featureflip-go/v2"
 
 client, err := featureflip.Get(os.Getenv("FEATUREFLIP_SDK_KEY"))
 if err != nil {

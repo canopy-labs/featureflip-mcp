@@ -53,4 +53,7 @@ Full reference: https://featureflip.io/docs/integrations/mcp/
 
 - Flag **evaluation** is not exposed over MCP — use the [language SDKs](https://featureflip.io/docs) in application code.
 - Every mutation is audit-logged and attributed to the token.
-- License: Apache-2.0
+
+## License
+
+Apache-2.0

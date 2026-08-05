@@ -626,6 +626,101 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/orgs/{org}/projects/{project}/flags/removal-candidates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lists confidently-dead (or, with `staleness=stale`, stale-or-dead) flags the Featureflip Flag Cleanup Action should remove, cursor-paginated, each with its kill `treatment` (true = keep the on-branch, false = keep the off-branch).
+         * @description Only flags the staleness engine marks at or
+         *     above the requested tier via a decisive StuckRolledOut/StuckRolledBack reason are returned;
+         *     ZeroTraffic/CreatedUnused, cross-env-divergent, and archived flags are omitted (no confident code
+         *     treatment). The ONLY public projection of staleness.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    limit?: number;
+                    cursor?: string;
+                    /**
+                     * @description Minimum staleness tier to include: `dead` (default) or `stale` (includes Stale + Dead).
+                     *     Omitted or any unrecognized value falls back to `dead` — the safe default never widens
+                     *     silently.
+                     */
+                    staleness?: string;
+                };
+                header?: never;
+                path: {
+                    org: string;
+                    project: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicFlagRemovalCandidatePagedResult"];
+                    };
+                };
+                /** @description Authentication is required, or the supplied API token is invalid or expired. */
+                401: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
+                429: {
+                    headers: {
+                        /** @description Number of seconds to wait before retrying the request. */
+                        "Retry-After"?: number;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/orgs/{org}/projects/{project}/flags/{flag}": {
         parameters: {
             query?: never;
@@ -4507,6 +4602,30 @@ export interface components {
             _actions?: {
                 [key: string]: components["schemas"]["ActionCapability"];
             };
+        };
+        /**
+         * @description One dead flag the Featureflip Flag Cleanup Action should remove, returned by
+         *     `GET .../flags/removal-candidates`. `Treatment` is the kill decision: true → keep the
+         *     flag's on-branch, false → keep the off-branch. `Status` is the flag's staleness tier
+         *     (`"Stale"` or `"Dead"`, never `"Active"`) — lets a caller distinguish the two when
+         *     `?staleness=stale` widens the response to include both tiers. This is the ONLY public
+         *     projection of staleness — PublicFlagResponse and PublicFlagListItem
+         *     still omit it by design.
+         */
+        PublicFlagRemovalCandidate: {
+            key?: string | null;
+            reason?: string | null;
+            treatment?: boolean;
+            status?: string | null;
+        };
+        /**
+         * @description A page of results plus an opaque cursor for the next page, or null when this is the last
+         *     page. Wire keys are frozen: `items` (already lowercase under the camelCase policy) and
+         *     `next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`).
+         */
+        PublicFlagRemovalCandidatePagedResult: {
+            items?: components["schemas"]["PublicFlagRemovalCandidate"][] | null;
+            next_cursor?: string | null;
         };
         /**
          * @description Public detail representation of a feature flag, returned by
