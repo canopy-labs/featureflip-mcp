@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.3 — 2026-08-28
+
+### Added
+
+- The server is published to the official MCP Registry as `io.github.canopy-labs/featureflip`. `package.json` carries the `mcpName` ownership marker the registry validates the npm tarball against, and `server.json` describes the package, its stdio transport and its three environment variables. Both versions in `server.json` are patched from the release tag by the publish workflow, which authenticates to the registry with GitHub OIDC.
+
 ## 0.1.2 — 2026-08-05
 
 ### Fixed

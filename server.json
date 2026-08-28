@@ -1,0 +1,44 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.canopy-labs/featureflip",
+  "title": "Featureflip",
+  "description": "Manage Featureflip feature flags, targeting and rollouts from AI agents and editors.",
+  "version": "0.1.3",
+  "websiteUrl": "https://featureflip.io/docs/integrations/mcp/",
+  "repository": {
+    "url": "https://github.com/canopy-labs/featureflip-mcp",
+    "source": "github"
+  },
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@featureflip/mcp",
+      "version": "0.1.3",
+      "transport": { "type": "stdio" },
+      "environmentVariables": [
+        {
+          "name": "FEATUREFLIP_TOKEN",
+          "description": "Featureflip API token. A personal token (ffp_) acts as you; a service token (ffs_) is a scoped machine identity for CI and agents.",
+          "isRequired": true,
+          "isSecret": true,
+          "format": "string"
+        },
+        {
+          "name": "FEATUREFLIP_API_URL",
+          "description": "Management API base URL. Defaults to https://api.featureflip.io.",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string",
+          "default": "https://api.featureflip.io"
+        },
+        {
+          "name": "FEATUREFLIP_ORG",
+          "description": "Organization slug. Only needed for a personal token that can reach more than one organization.",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string"
+        }
+      ]
+    }
+  ]
+}
