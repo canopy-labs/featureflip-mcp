@@ -72,7 +72,7 @@ export function registerFlagTools(server: McpServer, ctx: ToolContext): void {
           .optional(),
         idempotency_key: z.string().optional().describe('Idempotency-Key header for safe retries'),
       }),
-      annotations: {},
+      annotations: { destructiveHint: false },
     },
     async ({ project, idempotency_key, ...body }) =>
       run(async () =>
@@ -95,7 +95,7 @@ export function registerFlagTools(server: McpServer, ctx: ToolContext): void {
         tags: z.array(z.string()).optional(),
         clientSideVisible: z.boolean().optional(),
       }),
-      annotations: {},
+      annotations: { destructiveHint: true },
     },
     async ({ project, flag, ...body }) =>
       run(async () => {
@@ -144,7 +144,7 @@ export function registerFlagTools(server: McpServer, ctx: ToolContext): void {
       title: 'Restore archived flag',
       description: 'Restore a previously archived flag.',
       inputSchema: z.object({ project: z.string(), flag: z.string() }),
-      annotations: {},
+      annotations: { destructiveHint: false },
     },
     async ({ project, flag }) =>
       run(async () => {

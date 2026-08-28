@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.4 — 2026-08-28
+
+### Fixed
+
+- `create_flag`, `restore_flag` and `wrap_feature` declare `destructiveHint: false`, and `update_flag` declares `destructiveHint: true`. All four previously carried an empty `annotations: {}`, which a comment described as "an explicit non-destructive write" — but the MCP specification defaults an absent `destructiveHint` to **true**, so clients were told the opposite: that creating a flag was destructive. `update_flag` genuinely is destructive, because `clientSideVisible` decides whether the browser, React and Swift SDKs can see the flag at all.
+- The tool-surface test asserted `'readOnlyHint' in a || 'destructiveHint' in a || Object.keys(a).length === 0`, which is true for every possible object and so caught nothing. It now requires each tool to declare one hint or the other, and pins the three additive writes.
+
 ## 0.1.3 — 2026-08-28
 
 ### Added

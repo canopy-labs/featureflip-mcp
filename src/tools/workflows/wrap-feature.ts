@@ -23,7 +23,7 @@ export function registerWrapFeatureTool(server: McpServer, ctx: ToolContext): vo
         language: z.enum(LANGUAGES).describe('SDK language of the codebase being edited'),
         idempotency_key: z.string().optional(),
       }),
-      annotations: {},
+      annotations: { destructiveHint: false },
     },
     async ({ project, key, name, description, tags, language, idempotency_key }) =>
       run(async () => {

@@ -19,8 +19,16 @@ describe('full tool surface', () => {
       expect(tool.title, tool.name).toBeTruthy();
       expect(tool.description, tool.name).toBeTruthy();
       const a = tool.annotations ?? {};
-      // every tool declares at least one behavioral hint or is an explicit non-destructive write ({})
-      expect('readOnlyHint' in a || 'destructiveHint' in a || Object.keys(a).length === 0).toBe(true);
+      // Every tool must state its behaviour explicitly. An empty {} is NOT
+      // sufficient: the MCP spec defaults an absent destructiveHint to TRUE, so
+      // an unannotated write is advertised to clients as destructive — the
+      // opposite of the "explicit non-destructive write" this once assumed. The
+      // previous form of this assertion also admitted {} as a third branch,
+      // which made it true for every possible object and caught nothing.
+      expect(
+        'readOnlyHint' in a || 'destructiveHint' in a,
+        `${tool.name} declares neither readOnlyHint nor destructiveHint`,
+      ).toBe(true);
     }
     const readOnly = tools.filter((t) => t.annotations?.readOnlyHint).map((t) => t.name).sort();
     expect(readOnly).toEqual(
@@ -33,8 +41,19 @@ describe('full tool surface', () => {
     expect(destructive).toEqual(
       [
         'delete_flag', 'archive_flag', 'toggle_flag', 'update_flag_environment_config',
+        // update_flag is not metadata-only: clientSideVisible decides whether the
+        // browser/React/Swift SDKs can see the flag at all, so a bad write breaks
+        // client-side evaluation the same way a targeting change would.
+        'update_flag',
         'update_targeting', 'manage_variation',
       ].sort(),
     );
+    // The writes that only ever add: pinned so a future tool cannot quietly
+    // join them, and so these three stay distinguishable from an unannotated one.
+    const additive = tools
+      .filter((t) => t.annotations?.destructiveHint === false)
+      .map((t) => t.name)
+      .sort();
+    expect(additive).toEqual(['create_flag', 'restore_flag', 'wrap_feature'].sort());
   });
 });
