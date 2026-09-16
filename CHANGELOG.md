@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.5 — 2026-09-16
+
+### Fixed
+
+- The server starts and serves its tool definitions when no `FEATUREFLIP_TOKEN` is set, instead of exiting. Startup used to load the config, preflight `GET /api/v1/me` and resolve the organization *before* opening the stdio transport, so anything that inspected the server without credentials — a registry enumerating the tool surface, an editor probing on first run — got `process.exit(1)` and recorded zero tools. `tools/list` now answers in full and individual tool *calls* return the same `FEATUREFLIP_TOKEN is required` guidance that startup used to print.
+- A token that is present but bad still fails fast at startup, unchanged: the 401 and 404 preflight messages are untouched. Only the no-token-at-all path is deferred.
+
 ## 0.1.4 — 2026-08-28
 
 ### Fixed

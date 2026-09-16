@@ -1,6 +1,6 @@
 {
   "name": "@featureflip/mcp",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "mcpName": "io.github.canopy-labs/featureflip",
   "description": "MCP server for managing Featureflip feature flags from AI agents and editors",
   "license": "Apache-2.0",
@@ -31,15 +31,15 @@
   },
   "dependencies": {
     "@modelcontextprotocol/server": "2.0.0",
-    "zod": "^4.0.0"
+    "zod": "^4.6.2"
   },
   "devDependencies": {
     "@modelcontextprotocol/client": "2.0.0",
-    "@types/node": "^26.2.0",
+    "@types/node": "^26.5.1",
     "typescript": "^7.0.2",
-    "vite": "^8.2.2",
-    "vite-plugin-dts": "^5.0.3",
-    "vitest": "^4.1.11"
+    "vite": "^8.3.0",
+    "vite-plugin-dts": "^5.1.0",
+    "vitest": "^5.0.0"
   },
   "engines": { "node": ">=20.19.0" }
 }
