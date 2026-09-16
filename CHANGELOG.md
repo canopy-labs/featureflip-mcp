@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.6 — 2026-09-16
+
+### Added
+
+- A `Dockerfile`, so the server can actually be built and run from a source checkout. `bin/featureflip-mcp.mjs` imports `../dist/cli.mjs`, and `dist/` is build output that ships in the npm tarball but not in git — with no `prepare` script, `npm install` in a fresh clone never produced it, so launching the binary from the repo failed with `ERR_MODULE_NOT_FOUND` before the stdio transport opened. Anything that inspects the server from source — an MCP registry enumerating the tool surface, a contributor running it locally — got nothing. Installing from npm was unaffected.
+- A container smoke check (`npm run smoke:docker`) that starts the built image over stdio with no credentials and asserts all 19 tools are enumerated. Every other test imports `src/` directly, so all of them passed while the shipped artifact had no runnable entry point at all.
+
 ## 0.1.5 — 2026-09-16
 
 ### Fixed

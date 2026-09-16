@@ -3,7 +3,7 @@
   "name": "io.github.canopy-labs/featureflip",
   "title": "Featureflip",
   "description": "Manage Featureflip feature flags, targeting and rollouts from AI agents and editors.",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "websiteUrl": "https://featureflip.io/docs/integrations/mcp/",
   "repository": {
     "url": "https://github.com/canopy-labs/featureflip-mcp",
@@ -13,7 +13,7 @@
     {
       "registryType": "npm",
       "identifier": "@featureflip/mcp",
-      "version": "0.1.5",
+      "version": "0.1.6",
       "transport": { "type": "stdio" },
       "environmentVariables": [
         {

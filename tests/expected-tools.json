@@ -1,0 +1,21 @@
+[
+  "list_projects",
+  "list_environments",
+  "list_segments",
+  "get_segment",
+  "list_flags",
+  "get_flag",
+  "create_flag",
+  "update_flag",
+  "delete_flag",
+  "archive_flag",
+  "restore_flag",
+  "toggle_flag",
+  "update_flag_environment_config",
+  "flag_status",
+  "get_targeting",
+  "update_targeting",
+  "manage_variation",
+  "find_stale_flags",
+  "wrap_feature"
+]

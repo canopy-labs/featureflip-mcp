@@ -1,6 +1,6 @@
 {
   "name": "@featureflip/mcp",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "mcpName": "io.github.canopy-labs/featureflip",
   "description": "MCP server for managing Featureflip feature flags from AI agents and editors",
   "license": "Apache-2.0",
@@ -27,7 +27,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "generate:api": "npx --yes openapi-typescript@7.13.0 ../../apps/management-api/public-v1-openapi.json -o src/generated/api-types.ts",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "smoke:docker": "node scripts/docker-smoke.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/server": "2.0.0",
@@ -35,6 +36,7 @@
   },
   "devDependencies": {
     "@modelcontextprotocol/client": "2.0.0",
+    "@typescript/typescript6": "^6.0.2",
     "@types/node": "^26.5.1",
     "typescript": "^7.0.2",
     "vite": "^8.3.0",

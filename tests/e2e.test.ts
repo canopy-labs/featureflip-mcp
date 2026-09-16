@@ -1,12 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { mockApi, connectClient } from './helpers.js';
-
-const EXPECTED_TOOLS = [
-  'list_projects', 'list_environments', 'list_segments', 'get_segment',
-  'list_flags', 'get_flag', 'create_flag', 'update_flag', 'delete_flag',
-  'archive_flag', 'restore_flag', 'toggle_flag', 'update_flag_environment_config',
-  'flag_status', 'get_targeting', 'update_targeting', 'manage_variation', 'find_stale_flags', 'wrap_feature',
-];
+// Shared with scripts/docker-smoke.mjs, which asserts the same surface against
+// the CONTAINER. Two copies of this list would drift, and the copy that drifted
+// would be the one nothing notices — the container is inspected by registries,
+// not by us.
+import EXPECTED_TOOLS from './expected-tools.json' with { type: 'json' };
 
 describe('full tool surface', () => {
   it('registers exactly the 19 spec tools, every one titled and annotated', async () => {
