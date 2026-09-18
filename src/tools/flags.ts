@@ -126,14 +126,30 @@ export function registerFlagTools(server: McpServer, ctx: ToolContext): void {
     'archive_flag',
     {
       title: 'Archive feature flag',
-      description: 'Archive a flag (soft-hide, evaluation stops serving it). Reversible with restore_flag.',
-      inputSchema: z.object({ project: z.string(), flag: z.string() }),
+      description:
+        'Archive a flag (soft-hide, evaluation stops serving it). Reversible with restore_flag. ' +
+        'Refused with FLAG_RECENTLY_EVALUATED while live traffic is still evaluating the flag, ' +
+        'because archiving makes every caller fall back to its own hardcoded default — normally that ' +
+        'means the code removal has merged but not deployed yet, and the refusal clears itself once it has.',
+      inputSchema: z.object({
+        project: z.string(),
+        flag: z.string(),
+        force: z
+          .boolean()
+          .optional()
+          .describe(
+            'Archive even though traffic is still evaluating the flag. Only for clients that can never ' +
+              'be updated (old mobile app versions), where traffic will never drain on its own.',
+          ),
+      }),
       annotations: { destructiveHint: true },
     },
-    async ({ project, flag }) =>
+    async ({ project, flag, force }) =>
       run(async () => {
         // POST .../archive returns 204 No Content — nothing to pass through.
-        await ctx.api.request('POST', `${base(project)}/${enc(flag)}/archive`);
+        await ctx.api.request('POST', `${base(project)}/${enc(flag)}/archive`, {
+          query: force ? { force: true } : {},
+        });
         return okJson({ flag, archived: true });
       }),
   );

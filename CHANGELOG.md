@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.1.7 — 2026-09-18
+
+### Added
+
+- `archive_flag` takes an optional `force`. The Management API now refuses to archive a flag that live traffic is still evaluating, and the reason is worth stating plainly: archiving stops the flag being served, so every caller falls back to its own hardcoded default. Archiving on the day a removal PR merges — but before that build reaches production — therefore changes behaviour for real users, which is the opposite of what the removal intended. The refusal clears itself once the deploy lands, so waiting is the right default rather than a limitation. `force: true` overrides it, for the one case that never drains on its own: clients that can never be updated, such as an old mobile app version still in the wild. (#3043)
+
+- The `archive_flag` description names the `FLAG_RECENTLY_EVALUATED` refusal and what it means, so an agent that hits it can tell a guardrail from a failure without going to the API reference.
+
+### Changed
+
+- The `Dockerfile`'s build and runtime stages move from `node:22-alpine` to `node:24-alpine`, Node's Active LTS line.
+
 ## 0.1.6 — 2026-09-16
 
 ### Added

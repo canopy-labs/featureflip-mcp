@@ -9,7 +9,7 @@
 # The build context is THIS directory, which is also the mirror's repo root.
 # Nothing here may reference a path outside packages/mcp-server/.
 
-FROM node:22-alpine AS build
+FROM node:24-alpine AS build
 WORKDIR /app
 
 # No package-lock.json to copy: the lock governing this package lives at the
@@ -22,7 +22,7 @@ COPY src ./src
 RUN npm install --no-audit --no-fund
 RUN npm run build
 
-FROM node:22-alpine AS runtime
+FROM node:24-alpine AS runtime
 ENV NODE_ENV=production
 WORKDIR /app
 

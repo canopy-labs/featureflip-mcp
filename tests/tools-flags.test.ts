@@ -76,6 +76,25 @@ describe('flag CRUD tools', () => {
     expect(JSON.parse((restored.content as { text: string }[])[0].text)).toEqual({ flag: 'tired', archived: false });
   });
 
+  it('archive_flag only sends force when asked (#3043)', async () => {
+    const { api, calls } = mockApi([
+      { method: 'POST', path: `${FLAGS}/a/archive`, status: 204 },
+      { method: 'POST', path: `${FLAGS}/b/archive`, status: 204 },
+      { method: 'POST', path: `${FLAGS}/c/archive`, status: 204 },
+    ]);
+    const client = await connectClient({ api, org: ORG });
+
+    await client.callTool({ name: 'archive_flag', arguments: { project: 'web', flag: 'a' } });
+    await client.callTool({ name: 'archive_flag', arguments: { project: 'web', flag: 'b', force: false } });
+    await client.callTool({ name: 'archive_flag', arguments: { project: 'web', flag: 'c', force: true } });
+
+    // force=false must be indistinguishable from omitting it — sending `force=false` would still
+    // read as an explicit override to anyone auditing the request log.
+    expect(calls[0].url).not.toContain('force');
+    expect(calls[1].url).not.toContain('force');
+    expect(calls[2].url).toContain('force=true');
+  });
+
   it('destructive tools carry destructiveHint', async () => {
     const { api } = mockApi([]);
     const client = await connectClient({ api, org: ORG });

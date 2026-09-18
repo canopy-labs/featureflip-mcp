@@ -996,7 +996,14 @@ export interface paths {
          */
         post: {
             parameters: {
-                query?: never;
+                query?: {
+                    /**
+                     * @description Archive even though live traffic is still evaluating the flag. Without it the request is
+                     *     refused with `FLAG_RECENTLY_EVALUATED` naming the environments still reading it — which
+                     *     usually means the removal has merged but not yet deployed.
+                     */
+                    force?: boolean;
+                };
                 header?: never;
                 path: {
                     org: string;
@@ -1016,6 +1023,18 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
                 };
                 /** @description Authentication is required, or the supplied API token is invalid or expired. */
                 401: {
