@@ -10,12 +10,17 @@
   "delete_flag",
   "archive_flag",
   "restore_flag",
+  "set_flag_expiry",
   "toggle_flag",
   "update_flag_environment_config",
   "flag_status",
   "get_targeting",
   "update_targeting",
   "manage_variation",
+  "list_webhooks",
+  "list_webhook_deliveries",
+  "manage_webhook",
+  "deliver_webhook",
   "find_stale_flags",
   "wrap_feature"
 ]

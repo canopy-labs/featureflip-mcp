@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.1.8 — 2026-09-24
+
+### Added
+
+- Four tools for outbound webhook subscriptions. (#3181)
+  - `list_webhooks` lists subscriptions, plus `availableEventTypes`: the event types a subscription can filter on.
+  - `list_webhook_deliveries` pages one subscription's delivery log.
+  - `manage_webhook` creates, updates and deletes subscriptions, and rotates or retires signing secrets. `create` and `rotate_secret` return a secret that is shown only once. `update` changes only the fields you pass: the API's `PUT` replaces the whole subscription, so the tool reads it first and sends back everything else unchanged. An empty list widens that filter back to "all".
+  - `deliver_webhook` queues a test event or redelivers a finished delivery.
+- Webhook filters take project keys and `project/environment` keys (`web/production`), or ids. Environment keys need their project because every project tends to have a `production`.
+- Every webhook action needs an Admin token, reads included. While webhooks aren't enabled for the organization, every webhook call returns 404.
+- `set_flag_expiry` sets the date a flag is expected to be removed by, or clears it with `expiresAtUtc: null`. Expiry is advisory: evaluation never changes. The Management API refuses a time that has already passed (`EXPIRY_IN_PAST`) and refuses any new date while flag expiration isn't enabled for the organization (`FEATURE_NOT_ENABLED`). Clearing is always allowed. (#2563)
+- `create_flag` takes an optional `expiresAtUtc`.
+
+### Changed
+
+- Requests that fail on a transient gateway error (502, 503, 504) or a dropped connection are retried, up to 3 attempts. That covers what a rolling deploy of the Management API produces. Reads and other requests that are safe to replay retry all of these. A `POST` without an idempotency key retries only a 503, because after a 502 or 504 it may already have been applied, and replaying it would report a spurious conflict. (#3147)
+- The npm package now carries `keywords`, so it can be found by searching npm for "mcp" or "feature flags". (#3151)
+- `find_stale_flags` reports each flag's `expiresAtUtc` and an `expired` boolean. A flag whose expiry has passed is a candidate however recently it was edited, since the date is its owner's stated intent. An expired flag that is on in some environments and off in others used to be skipped. It is now reported with the new reason `past-expiry`, because it has no obvious fold direction and its owner has to decide. Expired flags are checked before the 50-candidate cap applies, so truncation can't hide them. Against an API that doesn't return `expiresAtUtc`, results are the same as before.
+
 ## 0.1.7 — 2026-09-18
 
 ### Added

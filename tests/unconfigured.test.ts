@@ -3,6 +3,7 @@ import { connectClient } from './helpers.js';
 import { resolveContext } from '../src/bootstrap.js';
 import { loadConfig, tryLoadConfig, MISSING_TOKEN_MESSAGE } from '../src/config.js';
 import { unconfiguredContext } from '../src/unconfigured.js';
+import EXPECTED_TOOLS from './expected-tools.json' with { type: 'json' };
 
 /** Records every request and answers from a path table, 404-ing anything unlisted. */
 function stubFetch(routes: Record<string, unknown>): { fetchImpl: typeof fetch; paths: string[] } {
@@ -44,7 +45,7 @@ describe('starting with no credentials configured', () => {
     const client = await connectClient(unconfiguredContext());
     const { tools } = await client.listTools();
 
-    expect(tools).toHaveLength(19);
+    expect(tools).toHaveLength(EXPECTED_TOOLS.length);
     expect(tools.map((t) => t.name)).toContain('list_flags');
   });
 

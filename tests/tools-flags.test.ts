@@ -95,6 +95,79 @@ describe('flag CRUD tools', () => {
     expect(calls[2].url).toContain('force=true');
   });
 
+  it('create_flag forwards expiresAtUtc', async () => {
+    const { api, calls } = mockApi([{ method: 'POST', path: FLAGS, status: 201, json: { key: 'promo' } }]);
+    const client = await connectClient({ api, org: ORG });
+    await client.callTool({
+      name: 'create_flag',
+      arguments: { project: 'web', key: 'promo', name: 'Promo', type: 'Boolean', expiresAtUtc: '2026-12-31T23:59:59Z' },
+    });
+    expect(calls[0].body).toMatchObject({ key: 'promo', expiresAtUtc: '2026-12-31T23:59:59Z' });
+  });
+
+  it('set_flag_expiry PUTs a date and DELETEs on null (#2563)', async () => {
+    const { api, calls } = mockApi([
+      // Real controller (PublicFlagsController.SetExpiry/ClearExpiry) returns 204 No Content.
+      { method: 'PUT', path: `${FLAGS}/promo/expiry`, status: 204 },
+      { method: 'DELETE', path: `${FLAGS}/promo/expiry`, status: 204 },
+    ]);
+    const client = await connectClient({ api, org: ORG });
+
+    const set = await client.callTool({
+      name: 'set_flag_expiry',
+      arguments: { project: 'web', flag: 'promo', expiresAtUtc: '2026-12-31T23:59:59Z' },
+    });
+    const cleared = await client.callTool({
+      name: 'set_flag_expiry',
+      arguments: { project: 'web', flag: 'promo', expiresAtUtc: null },
+    });
+
+    expect(calls.map((c) => c.method)).toEqual(['PUT', 'DELETE']);
+    expect(calls[0].body).toEqual({ expiresAtUtc: '2026-12-31T23:59:59Z' });
+    expect(calls[1].body).toBeUndefined();
+    expect(JSON.parse((set.content as { text: string }[])[0].text)).toEqual({
+      project: 'web',
+      flag: 'promo',
+      expiresAtUtc: '2026-12-31T23:59:59Z',
+    });
+    expect(JSON.parse((cleared.content as { text: string }[])[0].text)).toEqual({
+      project: 'web',
+      flag: 'promo',
+      expiresAtUtc: null,
+    });
+  });
+
+  it('set_flag_expiry surfaces the API refusal', async () => {
+    const { api } = mockApi([
+      {
+        method: 'PUT',
+        path: `${FLAGS}/promo/expiry`,
+        status: 400,
+        json: {
+          error: 'validation_failed',
+          message: 'One or more validation errors occurred.',
+          fields: { expiresAtUtc: ['EXPIRY_IN_PAST: Expiry must be in the future.'] },
+        },
+      },
+    ]);
+    const client = await connectClient({ api, org: ORG });
+    const result = await client.callTool({
+      name: 'set_flag_expiry',
+      arguments: { project: 'web', flag: 'promo', expiresAtUtc: '2020-01-01T00:00:00Z' },
+    });
+    expect(result.isError).toBe(true);
+    expect((result.content as { text: string }[])[0].text).toContain('EXPIRY_IN_PAST');
+  });
+
+  it('set_flag_expiry is advertised as non-destructive and idempotent', async () => {
+    const { api } = mockApi([]);
+    const client = await connectClient({ api, org: ORG });
+    const { tools } = await client.listTools();
+    const tool = tools.find((t) => t.name === 'set_flag_expiry');
+    expect(tool?.annotations?.destructiveHint).toBe(false);
+    expect(tool?.annotations?.idempotentHint).toBe(true);
+  });
+
   it('destructive tools carry destructiveHint', async () => {
     const { api } = mockApi([]);
     const client = await connectClient({ api, org: ORG });

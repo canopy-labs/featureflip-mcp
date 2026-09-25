@@ -70,6 +70,10 @@ export function registerFlagTools(server: McpServer, ctx: ToolContext): void {
             }),
           )
           .optional(),
+        expiresAtUtc: z
+          .string()
+          .optional()
+          .describe('Optional ISO-8601 UTC instant the flag is expected to be removed by (see set_flag_expiry)'),
         idempotency_key: z.string().optional().describe('Idempotency-Key header for safe retries'),
       }),
       annotations: { destructiveHint: false },
@@ -102,6 +106,34 @@ export function registerFlagTools(server: McpServer, ctx: ToolContext): void {
         // PUT .../flags/{flag} returns 204 No Content — nothing to pass through.
         await ctx.api.request('PUT', `${base(project)}/${enc(flag)}`, { body });
         return okJson({ project, flag, updated: true });
+      }),
+  );
+
+  server.registerTool(
+    'set_flag_expiry',
+    {
+      title: 'Set or clear flag expiry',
+      description:
+        'Set the date a flag is expected to be removed by, or pass expiresAtUtc: null to clear it. ' +
+        'Expiry is advisory: evaluation never changes. Once the date passes, find_stale_flags reports the flag ' +
+        'as expired. expiresAtUtc is an exact ISO-8601 UTC instant; a bare date means 00:00 UTC that day, so pass ' +
+        'e.g. 2026-12-31T23:59:59Z for the end of a day. Refused with EXPIRY_IN_PAST for a time that has already ' +
+        'passed, and with FEATURE_NOT_ENABLED while flag expiration is not enabled for the organization. ' +
+        'Clearing is always allowed.',
+      inputSchema: z.object({
+        project: z.string(),
+        flag: z.string().describe('Flag key or id'),
+        expiresAtUtc: z.string().nullable().describe('ISO-8601 UTC instant, or null to clear the expiry'),
+      }),
+      annotations: { destructiveHint: false, idempotentHint: true },
+    },
+    async ({ project, flag, expiresAtUtc }) =>
+      run(async () => {
+        // PUT and DELETE .../expiry both return 204 No Content — nothing to pass through.
+        const path = `${base(project)}/${enc(flag)}/expiry`;
+        if (expiresAtUtc === null) await ctx.api.request('DELETE', path);
+        else await ctx.api.request('PUT', path, { body: { expiresAtUtc } });
+        return okJson({ project, flag, expiresAtUtc });
       }),
   );
 

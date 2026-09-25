@@ -8,6 +8,7 @@ import { registerFlagTools } from './tools/flags.js';
 import { registerFlagEnvironmentTools } from './tools/flag-environments.js';
 import { registerTargetingTools } from './tools/targeting.js';
 import { registerVariationTools } from './tools/variations.js';
+import { registerWebhookTools } from './tools/webhooks.js';
 import { registerStaleFlagTools } from './tools/workflows/stale-flags.js';
 import { registerWrapFeatureTool } from './tools/workflows/wrap-feature.js';
 
@@ -20,6 +21,7 @@ export function createServer(ctx: ToolContext): McpServer {
   registerFlagEnvironmentTools(server, ctx);
   registerTargetingTools(server, ctx);
   registerVariationTools(server, ctx);
+  registerWebhookTools(server, ctx);
   registerStaleFlagTools(server, ctx);
   registerWrapFeatureTool(server, ctx);
   return server;

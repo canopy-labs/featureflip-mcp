@@ -7,7 +7,7 @@ import { mockApi, connectClient } from './helpers.js';
 import EXPECTED_TOOLS from './expected-tools.json' with { type: 'json' };
 
 describe('full tool surface', () => {
-  it('registers exactly the 19 spec tools, every one titled and annotated', async () => {
+  it('registers exactly the 24 spec tools, every one titled and annotated', async () => {
     const { api } = mockApi([]);
     const client = await connectClient({ api, org: 'acme' });
     const { tools } = await client.listTools();
@@ -33,6 +33,7 @@ describe('full tool surface', () => {
       [
         'list_projects', 'list_environments', 'list_segments', 'get_segment',
         'list_flags', 'get_flag', 'flag_status', 'get_targeting', 'find_stale_flags',
+        'list_webhooks', 'list_webhook_deliveries',
       ].sort(),
     );
     const destructive = tools.filter((t) => t.annotations?.destructiveHint).map((t) => t.name).sort();
@@ -44,14 +45,20 @@ describe('full tool surface', () => {
         // client-side evaluation the same way a targeting change would.
         'update_flag',
         'update_targeting', 'manage_variation',
+        // Deleting a subscription or retiring a secret stops deliveries a receiver relies on.
+        'manage_webhook',
       ].sort(),
     );
-    // The writes that only ever add: pinned so a future tool cannot quietly
-    // join them, and so these three stay distinguishable from an unannotated one.
+    // The writes that cannot change what any caller is served: pinned so a future
+    // tool cannot quietly join them, and so these stay distinguishable from an
+    // unannotated one. set_flag_expiry is here because expiry is advisory only.
+    // deliver_webhook sends an event to a receiver but changes nothing in Featureflip.
     const additive = tools
       .filter((t) => t.annotations?.destructiveHint === false)
       .map((t) => t.name)
       .sort();
-    expect(additive).toEqual(['create_flag', 'restore_flag', 'wrap_feature'].sort());
+    expect(additive).toEqual(
+      ['create_flag', 'restore_flag', 'set_flag_expiry', 'wrap_feature', 'deliver_webhook'].sort(),
+    );
   });
 });
