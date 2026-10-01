@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.1.9 — 2026-10-01
+
+### Added
+
+- `set_flag_owner` names the person responsible for a flag: an active member's email, or `me` for the token's own user. Pass `null` (or `none`) to leave the flag unowned. `create_flag` takes an optional `ownerEmail` as well. Naming an owner needs the Pro plan or above, and the API refuses it below that with `PLAN_FEATURE_UNAVAILABLE`; clearing works on every plan.
+- `find_stale_flags` reports each flag's owner (`{id, email, name}`, or `null` when unowned), and both `find_stale_flags` and `list_flags` take an `owner` filter: an email, `none` for unowned flags, or `me` for the token's own user. `me` needs a personal access token (`ffp_...`), because a service token has no user and so owns no flags; the tool refuses it rather than dropping the filter and listing every flag. (#3189)
+
+### Changed
+
+- `@modelcontextprotocol/server` 2.0.0 → 2.1.0.
+
+### Fixed
+
+- `set_flag_expiry` and `create_flag` treat a bare date (`2026-12-01`) as the end of that day in UTC, the same as the dashboard. It used to mean midnight, so a flag dated through the MCP server expired a day earlier than one given the same date in the dashboard, and today's date was refused. A full timestamp is still stored exactly. The change is in the API, so it applies to every server version; this release updates the tool descriptions to match. (#3345)
+- `update_flag` changes only the fields you pass. Before, leaving out `name` failed with a 400 ("The Name field is required"), and leaving out `description` erased the flag's description, because the API's `PUT` replaces the whole flag. When either one is missing, the tool now reads the flag first and sends its current value back. Pass `description: ""` to clear it. (#3220)
+
 ## 0.1.8 — 2026-09-24
 
 ### Added

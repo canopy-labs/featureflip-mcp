@@ -3,9 +3,11 @@ import * as z from 'zod/v4';
 import { enc } from '../../client.js';
 import { okJson, run } from '../../errors.js';
 import type { ToolContext } from '../context.js';
+import { ownerFilter, resolveOwner } from '../owner.js';
 import type { components } from '../../generated/api-types.js';
 
 type FlagListItem = components['schemas']['PublicFlagListItem'];
+type FlagOwner = components['schemas']['PublicFlagOwner'];
 type FlagListPage = components['schemas']['PublicFlagListItemPagedResult'];
 // The environments endpoint returns the same PublicFlagEnvConfigResponse shape used by
 // flag_status — only environmentKey/isEnabled are consumed here.
@@ -24,16 +26,19 @@ export function registerStaleFlagTools(server: McpServer, ctx: ToolContext): voi
         'or disabled in every environment (dead — remove flag and code path). ' +
         'A flag whose expiry date (set_flag_expiry) has passed is always a candidate, however recently it was edited; ' +
         'if it is on in some environments and off in others its reason is past-expiry, meaning the owner has to ' +
-        'decide which way to fold it. Every result carries expiresAtUtc and expired. ' +
+        'decide which way to fold it. Every result carries expiresAtUtc, expired and owner (null when unowned). ' +
+        'Pass owner to see one person\'s stale flags ("me" for your own) or "none" for the unowned ones. ' +
         `Checks at most ${MAX_CANDIDATES} candidates per call, expired flags first.`,
       inputSchema: z.object({
         project: z.string(),
         days: z.number().int().min(1).optional().default(30).describe('Minimum age in days since last update'),
+        owner: ownerFilter,
       }),
       annotations: { readOnlyHint: true },
     },
-    async ({ project, days }) =>
+    async ({ project, days, owner }) =>
       run(async () => {
+        const ownerQuery = await resolveOwner(ctx, owner);
         const base = `/api/v1/orgs/${enc(ctx.org)}/projects/${enc(project)}/flags`;
         const now = Date.now();
         const cutoff = now - days * 24 * 60 * 60 * 1000;
@@ -47,7 +52,7 @@ export function registerStaleFlagTools(server: McpServer, ctx: ToolContext): voi
         let cursor: string | undefined;
         do {
           const page = await ctx.api.request<FlagListPage>('GET', base, {
-            query: { archived: false, limit: 100, cursor },
+            query: { archived: false, limit: 100, cursor, owner: ownerQuery },
           });
           candidates.push(
             ...(page.items ?? []).filter(
@@ -73,6 +78,7 @@ export function registerStaleFlagTools(server: McpServer, ctx: ToolContext): voi
           updatedAt: string;
           expiresAtUtc: string | null;
           expired: boolean;
+          owner: FlagOwner | null;
           reason: string;
           environments: number;
         }[] = [];
@@ -91,6 +97,8 @@ export function registerStaleFlagTools(server: McpServer, ctx: ToolContext): voi
             updatedAt: f.updatedAt,
             expiresAtUtc: f.expiresAtUtc ?? null,
             expired,
+            // owner is absent against an API that predates flag ownership; that reads as unowned.
+            owner: f.owner ?? null,
             reason: allOn ? 'enabled-everywhere' : allOff ? 'disabled-everywhere' : 'past-expiry',
             environments: envs.length,
           });
@@ -99,6 +107,7 @@ export function registerStaleFlagTools(server: McpServer, ctx: ToolContext): voi
         return okJson({
           project,
           olderThanDays: days,
+          ...(ownerQuery ? { owner: ownerQuery } : {}),
           checked: toCheck.length,
           truncated,
           ...(truncated ? { note: `Only the first ${MAX_CANDIDATES} of ${candidates.length} candidates were checked.` } : {}),

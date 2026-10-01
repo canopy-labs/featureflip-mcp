@@ -116,3 +116,65 @@ describe('find_stale_flags expiry (#2563)', () => {
     expect(r.stale.map((f: { key: string }) => f.key)).toContain('expired');
   });
 });
+
+describe('find_stale_flags owner (#3189)', () => {
+  const ALICE = { id: '0197b6a0-5f2a-7c3e-9b4d-1e2f3a4b5c6d', email: 'alice@acme.test', name: 'Alice' };
+  const offEverywhere = { method: 'GET', path: /\/environments$/, json: [{ environmentKey: 'prod', isEnabled: false }] };
+
+  async function call(args: Record<string, unknown>, routes: Parameters<typeof mockApi>[0]) {
+    const { api, calls } = mockApi(routes);
+    const client = await connectClient({ api, org: ORG });
+    const result = await client.callTool({ name: 'find_stale_flags', arguments: { project: 'web', ...args } });
+    return { result, calls, text: (result.content as { text: string }[])[0].text };
+  }
+
+  it('reports each stale flag with its owner, and null for an unowned one', async () => {
+    const { result, text } = await call({}, [
+      {
+        method: 'GET',
+        path: FLAGS,
+        json: { items: [{ ...flag('owned', OLD), owner: ALICE }, flag('unowned', OLD)], next_cursor: null },
+      },
+      offEverywhere,
+    ]);
+    expect(result.isError).toBeFalsy();
+    const byKey = Object.fromEntries(JSON.parse(text).stale.map((f: { key: string }) => [f.key, f]));
+    expect(byKey.owned.owner).toEqual(ALICE);
+    expect(byKey.unowned.owner).toBeNull();
+  });
+
+  it('passes an email owner filter to the flag list and echoes it', async () => {
+    const { result, calls, text } = await call({ owner: 'alice@acme.test' }, [
+      { method: 'GET', path: FLAGS, json: { items: [], next_cursor: null } },
+    ]);
+    expect(result.isError).toBeFalsy();
+    expect(new URL(calls[0].url).searchParams.get('owner')).toBe('alice@acme.test');
+    expect(JSON.parse(text).owner).toBe('alice@acme.test');
+  });
+
+  it('passes owner "none" through for unowned flags', async () => {
+    const { calls } = await call({ owner: 'none' }, [{ method: 'GET', path: FLAGS, json: { items: [], next_cursor: null } }]);
+    expect(new URL(calls[0].url).searchParams.get('owner')).toBe('none');
+  });
+
+  it('resolves owner "me" to the token user\'s email', async () => {
+    const { result, calls, text } = await call({ owner: 'me' }, [
+      { method: 'GET', path: '/api/v1/me', json: { type: 'user', id: ALICE.id, name: 'Alice', email: 'alice@acme.test' } },
+      { method: 'GET', path: FLAGS, json: { items: [], next_cursor: null } },
+    ]);
+    expect(result.isError).toBeFalsy();
+    const list = calls.find((c) => new URL(c.url).pathname === FLAGS)!;
+    expect(new URL(list.url).searchParams.get('owner')).toBe('alice@acme.test');
+    expect(JSON.parse(text).owner).toBe('alice@acme.test');
+  });
+
+  it('refuses owner "me" for a service token instead of listing every flag', async () => {
+    const { result, calls, text } = await call({ owner: 'me' }, [
+      { method: 'GET', path: '/api/v1/me', json: { type: 'service_token', id: ALICE.id, name: 'ci', role: 'Admin' } },
+      { method: 'GET', path: FLAGS, json: { items: [], next_cursor: null } },
+    ]);
+    expect(result.isError).toBe(true);
+    expect(text).toMatch(/service token/i);
+    expect(calls.some((c) => new URL(c.url).pathname === FLAGS)).toBe(false);
+  });
+});

@@ -11,6 +11,7 @@
   "archive_flag",
   "restore_flag",
   "set_flag_expiry",
+  "set_flag_owner",
   "toggle_flag",
   "update_flag_environment_config",
   "flag_status",

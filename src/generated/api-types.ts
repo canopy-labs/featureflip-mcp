@@ -994,9 +994,11 @@ export interface paths {
         /**
          * Sets the flag's advisory expiry date.
          * @description Evaluation never changes when it passes — the flag is
-         *     reported stale so it can be cleaned up. Requires at least Member. The date must be in the
-         *     future (400 `EXPIRY_IN_PAST`) and the flag-expiration feature must be enabled
-         *     (400 `FEATURE_NOT_ENABLED`).
+         *     reported stale so it can be cleaned up. Requires at least Member. `expiresAtUtc` takes a
+         *     date (`2026-12-01`), which means the end of that day in UTC, the same as picking it in the
+         *     dashboard, or a full ISO-8601 timestamp, which is stored exactly. It must be in the future
+         *     (400 `EXPIRY_IN_PAST`), so today's date is accepted, and the flag-expiration feature must
+         *     be enabled (400 `FEATURE_NOT_ENABLED`).
          */
         put: {
             parameters: {
@@ -1289,6 +1291,197 @@ export interface paths {
          * Leaves the flag unowned.
          * @description Requires at least Member. Always allowed, even when the
          *      flag-ownership feature is disabled.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    org: string;
+                    project: string;
+                    flag: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Authentication is required, or the supplied API token is invalid or expired. */
+                401: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
+                429: {
+                    headers: {
+                        /** @description Number of seconds to wait before retrying the request. */
+                        "Retry-After"?: number;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orgs/{org}/projects/{project}/flags/{flag}/removal-pr": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Records the pull request that removes this flag from code, so the flag's owner is sent a link to it.
+         * @description Called by the Featureflip Flag Cleanup Action. Requires at least Member. The URL
+         *     must be an https pull request URL (400 `validation_failed`).
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    org: string;
+                    project: string;
+                    flag: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["PublicSetFlagRemovalPrRequest"];
+                    "text/json": components["schemas"]["PublicSetFlagRemovalPrRequest"];
+                    "application/*+json": components["schemas"]["PublicSetFlagRemovalPrRequest"];
+                };
+            };
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Authentication is required, or the supplied API token is invalid or expired. */
+                401: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
+                429: {
+                    headers: {
+                        /** @description Number of seconds to wait before retrying the request. */
+                        "Retry-After"?: number;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /**
+         * Forgets the flag's removal pull request.
+         * @description Requires at least Member.
          */
         delete: {
             parameters: {
@@ -5415,8 +5608,8 @@ export interface paths {
         /**
          * Queues a finished delivery (succeeded or dead-lettered) to be sent again, restarting its retry schedule.
          * @description Requires Admin. Refused with a 400 when the delivery is still pending, when
-         *     the subscription is disabled, or when the delivery's event belongs to a project the
-         *     subscription no longer covers.
+         *     the subscription is disabled, or when the subscription's current project, environment or
+         *     event-type filters no longer cover the delivery's event.
          */
         post: {
             parameters: {
@@ -5558,10 +5751,10 @@ export interface components {
             name?: string | null;
             slug?: string | null;
             /**
-             * @description Allowed values: Solo, Pro, Business, Enterprise.
+             * @description Allowed values: Solo, Team, Pro, Business, Enterprise.
              * @enum {string|null}
              */
-            plan?: "Solo" | "Pro" | "Business" | "Enterprise" | null;
+            plan?: "Solo" | "Team" | "Pro" | "Business" | "Enterprise" | null;
             isActive?: boolean;
             /** Format: date-time */
             createdAt?: string;
@@ -5649,9 +5842,13 @@ export interface components {
          *     `docsUrl`/`retryAfter`, breaking the published spec. !:JsonPropertyName
          *     always wins over the policy, so these are pinned explicitly rather than relying on the
          *     property names already being lowercase for the single-word ones.
-         *     `did_you_mean` and `next_actions` are ADDITIVE optional keys (null → omitted via
-         *     the global `DefaultIgnoreCondition = WhenWritingNull`), so pre-existing error bodies
-         *     are byte-for-byte unchanged when they're absent.
+         *     `did_you_mean`, `next_actions` and `connection_id` are ADDITIVE optional keys
+         *     (null → omitted via the global `DefaultIgnoreCondition = WhenWritingNull`), so
+         *     pre-existing error bodies are byte-for-byte unchanged when they're absent.
+         *
+         *     `connection_id` is present only on the `sso_required` error: the organization
+         *     requires single sign-on, and this credential didn't come through its identity provider.
+         *     `connection_id` identifies which SSO connection to sign in with.
          * @example {
          *       "error": "not_found",
          *       "message": "Flag 'new-checkout-flw' was not found in project 'checkout'.",
@@ -5678,6 +5875,8 @@ export interface components {
             retry_after?: number | null;
             did_you_mean?: string[] | null;
             next_actions?: components["schemas"]["NextAction"][] | null;
+            /** Format: uuid */
+            connection_id?: string | null;
         };
         /** @description Request-side condition group, symmetric with PublicConditionGroupResponse. */
         PublicConditionGroupRequest: {
@@ -5757,7 +5956,8 @@ export interface components {
          *     is passed through verbatim to Type, which itself takes a
          *     bare string (Boolean/String/Number/Json) rather than the domain enum — invalid values surface
          *     as the handler's own validation failure, not a controller-level 400. ExpiresAtUtc is
-         *     optional and advisory; it must be in the future and requires the flag-expiration feature
+         *     optional and advisory; a bare date (`2026-12-01`) means the end of that day in UTC, and a full
+         *     timestamp is stored exactly. It must be in the future and requires the flag-expiration feature
          *     (400 `EXPIRY_IN_PAST` / `FEATURE_NOT_ENABLED`). OwnerEmail optionally names
          *     the owner (an active member, matched case-insensitively; requires the flag-ownership feature —
          *     400 `OWNER_NOT_MEMBER` / `FEATURE_NOT_ENABLED`). Omitted, the owner is the caller when
@@ -6112,6 +6312,7 @@ export interface components {
             /** Format: date-time */
             expiresAtUtc?: string | null;
             owner?: components["schemas"]["PublicFlagOwner"];
+            removalPrUrl?: string | null;
         };
         /**
          * @description A page of results plus an opaque cursor for the next page, or null when this is the last
@@ -6235,6 +6436,7 @@ export interface components {
             /** Format: date-time */
             expiresAtUtc?: string | null;
             owner?: components["schemas"]["PublicFlagOwner"];
+            removalPrUrl?: string | null;
             /** @description Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it. */
             _actions?: {
                 [key: string]: components["schemas"]["ActionCapability"];
@@ -6407,7 +6609,8 @@ export interface components {
          * @description Request body for `PUT /api/v1/orgs/{org}/projects/{project}/flags/{flag}/expiry`. Expiry is a
          *     dedicated sub-resource, deliberately NOT a field on PublicUpdateFeatureFlagRequest: that
          *     PUT is a full replace, so a new nullable field there would let any client that doesn't know about
-         *     expiry (the Terraform provider included) wipe it on every update.
+         *     expiry (the Terraform provider included) wipe it on every update. A bare date means the end of that
+         *     UTC day; a full timestamp is stored exactly.
          */
         PublicSetFlagExpiryRequest: {
             /** Format: date-time */
@@ -6421,6 +6624,15 @@ export interface components {
          */
         PublicSetFlagOwnerRequest: {
             email?: string | null;
+        };
+        /**
+         * @description Request body for `PUT /api/v1/orgs/{org}/projects/{project}/flags/{flag}/removal-pr`: the
+         *     pull request that removes this flag from code, as opened by the Featureflip Flag Cleanup Action.
+         *     A dedicated sub-resource for the same reason as expiry and owner. `url` must be an https
+         *     pull request URL (`https://{host}/{owner}/{repo}/pull/{number}`).
+         */
+        PublicSetFlagRemovalPrRequest: {
+            url?: string | null;
         };
         /**
          * @description The full targeting configuration for a flag in a single environment, returned by
@@ -6697,6 +6909,10 @@ export interface components {
         /**
          * @description A webhook subscription. Never carries secret material: signing secrets are listed by id and
          *     lifecycle only — the value itself is returned once, when it is created or rotated.
+         *     `overPlanLimit` is true when the organization has more subscriptions than its plan
+         *     allows, which happens after a downgrade. The oldest subscriptions up to the limit keep
+         *     delivering. The rest receive nothing and cannot be re-enabled, tested or redelivered to until
+         *     the plan is upgraded or older subscriptions are deleted.
          * @example {
          *       "id": "0197b6a4-6f7a-7b8c-9d0e-1f2a3b4c5d6e",
          *       "name": "Checkout flag changes to Slack relay",
@@ -6747,6 +6963,7 @@ export interface components {
             /** Format: date-time */
             updatedAt?: string;
             secrets?: components["schemas"]["PublicWebhookSecretResponse"][] | null;
+            overPlanLimit?: boolean;
             /** @description Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it. */
             _actions?: {
                 [key: string]: components["schemas"]["ActionCapability"];

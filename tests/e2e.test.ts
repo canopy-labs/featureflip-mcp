@@ -51,14 +51,15 @@ describe('full tool surface', () => {
     );
     // The writes that cannot change what any caller is served: pinned so a future
     // tool cannot quietly join them, and so these stay distinguishable from an
-    // unannotated one. set_flag_expiry is here because expiry is advisory only.
+    // unannotated one. set_flag_expiry and set_flag_owner are here because expiry and
+    // ownership are advisory only.
     // deliver_webhook sends an event to a receiver but changes nothing in Featureflip.
     const additive = tools
       .filter((t) => t.annotations?.destructiveHint === false)
       .map((t) => t.name)
       .sort();
     expect(additive).toEqual(
-      ['create_flag', 'restore_flag', 'set_flag_expiry', 'wrap_feature', 'deliver_webhook'].sort(),
+      ['create_flag', 'restore_flag', 'set_flag_expiry', 'set_flag_owner', 'wrap_feature', 'deliver_webhook'].sort(),
     );
   });
 });

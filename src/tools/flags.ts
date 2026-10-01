@@ -3,6 +3,7 @@ import * as z from 'zod/v4';
 import { enc } from '../client.js';
 import { okJson, run } from '../errors.js';
 import type { ToolContext } from './context.js';
+import { ownerFilter, resolveOwner } from './owner.js';
 
 const flagTypes = z.enum(['Boolean', 'String', 'Number', 'Json']);
 
@@ -14,27 +15,33 @@ export function registerFlagTools(server: McpServer, ctx: ToolContext): void {
     {
       title: 'List feature flags',
       description:
-        'List feature flags in a project. Filter with search (key/name substring), tag, type, archived. Paginated via cursor.',
+        'List feature flags in a project. Filter with search (key/name substring), tag, type, archived, owner. ' +
+        'Each flag carries its owner ({id, email, name}, or null when unowned). Paginated via cursor.',
       inputSchema: z.object({
         project: z.string().describe('Project key'),
         search: z.string().optional(),
         tag: z.string().optional(),
         type: flagTypes.optional(),
         archived: z.boolean().optional().describe('true = only archived, false = only active'),
+        owner: ownerFilter,
         limit: z.number().int().min(1).max(100).optional(),
         cursor: z.string().optional(),
       }),
       annotations: { readOnlyHint: true },
     },
-    async ({ project, ...query }) =>
-      run(async () => okJson(await ctx.api.request('GET', base(project), { query }))),
+    async ({ project, owner, ...query }) =>
+      run(async () =>
+        okJson(await ctx.api.request('GET', base(project), { query: { ...query, owner: await resolveOwner(ctx, owner) } })),
+      ),
   );
 
   server.registerTool(
     'get_flag',
     {
       title: 'Get feature flag',
-      description: 'Get one feature flag with its variations and metadata. Address by flag key or id.',
+      description:
+        'Get one feature flag with its variations and metadata, including its owner (null when unowned). ' +
+        'Address by flag key or id.',
       inputSchema: z.object({
         project: z.string().describe('Project key'),
         flag: z.string().describe('Flag key or id'),
@@ -73,7 +80,14 @@ export function registerFlagTools(server: McpServer, ctx: ToolContext): void {
         expiresAtUtc: z
           .string()
           .optional()
-          .describe('Optional ISO-8601 UTC instant the flag is expected to be removed by (see set_flag_expiry)'),
+          .describe('Optional date (YYYY-MM-DD, end of that UTC day) or ISO-8601 timestamp the flag is expected to be removed by (see set_flag_expiry)'),
+        ownerEmail: z
+          .string()
+          .optional()
+          .describe(
+            'Optional owner: the email of an active member (Pro plan and above, see set_flag_owner). ' +
+              'Omitted, a personal access token makes its own user the owner and a service token leaves the flag unowned',
+          ),
         idempotency_key: z.string().optional().describe('Idempotency-Key header for safe retries'),
       }),
       annotations: { destructiveHint: false },
@@ -89,7 +103,8 @@ export function registerFlagTools(server: McpServer, ctx: ToolContext): void {
     {
       title: 'Update feature flag metadata',
       description:
-        'Update flag name/description/tags/clientSideVisible. Key and type are immutable. ' +
+        'Update flag name/description/tags/clientSideVisible. Changes only the fields you pass and keeps the rest; ' +
+        'pass description: "" to clear it. Key and type are immutable. ' +
         'Use toggle_flag / update_targeting for behavior changes.',
       inputSchema: z.object({
         project: z.string(),
@@ -101,10 +116,23 @@ export function registerFlagTools(server: McpServer, ctx: ToolContext): void {
       }),
       annotations: { destructiveHint: true },
     },
-    async ({ project, flag, ...body }) =>
+    async ({ project, flag, name, description, tags, clientSideVisible }) =>
       run(async () => {
+        const path = `${base(project)}/${enc(flag)}`;
+        // PUT is a full replace: a missing name is a 400 and a missing description clears it (#3220).
+        // Omitted tags / clientSideVisible already mean "unchanged", so only these two are carried over.
+        const current =
+          name === undefined || description === undefined
+            ? await ctx.api.request<{ name: string; description: string | null }>('GET', path)
+            : undefined;
+        const body = {
+          name: name ?? current?.name,
+          description: description ?? current?.description,
+          tags,
+          clientSideVisible,
+        };
         // PUT .../flags/{flag} returns 204 No Content — nothing to pass through.
-        await ctx.api.request('PUT', `${base(project)}/${enc(flag)}`, { body });
+        await ctx.api.request('PUT', path, { body });
         return okJson({ project, flag, updated: true });
       }),
   );
@@ -116,14 +144,15 @@ export function registerFlagTools(server: McpServer, ctx: ToolContext): void {
       description:
         'Set the date a flag is expected to be removed by, or pass expiresAtUtc: null to clear it. ' +
         'Expiry is advisory: evaluation never changes. Once the date passes, find_stale_flags reports the flag ' +
-        'as expired. expiresAtUtc is an exact ISO-8601 UTC instant; a bare date means 00:00 UTC that day, so pass ' +
-        'e.g. 2026-12-31T23:59:59Z for the end of a day. Refused with EXPIRY_IN_PAST for a time that has already ' +
-        'passed, and with FEATURE_NOT_ENABLED while flag expiration is not enabled for the organization. ' +
+        'as expired. expiresAtUtc takes a date (2026-12-31), which means the end of that day in UTC, the same as ' +
+        'picking it in the dashboard, or a full ISO-8601 timestamp, which is stored exactly. Refused with ' +
+        'EXPIRY_IN_PAST for a time that has already passed (today\'s date is allowed), and with ' +
+        'FEATURE_NOT_ENABLED while flag expiration is not enabled for the organization. ' +
         'Clearing is always allowed.',
       inputSchema: z.object({
         project: z.string(),
         flag: z.string().describe('Flag key or id'),
-        expiresAtUtc: z.string().nullable().describe('ISO-8601 UTC instant, or null to clear the expiry'),
+        expiresAtUtc: z.string().nullable().describe('Date (YYYY-MM-DD, end of that UTC day) or ISO-8601 timestamp, or null to clear the expiry'),
       }),
       annotations: { destructiveHint: false, idempotentHint: true },
     },
@@ -134,6 +163,39 @@ export function registerFlagTools(server: McpServer, ctx: ToolContext): void {
         if (expiresAtUtc === null) await ctx.api.request('DELETE', path);
         else await ctx.api.request('PUT', path, { body: { expiresAtUtc } });
         return okJson({ project, flag, expiresAtUtc });
+      }),
+  );
+
+  server.registerTool(
+    'set_flag_owner',
+    {
+      title: 'Set or clear flag owner',
+      description:
+        'Name the person responsible for a flag, or pass owner: null to leave it unowned. owner is the email of an ' +
+        'active member of the organization, or "me" for the token\'s own user (needs a personal access token). ' +
+        'The owner gets the flag\'s cleanup notices; evaluation never changes. Refused with OWNER_NOT_MEMBER for an ' +
+        'email that is not an active member, and with PLAN_FEATURE_UNAVAILABLE below the Pro plan. ' +
+        'Clearing is always allowed.',
+      inputSchema: z.object({
+        project: z.string(),
+        flag: z.string().describe('Flag key or id'),
+        owner: z
+          .string()
+          .nullable()
+          .describe('Owner email, "me" for the token\'s own user, or null (or "none") to clear the owner'),
+      }),
+      annotations: { destructiveHint: false, idempotentHint: true },
+    },
+    async ({ project, flag, owner }) =>
+      run(async () => {
+        // PUT and DELETE .../owner both return 204 No Content — nothing to pass through.
+        const path = `${base(project)}/${enc(flag)}/owner`;
+        // "none" is the list_flags filter's word for unowned, so it clears here rather than
+        // reaching the API as an email.
+        const email = owner?.trim().toLowerCase() === 'none' ? undefined : await resolveOwner(ctx, owner ?? undefined);
+        if (email === undefined) await ctx.api.request('DELETE', path);
+        else await ctx.api.request('PUT', path, { body: { email } });
+        return okJson({ project, flag, owner: email ?? null });
       }),
   );
 
