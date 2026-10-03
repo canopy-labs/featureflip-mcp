@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.1.10 — 2026-10-03
+
+### Added
+
+- `list_removal_candidates` lists the flags the server is confident can be removed from code, the same list the flag cleanup GitHub Action works from. Each item has `key`, `reason`, `status`, `treatment` (which branch to keep) and `blockedBy`. `staleness` is `dead` (the default) or `stale`. (#3458)
+- `find_stale_flags` reports `blockedBy` for each flag: the live flags that still list it as a prerequisite and have to be removed and archived first. It is `[]` when nothing depends on the flag, and `null` when the server didn't classify the flag as a removal candidate, which means unknown rather than unblocked. If the lookup fails, the stale report still comes back, with every `blockedBy` set to `null` and a `blockedByNote` saying why. Against an API that predates `blockedBy`, every value is `null`. (#3458)
+
+### Changed
+
+- `find_stale_flags`, `list_removal_candidates` and `archive_flag` tell the agent to remove dependents first. `archive_flag` refuses a flag that another live flag still lists as a prerequisite (`FLAG_HAS_DEPENDENTS`), and the agent now hears that before trying.
+
 ## 0.1.9 — 2026-10-01
 
 ### Added

@@ -638,9 +638,13 @@ export interface paths {
         /**
          * Lists confidently-dead (or, with `staleness=stale`, stale-or-dead) flags the Featureflip Flag Cleanup Action should remove, cursor-paginated, each with its kill `treatment` (true = keep the on-branch, false = keep the off-branch).
          * @description Only flags the staleness engine marks at or
-         *     above the requested tier via a decisive StuckRolledOut/StuckRolledBack reason are returned;
-         *     ZeroTraffic/CreatedUnused, cross-env-divergent, and archived flags are omitted (no confident code
-         *     treatment). The ONLY public projection of staleness.
+         *     above the requested tier with a settled value are returned: a decisive StuckRolledOut/StuckRolledBack
+         *     reason, or ZeroTraffic/CreatedUnused when no environment saw traffic and every environment's
+         *     configuration serves one fixed variation (enabled, no rules, no prerequisites). Cross-env-divergent
+         *     flags, flags without traffic whose configuration could serve more than one value, and archived
+         *     flags are omitted (no confident code treatment). The ONLY public projection of staleness.
+         *     Each item's `blockedBy` names the live flags that still list it as a prerequisite; while
+         *     it is non-empty the flag cannot be archived (`FLAG_HAS_DEPENDENTS`), so remove those first.
          */
         get: {
             parameters: {
@@ -6360,13 +6364,16 @@ export interface components {
          *     (`"Stale"` or `"Dead"`, never `"Active"`) — lets a caller distinguish the two when
          *     `?staleness=stale` widens the response to include both tiers. This is the ONLY public
          *     projection of staleness — PublicFlagResponse and PublicFlagListItem
-         *     still omit it by design.
+         *     still omit it by design. `BlockedBy` names the live flags that still list this one as a
+         *     prerequisite, sorted by key; while it is non-empty the flag cannot be archived
+         *     (`FLAG_HAS_DEPENDENTS`), so a caller should remove those dependents first.
          */
         PublicFlagRemovalCandidate: {
             key?: string | null;
             reason?: string | null;
             treatment?: boolean;
             status?: string | null;
+            blockedBy?: string[] | null;
         };
         /**
          * @description A page of results plus an opaque cursor for the next page, or null when this is the last

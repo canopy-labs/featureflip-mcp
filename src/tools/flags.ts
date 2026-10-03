@@ -222,6 +222,8 @@ export function registerFlagTools(server: McpServer, ctx: ToolContext): void {
       title: 'Archive feature flag',
       description:
         'Archive a flag (soft-hide, evaluation stops serving it). Reversible with restore_flag. ' +
+        'Archive dependents first: refused with FLAG_HAS_DEPENDENTS while another live flag lists this one as a ' +
+        'prerequisite, so archive those flags (blockedBy in find_stale_flags / list_removal_candidates) first. ' +
         'Refused with FLAG_RECENTLY_EVALUATED while live traffic is still evaluating the flag, ' +
         'because archiving makes every caller fall back to its own hardcoded default — normally that ' +
         'means the code removal has merged but not deployed yet, and the refusal clears itself once it has.',

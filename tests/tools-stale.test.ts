@@ -117,6 +117,126 @@ describe('find_stale_flags expiry (#2563)', () => {
   });
 });
 
+describe('find_stale_flags blockedBy (#3458)', () => {
+  const CANDIDATES = `${FLAGS}/removal-candidates`;
+  const offEverywhere = { method: 'GET', path: /\/environments$/, json: [{ environmentKey: 'prod', isEnabled: false }] };
+
+  async function call(routes: Parameters<typeof mockApi>[0]) {
+    const { api, calls } = mockApi(routes);
+    const client = await connectClient({ api, org: ORG });
+    const result = await client.callTool({ name: 'find_stale_flags', arguments: { project: 'web', days: 30 } });
+    expect(result.isError).toBeFalsy();
+    const report = JSON.parse((result.content as { text: string }[])[0].text);
+    return { report, calls, byKey: Object.fromEntries(report.stale.map((f: { key: string }) => [f.key, f])) };
+  }
+
+  it('reports the live dependents the server names, [] for none, and null for a flag it did not classify', async () => {
+    const { byKey, calls } = await call([
+      {
+        method: 'GET',
+        path: FLAGS,
+        json: { items: [flag('two-factor-auth', OLD), flag('leaf', OLD), flag('unclassified', OLD)], next_cursor: null },
+      },
+      offEverywhere,
+      {
+        method: 'GET',
+        path: CANDIDATES,
+        json: {
+          items: [
+            { key: 'two-factor-auth', reason: 'StuckRolledBack', treatment: false, status: 'Dead', blockedBy: ['web-two-factor-auth'] },
+            { key: 'leaf', reason: 'StuckRolledBack', treatment: false, status: 'Dead', blockedBy: [] },
+          ],
+          next_cursor: null,
+        },
+      },
+    ]);
+    expect(byKey['two-factor-auth'].blockedBy).toEqual(['web-two-factor-auth']);
+    expect(byKey.leaf.blockedBy).toEqual([]);
+    expect(byKey.unclassified.blockedBy).toBeNull();
+    // Stale tier, so the classification covers every flag the server would call stale, not only dead ones.
+    const candidateCall = calls.find((c) => new URL(c.url).pathname === CANDIDATES)!;
+    expect(new URL(candidateCall.url).searchParams.get('staleness')).toBe('stale');
+  });
+
+  it('follows the removal-candidates cursor', async () => {
+    const { byKey } = await call([
+      { method: 'GET', path: FLAGS, json: { items: [flag('a', OLD), flag('b', OLD)], next_cursor: null } },
+      offEverywhere,
+      { method: 'GET', path: CANDIDATES, query: { cursor: null }, json: { items: [{ key: 'a', blockedBy: ['x'] }], next_cursor: 'page2' } },
+      { method: 'GET', path: CANDIDATES, query: { cursor: 'page2' }, json: { items: [{ key: 'b', blockedBy: ['y'] }], next_cursor: null } },
+    ]);
+    expect(byKey.a.blockedBy).toEqual(['x']);
+    expect(byKey.b.blockedBy).toEqual(['y']);
+  });
+
+  it('reads blockedBy as unknown (null) from an API that predates the field', async () => {
+    const { byKey } = await call([
+      { method: 'GET', path: FLAGS, json: { items: [flag('legacy', OLD)], next_cursor: null } },
+      offEverywhere,
+      { method: 'GET', path: CANDIDATES, json: { items: [{ key: 'legacy', reason: 'StuckRolledBack', treatment: false, status: 'Dead' }], next_cursor: null } },
+    ]);
+    expect(byKey.legacy.blockedBy).toBeNull();
+  });
+
+  it('does not ask for removal candidates when nothing is stale', async () => {
+    const { calls } = await call([{ method: 'GET', path: FLAGS, json: { items: [flag('fresh', FRESH)], next_cursor: null } }]);
+    expect(calls.some((c) => new URL(c.url).pathname === CANDIDATES)).toBe(false);
+  });
+
+  it('still returns the stale report, with blockedBy null and a note, when removal-candidates fails', async () => {
+    const { report } = await call([
+      { method: 'GET', path: FLAGS, json: { items: [flag('old-off', OLD)], next_cursor: null } },
+      offEverywhere,
+      { method: 'GET', path: CANDIDATES, status: 500, json: { error: 'internal_error', message: 'boom' } },
+    ]);
+    expect(report.stale).toEqual([expect.objectContaining({ key: 'old-off', blockedBy: null })]);
+    expect(report.blockedByNote).toMatch(/removal-candidates/);
+  });
+});
+
+describe('list_removal_candidates (#3458)', () => {
+  const CANDIDATES = `${FLAGS}/removal-candidates`;
+
+  it('passes staleness, limit and cursor through and returns the page as-is', async () => {
+    const page = {
+      items: [{ key: 'two-factor-auth', reason: 'StuckRolledBack', treatment: false, status: 'Dead', blockedBy: ['web-two-factor-auth'] }],
+      next_cursor: 'MjA',
+    };
+    const { api, calls } = mockApi([{ method: 'GET', path: CANDIDATES, json: page }]);
+    const client = await connectClient({ api, org: ORG });
+    const result = await client.callTool({
+      name: 'list_removal_candidates',
+      arguments: { project: 'web', staleness: 'stale', limit: 20, cursor: 'abc' },
+    });
+    expect(result.isError).toBeFalsy();
+    expect(JSON.parse((result.content as { text: string }[])[0].text)).toEqual(page);
+    const params = new URL(calls[0].url).searchParams;
+    expect(params.get('staleness')).toBe('stale');
+    expect(params.get('limit')).toBe('20');
+    expect(params.get('cursor')).toBe('abc');
+  });
+
+  it('defaults to the server\'s dead tier by omitting staleness', async () => {
+    const { api, calls } = mockApi([{ method: 'GET', path: CANDIDATES, json: { items: [], next_cursor: null } }]);
+    const client = await connectClient({ api, org: ORG });
+    await client.callTool({ name: 'list_removal_candidates', arguments: { project: 'web' } });
+    expect(new URL(calls[0].url).searchParams.has('staleness')).toBe(false);
+  });
+});
+
+describe('dependents-first guidance (#3458)', () => {
+  it('find_stale_flags, list_removal_candidates and archive_flag all say dependents go first', async () => {
+    const { api } = mockApi([]);
+    const client = await connectClient({ api, org: ORG });
+    const { tools } = await client.listTools();
+    const desc = (name: string) => tools.find((t) => t.name === name)!.description!;
+    for (const name of ['find_stale_flags', 'list_removal_candidates', 'archive_flag']) {
+      expect(desc(name)).toMatch(/FLAG_HAS_DEPENDENTS/);
+      expect(desc(name)).toMatch(/dependents first/i);
+    }
+  });
+});
+
 describe('find_stale_flags owner (#3189)', () => {
   const ALICE = { id: '0197b6a0-5f2a-7c3e-9b4d-1e2f3a4b5c6d', email: 'alice@acme.test', name: 'Alice' };
   const offEverywhere = { method: 'GET', path: /\/environments$/, json: [{ environmentKey: 'prod', isEnabled: false }] };

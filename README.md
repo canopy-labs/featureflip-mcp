@@ -48,6 +48,7 @@ CRUD: `list_projects`, `list_environments`, `list_flags`, `get_flag`, `create_fl
 Webhooks (Admin token required): `list_webhooks`, `list_webhook_deliveries`, `manage_webhook`, `deliver_webhook`
 
 Workflows: `flag_status` (cross-environment view), `find_stale_flags` (cleanup candidates),
+`list_removal_candidates` (flags safe to remove, with the prerequisite dependents to remove first),
 `wrap_feature` (create flag + get the SDK snippet for your language)
 
 Full reference: https://featureflip.io/docs/integrations/mcp/

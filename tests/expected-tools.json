@@ -23,5 +23,6 @@
   "manage_webhook",
   "deliver_webhook",
   "find_stale_flags",
+  "list_removal_candidates",
   "wrap_feature"
 ]

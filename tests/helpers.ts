@@ -7,6 +7,8 @@ import type { ToolContext } from '../src/tools/context.js';
 export interface Route {
   method: string;
   path: string | RegExp;
+  /** Query parameters the request must carry; null means the parameter must be absent. */
+  query?: Record<string, string | null>;
   status?: number;
   json?: unknown;
 }
@@ -22,12 +24,13 @@ export function mockApi(routes: Route[]): { api: FeatureflipApi; calls: Recorded
   const fetchImpl = (async (input: string | URL | Request, init?: RequestInit) => {
     const url = String(input);
     const method = init?.method ?? 'GET';
-    const pathname = new URL(url).pathname;
+    const { pathname, searchParams } = new URL(url);
     calls.push({ method, url, body: init?.body ? JSON.parse(String(init.body)) : undefined });
     const route = routes.find(
       (r) =>
         r.method === method &&
-        (typeof r.path === 'string' ? r.path === pathname : r.path.test(pathname)),
+        (typeof r.path === 'string' ? r.path === pathname : r.path.test(pathname)) &&
+        Object.entries(r.query ?? {}).every(([k, v]) => searchParams.get(k) === v),
     );
     if (!route) {
       return new Response(

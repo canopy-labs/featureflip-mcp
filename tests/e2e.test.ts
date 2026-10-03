@@ -7,7 +7,7 @@ import { mockApi, connectClient } from './helpers.js';
 import EXPECTED_TOOLS from './expected-tools.json' with { type: 'json' };
 
 describe('full tool surface', () => {
-  it('registers exactly the 24 spec tools, every one titled and annotated', async () => {
+  it('registers exactly the expected tools, every one titled and annotated', async () => {
     const { api } = mockApi([]);
     const client = await connectClient({ api, org: 'acme' });
     const { tools } = await client.listTools();
@@ -32,7 +32,7 @@ describe('full tool surface', () => {
     expect(readOnly).toEqual(
       [
         'list_projects', 'list_environments', 'list_segments', 'get_segment',
-        'list_flags', 'get_flag', 'flag_status', 'get_targeting', 'find_stale_flags',
+        'list_flags', 'get_flag', 'flag_status', 'get_targeting', 'find_stale_flags', 'list_removal_candidates',
         'list_webhooks', 'list_webhook_deliveries',
       ].sort(),
     );
