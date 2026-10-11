@@ -12,6 +12,7 @@
   "restore_flag",
   "set_flag_expiry",
   "set_flag_owner",
+  "set_flag_permanent",
   "toggle_flag",
   "update_flag_environment_config",
   "flag_status",

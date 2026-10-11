@@ -88,6 +88,13 @@ export function registerFlagTools(server: McpServer, ctx: ToolContext): void {
             'Optional owner: the email of an active member (Pro plan and above, see set_flag_owner). ' +
               'Omitted, a personal access token makes its own user the owner and a service token leaves the flag unowned',
           ),
+        isPermanent: z
+          .boolean()
+          .optional()
+          .describe(
+            'Mark the flag permanent: a kill switch, ops toggle or entitlement gate that is meant to stay. ' +
+              'Permanent flags are never listed as removal candidates or by find_stale_flags. Cannot be combined with expiresAtUtc',
+          ),
         idempotency_key: z.string().optional().describe('Idempotency-Key header for safe retries'),
       }),
       annotations: { destructiveHint: false },
@@ -146,8 +153,9 @@ export function registerFlagTools(server: McpServer, ctx: ToolContext): void {
         'Expiry is advisory: evaluation never changes. Once the date passes, find_stale_flags reports the flag ' +
         'as expired. expiresAtUtc takes a date (2026-12-31), which means the end of that day in UTC, the same as ' +
         'picking it in the dashboard, or a full ISO-8601 timestamp, which is stored exactly. Refused with ' +
-        'EXPIRY_IN_PAST for a time that has already passed (today\'s date is allowed), and with ' +
-        'FEATURE_NOT_ENABLED while flag expiration is not enabled for the organization. ' +
+        'EXPIRY_IN_PAST for a time that has already passed (today\'s date is allowed), with ' +
+        'FEATURE_NOT_ENABLED while flag expiration is not enabled for the organization, and with ' +
+        'PERMANENT_FLAG_HAS_EXPIRY on a permanent flag (make it temporary first with set_flag_permanent). ' +
         'Clearing is always allowed.',
       inputSchema: z.object({
         project: z.string(),
@@ -163,6 +171,33 @@ export function registerFlagTools(server: McpServer, ctx: ToolContext): void {
         if (expiresAtUtc === null) await ctx.api.request('DELETE', path);
         else await ctx.api.request('PUT', path, { body: { expiresAtUtc } });
         return okJson({ project, flag, expiresAtUtc });
+      }),
+  );
+
+  server.registerTool(
+    'set_flag_permanent',
+    {
+      title: 'Mark a flag permanent or temporary',
+      description:
+        'Mark a flag permanent (a kill switch, ops toggle or entitlement gate that is meant to stay), or pass ' +
+        'permanent: false to make it temporary again. Permanent flags are never listed as removal candidates or ' +
+        'by find_stale_flags; evaluation never changes. Marking is refused with PERMANENT_FLAG_HAS_EXPIRY while ' +
+        'the flag has an expiry date (clear it first with set_flag_expiry and expiresAtUtc: null), with ' +
+        'FEATURE_NOT_ENABLED while permanent flags are not enabled for the organization, and on an archived flag. ' +
+        'Making a flag temporary is always allowed.',
+      inputSchema: z.object({
+        project: z.string(),
+        flag: z.string().describe('Flag key or id'),
+        permanent: z.boolean().describe('true to mark the flag permanent, false to make it temporary'),
+      }),
+      annotations: { destructiveHint: false, idempotentHint: true },
+    },
+    async ({ project, flag, permanent }) =>
+      run(async () => {
+        // PUT and DELETE .../permanent both return 204 No Content — nothing to pass through.
+        const path = `${base(project)}/${enc(flag)}/permanent`;
+        await ctx.api.request(permanent ? 'PUT' : 'DELETE', path);
+        return okJson({ project, flag, permanent });
       }),
   );
 

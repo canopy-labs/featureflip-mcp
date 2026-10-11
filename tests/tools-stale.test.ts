@@ -52,6 +52,25 @@ describe('find_stale_flags', () => {
   });
 });
 
+describe('find_stale_flags permanent flags (#3193)', () => {
+  it('lists only temporary flags', async () => {
+    const { api } = mockApi([
+      // Only a request carrying permanent=false matches; without it the tool gets a 404 and errors.
+      { method: 'GET', path: FLAGS, query: { permanent: 'false' }, json: { items: [flag('old-on', OLD)], next_cursor: null } },
+      {
+        method: 'GET',
+        path: `${FLAGS}/old-on/environments`,
+        json: [{ environmentKey: 'prod', isEnabled: true }],
+      },
+    ]);
+    const client = await connectClient({ api, org: ORG });
+    const result = await client.callTool({ name: 'find_stale_flags', arguments: { project: 'web', days: 30 } });
+    expect(result.isError).toBeFalsy();
+    const report = JSON.parse((result.content as { text: string }[])[0].text);
+    expect(report.stale.map((f: { key: string }) => f.key)).toEqual(['old-on']);
+  });
+});
+
 describe('find_stale_flags expiry (#2563)', () => {
   const PAST = '2026-01-15T23:59:59Z';
   const FUTURE = '2099-01-01T00:00:00Z';

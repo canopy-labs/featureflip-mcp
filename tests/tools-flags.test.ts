@@ -175,6 +175,16 @@ describe('flag CRUD tools', () => {
     expect(calls[2].url).toContain('force=true');
   });
 
+  it('create_flag forwards isPermanent', async () => {
+    const { api, calls } = mockApi([{ method: 'POST', path: FLAGS, status: 201, json: { key: 'kill' } }]);
+    const client = await connectClient({ api, org: ORG });
+    await client.callTool({
+      name: 'create_flag',
+      arguments: { project: 'web', key: 'kill', name: 'Kill', type: 'Boolean', isPermanent: true },
+    });
+    expect(calls[0].body).toMatchObject({ key: 'kill', isPermanent: true });
+  });
+
   it('create_flag forwards expiresAtUtc', async () => {
     const { api, calls } = mockApi([{ method: 'POST', path: FLAGS, status: 201, json: { key: 'promo' } }]);
     const client = await connectClient({ api, org: ORG });
@@ -246,6 +256,70 @@ describe('flag CRUD tools', () => {
     const tool = tools.find((t) => t.name === 'set_flag_expiry');
     expect(tool?.annotations?.destructiveHint).toBe(false);
     expect(tool?.annotations?.idempotentHint).toBe(true);
+  });
+
+  it('set_flag_permanent PUTs to mark and DELETEs to make temporary (#3671)', async () => {
+    const { api, calls } = mockApi([
+      // Real controller (PublicFlagsController.MarkPermanent/MarkTemporary) returns 204 No Content.
+      { method: 'PUT', path: `${FLAGS}/kill/permanent`, status: 204 },
+      { method: 'DELETE', path: `${FLAGS}/kill/permanent`, status: 204 },
+    ]);
+    const client = await connectClient({ api, org: ORG });
+
+    const marked = await client.callTool({
+      name: 'set_flag_permanent',
+      arguments: { project: 'web', flag: 'kill', permanent: true },
+    });
+    const unmarked = await client.callTool({
+      name: 'set_flag_permanent',
+      arguments: { project: 'web', flag: 'kill', permanent: false },
+    });
+
+    expect(calls.map((c) => c.method)).toEqual(['PUT', 'DELETE']);
+    expect(calls[0].body).toBeUndefined();
+    expect(JSON.parse((marked.content as { text: string }[])[0].text)).toEqual({ project: 'web', flag: 'kill', permanent: true });
+    expect(JSON.parse((unmarked.content as { text: string }[])[0].text)).toEqual({ project: 'web', flag: 'kill', permanent: false });
+  });
+
+  it('set_flag_permanent surfaces the refusal for a flag with an expiry date', async () => {
+    const { api } = mockApi([
+      {
+        method: 'PUT',
+        path: `${FLAGS}/promo/permanent`,
+        status: 400,
+        json: {
+          error: 'validation_failed',
+          message: 'One or more validation errors occurred.',
+          fields: { isPermanent: ["PERMANENT_FLAG_HAS_EXPIRY: a permanent flag can't have an expiry date."] },
+        },
+      },
+    ]);
+    const client = await connectClient({ api, org: ORG });
+    const result = await client.callTool({
+      name: 'set_flag_permanent',
+      arguments: { project: 'web', flag: 'promo', permanent: true },
+    });
+    expect(result.isError).toBe(true);
+    expect((result.content as { text: string }[])[0].text).toContain('PERMANENT_FLAG_HAS_EXPIRY');
+  });
+
+  it('set_flag_permanent is advertised as non-destructive and idempotent', async () => {
+    const { api } = mockApi([]);
+    const client = await connectClient({ api, org: ORG });
+    const { tools } = await client.listTools();
+    const tool = tools.find((t) => t.name === 'set_flag_permanent');
+    expect(tool?.annotations?.destructiveHint).toBe(false);
+    expect(tool?.annotations?.idempotentHint).toBe(true);
+  });
+
+  // An agent that hits the refusal needs to know what it means and how to get past it.
+  it('set_flag_expiry and set_flag_permanent describe the permanent/expiry conflict', async () => {
+    const { api } = mockApi([]);
+    const client = await connectClient({ api, org: ORG });
+    const { tools } = await client.listTools();
+    for (const name of ['set_flag_expiry', 'set_flag_permanent']) {
+      expect(tools.find((t) => t.name === name)?.description).toContain('PERMANENT_FLAG_HAS_EXPIRY');
+    }
   });
 
   it('set_flag_owner PUTs an email, resolves "me", and DELETEs on null or "none"', async () => {

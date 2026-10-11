@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.1.11 — 2026-10-11
+
+### Added
+
+- `set_flag_permanent` marks a flag permanent, for a kill switch or ops toggle that is meant to stay, or makes it temporary again with `permanent: false`. `create_flag` takes an optional `isPermanent` as well. Permanent flags are left out of `find_stale_flags` and `list_removal_candidates`. Marking is refused with `PERMANENT_FLAG_HAS_EXPIRY` while the flag has an expiry date, so clear the date first; making a flag temporary always works. (#3193, #3671)
+
+### Changed
+
+- `set_flag_expiry` documents its `PERMANENT_FLAG_HAS_EXPIRY` refusal on a permanent flag.
+- `@modelcontextprotocol/server` 2.1.0 → 2.3.1.
+
 ## 0.1.10 — 2026-10-03
 
 ### Added

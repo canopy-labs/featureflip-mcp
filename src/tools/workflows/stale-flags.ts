@@ -36,6 +36,7 @@ export function registerStaleFlagTools(server: McpServer, ctx: ToolContext): voi
         'A flag whose expiry date (set_flag_expiry) has passed is always a candidate, however recently it was edited; ' +
         'if it is on in some environments and off in others its reason is past-expiry, meaning the owner has to ' +
         'decide which way to fold it. Every result carries expiresAtUtc, expired and owner (null when unowned). ' +
+        'Flags marked permanent (kill switches, ops toggles) are never listed. ' +
         'Pass owner to see one person\'s stale flags ("me" for your own) or "none" for the unowned ones. ' +
         'Every result also carries blockedBy: the live flags that still list it as a prerequisite, which have to be ' +
         'removed and archived before it ([] when none). blockedBy is null when the server did not classify the ' +
@@ -65,7 +66,9 @@ export function registerStaleFlagTools(server: McpServer, ctx: ToolContext): voi
         let cursor: string | undefined;
         do {
           const page = await ctx.api.request<FlagListPage>('GET', base, {
-            query: { archived: false, limit: 100, cursor, owner: ownerQuery },
+            // Permanent flags (kill switches, ops toggles) are meant to stay, so they are never stale
+            // candidates (#3193). An API that predates the filter ignores it.
+            query: { archived: false, limit: 100, cursor, owner: ownerQuery, permanent: false },
           });
           candidates.push(
             ...(page.items ?? []).filter(
