@@ -4,3 +4,4 @@ tests
 scripts
 .git
 *.md
+*.mcpb

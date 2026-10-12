@@ -1,0 +1,70 @@
+{
+  "manifest_version": "0.3",
+  "name": "featureflip",
+  "display_name": "Featureflip",
+  "version": "0.1.12",
+  "description": "Manage Featureflip feature flags from AI agents and editors",
+  "long_description": "Create, toggle, target and clean up [Featureflip](https://featureflip.io) feature flags from an MCP client. Covers projects, environments, segments, targeting rules, variations and webhooks, plus workflow tools that find stale flags, list flags that are safe to remove, and wrap a new feature in a flag with the SDK snippet for your language.\n\nNeeds a Featureflip API token: a personal token (`ffp_`) acts as you, a service token (`ffs_`) is a scoped machine identity. Every change is audit-logged against the token.",
+  "author": {
+    "name": "Canopy Labs",
+    "url": "https://featureflip.io"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/canopy-labs/featureflip-mcp.git"
+  },
+  "homepage": "https://featureflip.io",
+  "documentation": "https://featureflip.io/docs/integrations/mcp/",
+  "support": "https://github.com/canopy-labs/featureflip-mcp/issues",
+  "icon": "icon.png",
+  "server": {
+    "type": "node",
+    "entry_point": "bin/featureflip-mcp.mjs",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/bin/featureflip-mcp.mjs"],
+      "env": {
+        "FEATUREFLIP_TOKEN": "${user_config.featureflip_token}",
+        "FEATUREFLIP_API_URL": "${user_config.featureflip_api_url}",
+        "FEATUREFLIP_ORG": "${user_config.featureflip_org}"
+      }
+    }
+  },
+  "keywords": [
+    "feature-flags",
+    "feature-toggles",
+    "feature-management",
+    "featureflip",
+    "flag-cleanup"
+  ],
+  "license": "Apache-2.0",
+  "privacy_policies": ["https://featureflip.io/privacy/"],
+  "compatibility": {
+    "platforms": ["darwin", "win32", "linux"],
+    "runtimes": {
+      "node": ">=20.19.0"
+    }
+  },
+  "user_config": {
+    "featureflip_token": {
+      "type": "string",
+      "title": "API token",
+      "description": "A personal token (ffp_) from Settings → API Tokens, or a service token (ffs_) from Organization Settings → Service Tokens.",
+      "sensitive": true,
+      "required": true
+    },
+    "featureflip_api_url": {
+      "type": "string",
+      "title": "API URL",
+      "description": "Management API base URL. Leave as is unless you were given a different one.",
+      "default": "https://api.featureflip.io",
+      "required": false
+    },
+    "featureflip_org": {
+      "type": "string",
+      "title": "Organization slug",
+      "description": "Only needed for a personal token that can reach more than one organization.",
+      "required": false
+    }
+  }
+}

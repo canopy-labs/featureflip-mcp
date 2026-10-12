@@ -196,6 +196,8 @@ export interface paths {
                 /** @description OK */
                 200: {
                     headers: {
+                        /** @description Strong ETag of the resource. Send it back as If-Match on a PUT. */
+                        ETag?: string;
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
                         "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
@@ -252,7 +254,10 @@ export interface paths {
         put: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Optional. The ETag from a GET of this resource. The write applies only if the resource still has that ETag; otherwise 412 `precondition_failed`. `*` or no header applies the write unconditionally. */
+                    "If-Match"?: string;
+                };
                 path: {
                     org: string;
                     project: string;
@@ -271,6 +276,8 @@ export interface paths {
                 /** @description No Content */
                 204: {
                     headers: {
+                        /** @description Strong ETag of the resource. Send it back as If-Match on a PUT. */
+                        ETag?: string;
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
                         "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
@@ -304,6 +311,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The resource changed since the If-Match ETag. */
+                412: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -753,6 +772,8 @@ export interface paths {
                 /** @description OK */
                 200: {
                     headers: {
+                        /** @description Strong ETag of the resource. Send it back as If-Match on a PUT. */
+                        ETag?: string;
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
                         "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
@@ -811,7 +832,10 @@ export interface paths {
         put: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Optional. The ETag from a GET of this resource. The write applies only if the resource still has that ETag; otherwise 412 `precondition_failed`. `*` or no header applies the write unconditionally. */
+                    "If-Match"?: string;
+                };
                 path: {
                     org: string;
                     project: string;
@@ -830,6 +854,8 @@ export interface paths {
                 /** @description No Content */
                 204: {
                     headers: {
+                        /** @description Strong ETag of the resource. Send it back as If-Match on a PUT. */
+                        ETag?: string;
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
                         "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
@@ -863,6 +889,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The resource changed since the If-Match ETag. */
+                412: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -2076,6 +2114,8 @@ export interface paths {
                 /** @description OK */
                 200: {
                     headers: {
+                        /** @description Strong ETag of the resource. Send it back as If-Match on a PUT. */
+                        ETag?: string;
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
                         "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
@@ -2134,7 +2174,10 @@ export interface paths {
         put: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Optional. The ETag from a GET of this resource. The write applies only if the resource still has that ETag; otherwise 412 `precondition_failed`. `*` or no header applies the write unconditionally. */
+                    "If-Match"?: string;
+                };
                 path: {
                     org: string;
                     project: string;
@@ -2154,6 +2197,8 @@ export interface paths {
                 /** @description No Content */
                 204: {
                     headers: {
+                        /** @description Strong ETag of the resource. Send it back as If-Match on a PUT. */
+                        ETag?: string;
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
                         "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
@@ -2199,6 +2244,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The resource changed since the If-Match ETag. */
+                412: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -2376,6 +2433,8 @@ export interface paths {
                 /** @description OK */
                 200: {
                     headers: {
+                        /** @description Strong ETag of the resource. Send it back as If-Match on a PUT. */
+                        ETag?: string;
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
                         "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
@@ -2434,7 +2493,10 @@ export interface paths {
         put: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Optional. The ETag from a GET of this resource. The write applies only if the resource still has that ETag; otherwise 412 `precondition_failed`. `*` or no header applies the write unconditionally. */
+                    "If-Match"?: string;
+                };
                 path: {
                     org: string;
                     project: string;
@@ -2454,6 +2516,8 @@ export interface paths {
                 /** @description No Content */
                 204: {
                     headers: {
+                        /** @description Strong ETag of the resource. Send it back as If-Match on a PUT. */
+                        ETag?: string;
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
                         "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
@@ -2499,6 +2563,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The resource changed since the If-Match ETag. */
+                412: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -2676,6 +2752,8 @@ export interface paths {
                 /** @description OK */
                 200: {
                     headers: {
+                        /** @description Strong ETag of the resource. Send it back as If-Match on a PUT. */
+                        ETag?: string;
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
                         "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
@@ -2732,7 +2810,10 @@ export interface paths {
         put: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Optional. The ETag from a GET of this resource. The write applies only if the resource still has that ETag; otherwise 412 `precondition_failed`. `*` or no header applies the write unconditionally. */
+                    "If-Match"?: string;
+                };
                 path: {
                     org: string;
                     project: string;
@@ -2753,6 +2834,8 @@ export interface paths {
                 /** @description No Content */
                 204: {
                     headers: {
+                        /** @description Strong ETag of the resource. Send it back as If-Match on a PUT. */
+                        ETag?: string;
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
                         "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
@@ -2798,6 +2881,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The resource changed since the If-Match ETag. */
+                412: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -4591,6 +4686,8 @@ export interface paths {
                 /** @description OK */
                 200: {
                     headers: {
+                        /** @description Strong ETag of the resource. Send it back as If-Match on a PUT. */
+                        ETag?: string;
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
                         "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
@@ -4647,7 +4744,10 @@ export interface paths {
         put: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Optional. The ETag from a GET of this resource. The write applies only if the resource still has that ETag; otherwise 412 `precondition_failed`. `*` or no header applies the write unconditionally. */
+                    "If-Match"?: string;
+                };
                 path: {
                     org: string;
                     project: string;
@@ -4666,6 +4766,8 @@ export interface paths {
                 /** @description No Content */
                 204: {
                     headers: {
+                        /** @description Strong ETag of the resource. Send it back as If-Match on a PUT. */
+                        ETag?: string;
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
                         "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
@@ -4711,6 +4813,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The resource changed since the If-Match ETag. */
+                412: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -5136,6 +5250,8 @@ export interface paths {
                 /** @description OK */
                 200: {
                     headers: {
+                        /** @description Strong ETag of the resource. Send it back as If-Match on a PUT. */
+                        ETag?: string;
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
                         "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
@@ -5205,7 +5321,10 @@ export interface paths {
         put: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Optional. The ETag from a GET of this resource. The write applies only if the resource still has that ETag; otherwise 412 `precondition_failed`. `*` or no header applies the write unconditionally. */
+                    "If-Match"?: string;
+                };
                 path: {
                     org: string;
                     id: string;
@@ -5223,6 +5342,8 @@ export interface paths {
                 /** @description No Content */
                 204: {
                     headers: {
+                        /** @description Strong ETag of the resource. Send it back as If-Match on a PUT. */
+                        ETag?: string;
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
                         "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
@@ -5268,6 +5389,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The resource changed since the If-Match ETag. */
+                412: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];

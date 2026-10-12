@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.12 — 2026-10-12
+
+### Added
+
+- Each release now carries `featureflip-mcp-<version>.mcpb`, an MCP Bundle with the server and its dependencies inside. Claude Desktop installs it in one click and asks for the API token in its own settings, so there is no JSON config to write. Needs Node.js 20.19 or later. (#2588)
+
 ## 0.1.11 — 2026-10-11
 
 ### Added
