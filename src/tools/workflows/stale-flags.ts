@@ -3,6 +3,8 @@ import * as z from 'zod/v4';
 import { ApiError, enc } from '../../client.js';
 import { okJson, run } from '../../errors.js';
 import type { ToolContext } from '../context.js';
+import { apiOutput, nullable, objectOutput, ref, shape } from '../outputs.js';
+import { pagination, projectParam } from '../params.js';
 import { ownerFilter, resolveOwner } from '../owner.js';
 import type { components } from '../../generated/api-types.js';
 
@@ -35,7 +37,10 @@ export function registerStaleFlagTools(server: McpServer, ctx: ToolContext): voi
         'or disabled in every environment (dead — remove flag and code path). ' +
         'A flag whose expiry date (set_flag_expiry) has passed is always a candidate, however recently it was edited; ' +
         'if it is on in some environments and off in others its reason is past-expiry, meaning the owner has to ' +
-        'decide which way to fold it. Every result carries expiresAtUtc, expired and owner (null when unowned). ' +
+        'decide which way to fold it. A project can give its temporary flags a default lifetime, so a flag with no ' +
+        'date of its own can still be past expiry. Every result carries expiresAtUtc (the date set on the flag), ' +
+        'effectiveExpiresAtUtc (the date in effect, from the flag or its project default), expirySource ' +
+        '(explicit, project-default, or null), expired and owner (null when unowned). ' +
         'Flags marked permanent (kill switches, ops toggles) are never listed. ' +
         'Pass owner to see one person\'s stale flags ("me" for your own) or "none" for the unowned ones. ' +
         'Every result also carries blockedBy: the live flags that still list it as a prerequisite, which have to be ' +
@@ -44,10 +49,29 @@ export function registerStaleFlagTools(server: McpServer, ctx: ToolContext): voi
         DEPENDENTS_FIRST +
         ` Checks at most ${MAX_CANDIDATES} candidates per call, expired flags first.`,
       inputSchema: z.object({
-        project: z.string(),
+        project: projectParam,
         days: z.number().int().min(1).optional().default(30).describe('Minimum age in days since last update'),
         owner: ownerFilter,
       }),
+      outputSchema: objectOutput(
+        { project: { type: 'string' }, olderThanDays: { type: 'integer' }, owner: { type: 'string' }, checked: { type: 'integer' }, truncated: { type: 'boolean' }, note: { type: 'string' }, blockedByNote: { type: 'string' }, stale: {
+          type: 'array',
+          items: shape({
+            key: { type: 'string' },
+            name: { type: 'string' },
+            updatedAt: { type: 'string' },
+            expiresAtUtc: nullable('string'),
+            effectiveExpiresAtUtc: nullable('string'),
+            expirySource: { ...nullable('string'), description: 'explicit, project-default, or null' },
+            expired: { type: 'boolean' },
+            owner: { anyOf: [ref('PublicFlagOwner'), { type: 'null' }] },
+            reason: { type: 'string', description: 'enabled-everywhere, disabled-everywhere or past-expiry' },
+            environments: { type: 'integer' },
+            blockedBy: { type: ['array', 'null'], items: { type: 'string' }, description: 'null means unknown, not unblocked' },
+          }),
+        } },
+        ['project', 'olderThanDays', 'checked', 'truncated', 'stale'],
+      ),
       annotations: { readOnlyHint: true },
     },
     async ({ project, days, owner }) =>
@@ -56,8 +80,16 @@ export function registerStaleFlagTools(server: McpServer, ctx: ToolContext): voi
         const base = `/api/v1/orgs/${enc(ctx.org)}/projects/${enc(project)}/flags`;
         const now = Date.now();
         const cutoff = now - days * 24 * 60 * 60 * 1000;
-        // expiresAtUtc is absent against an API that predates flag expiry; that reads as "no expiry".
-        const isExpired = (f: FlagListItem) => !!f.expiresAtUtc && new Date(f.expiresAtUtc).getTime() <= now;
+        // The effective expiry: the flag's own date, or the one its project's default lifetime gives it
+        // (#3194). An API that predates it sends only expiresAtUtc, which is then the whole story; one that
+        // predates flag expiry sends neither, which reads as "no expiry".
+        const expiryOf = (f: FlagListItem) => f.effectiveExpiresAtUtc ?? f.expiresAtUtc ?? null;
+        const sourceOf = (f: FlagListItem): string | null =>
+          f.expirySource ?? (f.expiresAtUtc ? 'explicit' : null);
+        const isExpired = (f: FlagListItem) => {
+          const at = expiryOf(f);
+          return !!at && new Date(at).getTime() <= now;
+        };
 
         // Only candidates with a key/name/updatedAt we can act on are useful here; the generated
         // types mark these optional/nullable (mirroring C# nullable-reference metadata) even though
@@ -93,6 +125,8 @@ export function registerStaleFlagTools(server: McpServer, ctx: ToolContext): voi
           name: string;
           updatedAt: string;
           expiresAtUtc: string | null;
+          effectiveExpiresAtUtc: string | null;
+          expirySource: string | null;
           expired: boolean;
           owner: FlagOwner | null;
           reason: string;
@@ -113,6 +147,8 @@ export function registerStaleFlagTools(server: McpServer, ctx: ToolContext): voi
             name: f.name,
             updatedAt: f.updatedAt,
             expiresAtUtc: f.expiresAtUtc ?? null,
+            effectiveExpiresAtUtc: expiryOf(f),
+            expirySource: sourceOf(f),
             expired,
             // owner is absent against an API that predates flag ownership; that reads as unowned.
             owner: f.owner ?? null,
@@ -174,11 +210,11 @@ export function registerStaleFlagTools(server: McpServer, ctx: ToolContext): voi
         DEPENDENTS_FIRST +
         ' staleness "dead" (the default) returns only dead flags, "stale" adds stale ones. Paginated via cursor.',
       inputSchema: z.object({
-        project: z.string().describe('Project key'),
+        project: projectParam,
         staleness: stalenessTier.optional().describe('Minimum staleness tier: dead (default) or stale'),
-        limit: z.number().int().min(1).max(100).optional(),
-        cursor: z.string().optional(),
+        ...pagination,
       }),
+      outputSchema: apiOutput('GET /api/v1/orgs/{org}/projects/{project}/flags/removal-candidates'),
       annotations: { readOnlyHint: true },
     },
     async ({ project, ...query }) =>

@@ -7,7 +7,12 @@ export interface ToolResult {
 }
 
 export function okJson(data: unknown): ToolResult {
-  return { content: [{ type: 'text', text: JSON.stringify(data, null, 2) }] };
+  const content: ToolResult['content'] = [{ type: 'text', text: JSON.stringify(data, null, 2) }];
+  // Every tool declares an outputSchema (tools/outputs.ts), and the SDK refuses a result
+  // without structuredContent once one is declared. It must be an object; every tool
+  // returns one, and the text stays for clients that read only content.
+  const isObject = data !== null && typeof data === 'object' && !Array.isArray(data);
+  return isObject ? { content, structuredContent: data as Record<string, unknown> } : { content };
 }
 
 export function errorResult(err: unknown): ToolResult {

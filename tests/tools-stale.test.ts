@@ -123,6 +123,48 @@ describe('find_stale_flags expiry (#2563)', () => {
     expect(byKey.legacy).toMatchObject({ expired: false, expiresAtUtc: null });
   });
 
+  it('counts a project default lifetime as expiry and says where the date came from (#3194)', async () => {
+    const r = await report([
+      {
+        method: 'GET',
+        path: FLAGS,
+        json: {
+          items: [{ ...flag('defaulted', FRESH), expiresAtUtc: null, effectiveExpiresAtUtc: PAST, expirySource: 'project-default' }],
+          next_cursor: null,
+        },
+      },
+      {
+        method: 'GET',
+        path: `${FLAGS}/defaulted/environments`,
+        json: [{ environmentKey: 'prod', isEnabled: false }],
+      },
+    ]);
+    expect(r.stale).toEqual([
+      expect.objectContaining({
+        key: 'defaulted',
+        expired: true,
+        // expiresAtUtc stays the flag's own date; the default's date is reported beside it.
+        expiresAtUtc: null,
+        effectiveExpiresAtUtc: PAST,
+        expirySource: 'project-default',
+      }),
+    ]);
+  });
+
+  it('reads an older API date as explicit and no date as no source', async () => {
+    const r = await report([
+      {
+        method: 'GET',
+        path: FLAGS,
+        json: { items: [{ ...flag('dated', OLD), expiresAtUtc: FUTURE }, flag('legacy', OLD)], next_cursor: null },
+      },
+      { method: 'GET', path: /\/environments$/, json: [{ environmentKey: 'prod', isEnabled: true }] },
+    ]);
+    const byKey = Object.fromEntries(r.stale.map((f: { key: string }) => [f.key, f]));
+    expect(byKey.dated).toMatchObject({ expirySource: 'explicit', expiresAtUtc: FUTURE, effectiveExpiresAtUtc: FUTURE });
+    expect(byKey.legacy).toMatchObject({ expirySource: null, expiresAtUtc: null, effectiveExpiresAtUtc: null });
+  });
+
   it('checks expired flags before the candidate cap can drop them', async () => {
     const old = Array.from({ length: 60 }, (_, i) => flag(`old-${i}`, OLD));
     const r = await report([

@@ -3,6 +3,8 @@ import * as z from 'zod/v4';
 import { enc } from '../client.js';
 import { okJson, run } from '../errors.js';
 import type { ToolContext } from './context.js';
+import { apiOutput } from './outputs.js';
+import { pagination } from './params.js';
 
 export function registerSegmentTools(server: McpServer, ctx: ToolContext): void {
   server.registerTool(
@@ -13,9 +15,9 @@ export function registerSegmentTools(server: McpServer, ctx: ToolContext): void 
         'List reusable user segments in a project. Segments are referenced from targeting rules via userSegmentId.',
       inputSchema: z.object({
         project: z.string().describe('Project key'),
-        limit: z.number().int().min(1).max(100).optional(),
-        cursor: z.string().optional(),
+        ...pagination,
       }),
+      outputSchema: apiOutput('GET /api/v1/orgs/{org}/projects/{project}/segments'),
       annotations: { readOnlyHint: true },
     },
     async ({ project, limit, cursor }) =>
@@ -39,6 +41,7 @@ export function registerSegmentTools(server: McpServer, ctx: ToolContext): void 
         project: z.string().describe('Project key'),
         segment: z.string().describe('Segment key or id'),
       }),
+      outputSchema: apiOutput('GET /api/v1/orgs/{org}/projects/{project}/segments/{segment}'),
       annotations: { readOnlyHint: true },
     },
     async ({ project, segment }) =>

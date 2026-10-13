@@ -4015,6 +4015,219 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/orgs/{org}/projects/{project}/default-flag-lifetime": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Sets or removes the project's default flag lifetime, in days (1–3650; null removes it).
+         * @description Temporary
+         *     flags with no expiry date of their own then expire that many days after they were created, reported
+         *     as `expirySource: "project-default"`. Takes effect at the next hourly staleness run. Requires at
+         *     least Member, and the default-flag-lifetime feature to set one (400 `FEATURE_NOT_ENABLED`);
+         *     removing one is always allowed.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    org: string;
+                    project: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["PublicSetDefaultFlagLifetimeRequest"];
+                    "text/json": components["schemas"]["PublicSetDefaultFlagLifetimeRequest"];
+                    "application/*+json": components["schemas"]["PublicSetDefaultFlagLifetimeRequest"];
+                };
+            };
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Authentication is required, or the supplied API token is invalid or expired. */
+                401: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
+                429: {
+                    headers: {
+                        /** @description Number of seconds to wait before retrying the request. */
+                        "Retry-After"?: number;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orgs/{org}/projects/{project}/default-flag-lifetime/impact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Previews a default flag lifetime: how many temporary flags with no expiry date of their own would newly be past expiry, and how many would stop being past the current one.
+         * @description Omit `days` to
+         *     preview removing it.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    days?: number;
+                };
+                header?: never;
+                path: {
+                    org: string;
+                    project: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicDefaultFlagLifetimeImpact"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Authentication is required, or the supplied API token is invalid or expired. */
+                401: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
+                429: {
+                    headers: {
+                        /** @description Number of seconds to wait before retrying the request. */
+                        "Retry-After"?: number;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/orgs/{org}/projects/{project}/environments/{env}/sdk-keys": {
         parameters: {
             query?: never;
@@ -6106,6 +6319,7 @@ export interface components {
          *     public API surfaces environments via their own endpoint (Task 6), not embedded here.
          *     UpdatedAt is only populated from ProjectDto (the detail/create
          *     shape); ProjectListItemDto doesn't carry it, so list rows leave it `null`.
+         *     DefaultFlagLifetimeDays is the project's default flag lifetime in days, or null (#3194).
          * @example {
          *       "id": "0197b69f-1a2b-7c3d-8e4f-5a6b7c8d9e0f",
          *       "key": "checkout",
@@ -6125,6 +6339,8 @@ export interface components {
             createdAt?: string;
             /** Format: date-time */
             updatedAt?: string | null;
+            /** Format: int32 */
+            defaultFlagLifetimeDays?: number | null;
             /** @description Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it. */
             _actions?: {
                 [key: string]: components["schemas"]["ActionCapability"];
@@ -6532,6 +6748,16 @@ export interface components {
             warning?: string | null;
         };
         /**
+         * @description Response of `GET .../default-flag-lifetime/impact`: how many temporary flags with no expiry
+         *     date of their own would newly be past expiry, and how many would stop being past it.
+         */
+        PublicDefaultFlagLifetimeImpact: {
+            /** Format: int32 */
+            newlyPastExpiry?: number;
+            /** Format: int32 */
+            noLongerPastExpiry?: number;
+        };
+        /**
          * @description Public representation of an environment, returned by
          *     `GET /api/v1/orgs/{org}/projects/{project}/environments` (list),
          *     `GET .../environments/{env}` (detail), and the body of a successful create/update. Drops
@@ -6622,6 +6848,9 @@ export interface components {
          *     Variations (a summary-only shape upstream) and
          *     Staleness, matching the "list is narrower than detail"
          *     split already present on the Application-layer DTOs.
+         *     EffectiveExpiresAtUtc is when the flag counts as past expiry, from its own ExpiresAtUtc
+         *     or its project's default lifetime; ExpirySource says which (`explicit` / `project-default`),
+         *     both null when neither applies.
          */
         PublicFlagListItem: {
             /** Format: uuid */
@@ -6645,6 +6874,9 @@ export interface components {
             owner?: components["schemas"]["PublicFlagOwner"];
             removalPrUrl?: string | null;
             isPermanent?: boolean;
+            /** Format: date-time */
+            effectiveExpiresAtUtc?: string | null;
+            expirySource?: string | null;
         };
         /**
          * @description A page of results plus an opaque cursor for the next page, or null when this is the last
@@ -6717,6 +6949,9 @@ export interface components {
          *     `GET .../flags/{flag}` and the body of a successful create. Drops internal/dashboard-only
          *     fields present on FeatureFlagDto — notably `ProjectId` (implicit in the
          *     route) and `Staleness` (an internal analytics signal, not part of the public contract).
+         *     EffectiveExpiresAtUtc is when the flag counts as past expiry, from its own ExpiresAtUtc
+         *     or its project's default lifetime; ExpirySource says which (`explicit` / `project-default`),
+         *     both null when neither applies.
          * @example {
          *       "id": "0197b6a0-5f2a-7c3e-9b4d-1e2f3a4b5c6d",
          *       "key": "new-checkout-flow",
@@ -6773,6 +7008,9 @@ export interface components {
             owner?: components["schemas"]["PublicFlagOwner"];
             removalPrUrl?: string | null;
             isPermanent?: boolean;
+            /** Format: date-time */
+            effectiveExpiresAtUtc?: string | null;
+            expirySource?: string | null;
             /** @description Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it. */
             _actions?: {
                 [key: string]: components["schemas"]["ActionCapability"];
@@ -6940,6 +7178,14 @@ export interface components {
             _actions?: {
                 [key: string]: components["schemas"]["ActionCapability"];
             };
+        };
+        /**
+         * @description Request body for `PUT /api/v1/orgs/{org}/projects/{project}/default-flag-lifetime`. `days`
+         *     is 1–3650; null (or an empty body) removes the default.
+         */
+        PublicSetDefaultFlagLifetimeRequest: {
+            /** Format: int32 */
+            days?: number | null;
         };
         /**
          * @description Request body for `PUT /api/v1/orgs/{org}/projects/{project}/flags/{flag}/expiry`. Expiry is a

@@ -3,6 +3,8 @@ import * as z from 'zod/v4';
 import { enc } from '../client.js';
 import { okJson, run } from '../errors.js';
 import type { ToolContext } from './context.js';
+import { apiOutput } from './outputs.js';
+import { pagination, projectParam } from './params.js';
 
 export function registerEnvironmentTools(server: McpServer, ctx: ToolContext): void {
   server.registerTool(
@@ -11,10 +13,10 @@ export function registerEnvironmentTools(server: McpServer, ctx: ToolContext): v
       title: 'List environments',
       description: 'List the environments of a project (e.g. development, staging, production).',
       inputSchema: z.object({
-        project: z.string().describe('Project key'),
-        limit: z.number().int().min(1).max(100).optional(),
-        cursor: z.string().optional(),
+        project: projectParam,
+        ...pagination,
       }),
+      outputSchema: apiOutput('GET /api/v1/orgs/{org}/projects/{project}/environments'),
       annotations: { readOnlyHint: true },
     },
     async ({ project, limit, cursor }) =>

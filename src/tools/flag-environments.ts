@@ -3,6 +3,8 @@ import * as z from 'zod/v4';
 import { enc } from '../client.js';
 import { okJson, run } from '../errors.js';
 import type { ToolContext } from './context.js';
+import { nullable, objectOutput, shape } from './outputs.js';
+import { environmentParam, flagParam, projectParam } from './params.js';
 import type { components } from '../generated/api-types.js';
 
 const strategies = z.enum(['SingleVariation', 'PercentageRollout', 'TargetedRollout']);
@@ -21,11 +23,15 @@ export function registerFlagEnvironmentTools(server: McpServer, ctx: ToolContext
       description:
         'Enable or disable a flag in ONE environment. Affects live evaluation immediately — double-check the environment.',
       inputSchema: z.object({
-        project: z.string(),
-        flag: z.string().describe('Flag key or id'),
-        environment: z.string().describe('Environment key, e.g. production'),
-        enabled: z.boolean(),
+        project: projectParam,
+        flag: flagParam,
+        environment: environmentParam,
+        enabled: z.boolean().describe('true to turn the flag on in this environment, false to turn it off'),
       }),
+      outputSchema: objectOutput(
+        { project: { type: 'string' }, flag: { type: 'string' }, environment: { type: 'string' }, enabled: { type: 'boolean' } },
+        ['project', 'flag', 'environment', 'enabled'],
+      ),
       annotations: { destructiveHint: true },
     },
     async ({ project, flag, environment, enabled }) =>
@@ -49,11 +55,11 @@ export function registerFlagEnvironmentTools(server: McpServer, ctx: ToolContext
         'supported at the environment level), and prerequisites. ' +
         'Percentage rollouts are configured on targeting rules via update_targeting.',
       inputSchema: z.object({
-        project: z.string(),
-        flag: z.string(),
-        environment: z.string(),
+        project: projectParam,
+        flag: flagParam,
+        environment: environmentParam,
         defaultVariationId: z.string().describe('Variation id to serve on fallthrough — required by the API'),
-        strategy: strategies.optional(),
+        strategy: strategies.optional().describe('Serving strategy; only SingleVariation is currently supported here'),
         prerequisites: z
           .array(z.object({ prerequisiteFlagKey: z.string(), expectedVariationKey: z.string() }))
           .optional()
@@ -62,6 +68,13 @@ export function registerFlagEnvironmentTools(server: McpServer, ctx: ToolContext
               'Omit to leave existing prerequisites untouched; pass a list (possibly empty) to replace them wholesale.',
           ),
       }),
+      outputSchema: objectOutput(
+        { project: { type: 'string' }, flag: { type: 'string' }, environment: { type: 'string' }, defaultVariationId: { type: 'string' }, strategy: { type: 'string' }, prerequisites: {
+          type: 'array',
+          items: shape({ prerequisiteFlagKey: { type: 'string' }, expectedVariationKey: { type: 'string' } }),
+        } },
+        ['project', 'flag', 'environment', 'defaultVariationId'],
+      ),
       annotations: { destructiveHint: true },
     },
     async ({ project, flag, environment, ...body }) =>
@@ -78,7 +91,20 @@ export function registerFlagEnvironmentTools(server: McpServer, ctx: ToolContext
       title: 'Flag status across environments',
       description:
         'Compact cross-environment view of one flag: enabled state, strategy, default variation, and prerequisites per environment.',
-      inputSchema: z.object({ project: z.string(), flag: z.string() }),
+      inputSchema: z.object({ project: projectParam, flag: flagParam }),
+      outputSchema: objectOutput(
+        { key: nullable('string'), name: nullable('string'), type: nullable('string'), archived: { type: 'boolean' }, updatedAt: nullable('string'), environments: {
+          type: 'array',
+          items: shape({
+            environment: nullable('string'),
+            enabled: { type: 'boolean' },
+            strategy: nullable('string'),
+            defaultVariation: { ...nullable('string'), description: 'Variation key served on fallthrough' },
+            prerequisites: { type: 'array' },
+          }),
+        } },
+        ['key', 'name', 'type', 'archived', 'updatedAt', 'environments'],
+      ),
       annotations: { readOnlyHint: true },
     },
     async ({ project, flag }) =>

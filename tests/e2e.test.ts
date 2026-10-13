@@ -65,4 +65,32 @@ describe('full tool surface', () => {
       ].sort(),
     );
   });
+
+  it('declares an object outputSchema on every tool', async () => {
+    // Clients and registries type-check results against it. Every existing tool test
+    // doubles as a check that the result matches, because the SDK validates
+    // structuredContent against the declared schema on every successful call.
+    const { api } = mockApi([]);
+    const client = await connectClient({ api, org: 'acme' });
+    const { tools } = await client.listTools();
+
+    const missing = tools.filter((t) => t.outputSchema?.type !== 'object').map((t) => t.name);
+    expect(missing).toEqual([]);
+  });
+
+  it('describes every input parameter of every tool', async () => {
+    // An undescribed parameter is all an agent sees of it: a name and a type.
+    // Smithery's quality score also counts these, and 54 of 113 were bare
+    // before this test existed, mostly copies of limit/cursor/project.
+    const { api } = mockApi([]);
+    const client = await connectClient({ api, org: 'acme' });
+    const { tools } = await client.listTools();
+
+    const bare = tools.flatMap((tool) =>
+      Object.entries(tool.inputSchema.properties ?? {})
+        .filter(([, schema]) => !(schema as { description?: string }).description?.trim())
+        .map(([param]) => `${tool.name}.${param}`),
+    );
+    expect(bare).toEqual([]);
+  });
 });

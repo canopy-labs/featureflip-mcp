@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.1.13 — 2026-10-13
+
+### Added
+
+- Every tool declares an `outputSchema` and returns `structuredContent` alongside the JSON text. Clients can type-check a result instead of parsing prose. Tools that pass an API response through take their schema from the public API spec, so it matches the API contract. The schema allows extra fields and nulls, so a field the API adds later can't make an older server version fail a call.
+- `find_stale_flags` counts a project's default flag lifetime. Each result now carries `effectiveExpiresAtUtc`, the date in effect from the flag or its project's default, and `expirySource` (`explicit`, `project-default`, or `null`). A flag with no date of its own can still be reported as past expiry. Against an API that doesn't report project defaults yet, `effectiveExpiresAtUtc` falls back to the flag's own date. (#3194)
+
+### Changed
+
+- Every tool parameter now has a description. 54 of 113 had only a name and a type, mostly `project`, `flag`, `environment`, `limit` and `cursor`, along with fields like `create_flag`'s `type` and `update_targeting`'s `rules`. Agents now see what each parameter expects.
+
 ## 0.1.12 — 2026-10-12
 
 ### Added

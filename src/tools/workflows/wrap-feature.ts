@@ -3,6 +3,7 @@ import * as z from 'zod/v4';
 import { enc } from '../../client.js';
 import { okJson, run } from '../../errors.js';
 import type { ToolContext } from '../context.js';
+import { endpoint, objectOutput, shape } from '../outputs.js';
 import { LANGUAGES, isClientSideLanguage, snippetFor } from './snippets.js';
 
 export function registerWrapFeatureTool(server: McpServer, ctx: ToolContext): void {
@@ -19,10 +20,14 @@ export function registerWrapFeatureTool(server: McpServer, ctx: ToolContext): vo
         key: z.string().describe('Flag key, e.g. new-checkout'),
         name: z.string().optional().describe('Display name; defaults to the key'),
         description: z.string().optional().describe('What this flag guards'),
-        tags: z.array(z.string()).optional(),
+        tags: z.array(z.string()).optional().describe('Tags for filtering, e.g. team or area'),
         language: z.enum(LANGUAGES).describe('SDK language of the codebase being edited'),
-        idempotency_key: z.string().optional(),
+        idempotency_key: z.string().optional().describe('Idempotency-Key header for safe retries'),
       }),
+      outputSchema: objectOutput(
+        { flag: endpoint('POST /api/v1/orgs/{org}/projects/{project}/flags'), integration: shape({ language: { type: 'string' }, install: { type: 'string' }, code: { type: 'string' }, notes: { type: 'string' } }), next_steps: { type: 'array', items: { type: 'string' } } },
+        ['flag', 'integration', 'next_steps'],
+      ),
       annotations: { destructiveHint: false },
     },
     async ({ project, key, name, description, tags, language, idempotency_key }) =>

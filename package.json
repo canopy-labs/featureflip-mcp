@@ -1,6 +1,6 @@
 {
   "name": "@featureflip/mcp",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "mcpName": "io.github.canopy-labs/featureflip",
   "description": "MCP server for managing Featureflip feature flags from AI agents and editors",
   "keywords": [
@@ -37,7 +37,7 @@
   "scripts": {
     "build": "vite build",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "generate:api": "npx --yes openapi-typescript@7.13.0 ../../apps/management-api/public-v1-openapi.json -o src/generated/api-types.ts",
+    "generate:api": "npx --yes openapi-typescript@7.13.0 ../../apps/management-api/public-v1-openapi.json -o src/generated/api-types.ts && node scripts/generate-output-schemas.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "smoke:docker": "node scripts/docker-smoke.mjs",
@@ -52,7 +52,7 @@
     "@typescript/typescript6": "^6.0.2",
     "@types/node": "^26.6.4",
     "typescript": "^7.0.2",
-    "vite": "^8.3.3",
+    "vite": "^8.3.4",
     "vite-plugin-dts": "^5.1.2",
     "vitest": "^5.0.3"
   },

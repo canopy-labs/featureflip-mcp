@@ -3,11 +3,8 @@ import * as z from 'zod/v4';
 import { enc } from '../client.js';
 import { okJson, run } from '../errors.js';
 import type { ToolContext } from './context.js';
-
-const pagination = {
-  limit: z.number().int().min(1).max(100).optional().describe('Page size (default 20)'),
-  cursor: z.string().optional().describe('next_cursor from a previous response'),
-};
+import { apiOutput } from './outputs.js';
+import { pagination } from './params.js';
 
 export function registerProjectTools(server: McpServer, ctx: ToolContext): void {
   server.registerTool(
@@ -17,6 +14,7 @@ export function registerProjectTools(server: McpServer, ctx: ToolContext): void 
       description:
         'List projects in the Featureflip organization. Paginated: pass cursor from next_cursor to continue.',
       inputSchema: z.object({ ...pagination }),
+      outputSchema: apiOutput('GET /api/v1/orgs/{org}/projects'),
       annotations: { readOnlyHint: true },
     },
     async ({ limit, cursor }) =>

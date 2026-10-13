@@ -3,6 +3,8 @@ import * as z from 'zod/v4';
 import { enc } from '../client.js';
 import { errorResult, okJson, run } from '../errors.js';
 import type { ToolContext } from './context.js';
+import { endpoint, oneOfOutputs, shape } from './outputs.js';
+import { flagParam, projectParam } from './params.js';
 
 export function registerVariationTools(server: McpServer, ctx: ToolContext): void {
   server.registerTool(
@@ -13,15 +15,20 @@ export function registerVariationTools(server: McpServer, ctx: ToolContext): voi
         'Manage a flag\'s variations. action=add requires key + value; action=update/remove require variationId ' +
         '(get ids via get_flag). Removing a variation fails with VARIATION_HAS_DEPENDENTS if other flags depend on it.',
       inputSchema: z.object({
-        project: z.string(),
-        flag: z.string(),
-        action: z.enum(['add', 'update', 'remove']),
+        project: projectParam,
+        flag: flagParam,
+        action: z.enum(['add', 'update', 'remove']).describe('add needs key + value; update and remove need variationId'),
         variationId: z.string().optional().describe('Required for update/remove'),
         key: z.string().optional().describe('Required for add; immutable afterwards'),
-        name: z.string().optional(),
+        name: z.string().optional().describe('Display name'),
         value: z.string().optional().describe('Variation value serialized as a string; required for add'),
-        description: z.string().optional(),
+        description: z.string().optional().describe('What this variation means'),
       }),
+      outputSchema: oneOfOutputs(
+        endpoint('POST /api/v1/orgs/{org}/projects/{project}/flags/{flag}/variations'),
+        shape({ updated: { type: 'string', description: 'Id of the updated variation' } }, ['updated']),
+        shape({ removed: { type: 'string', description: 'Id of the removed variation' } }, ['removed']),
+      ),
       annotations: { destructiveHint: true },
     },
     async ({ project, flag, action, variationId, key, name, value, description }) =>

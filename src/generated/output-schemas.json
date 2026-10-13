@@ -1,0 +1,2961 @@
+{
+  "endpoints": {
+    "POST /api/v1/orgs/{org}/projects/{project}/environments": "PublicEnvironmentResponse",
+    "GET /api/v1/orgs/{org}/projects/{project}/environments": "PublicEnvironmentResponsePagedResult",
+    "GET /api/v1/orgs/{org}/projects/{project}/environments/{env}": "PublicEnvironmentResponse",
+    "POST /api/v1/orgs/{org}/projects/{project}/flags": "PublicFlagResponse",
+    "GET /api/v1/orgs/{org}/projects/{project}/flags": "PublicFlagListItemPagedResult",
+    "GET /api/v1/orgs/{org}/projects/{project}/flags/removal-candidates": "PublicFlagRemovalCandidatePagedResult",
+    "GET /api/v1/orgs/{org}/projects/{project}/flags/{flag}": "PublicFlagResponse",
+    "GET /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}": "PublicFlagEnvConfigResponse",
+    "GET /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/targeting": "PublicTargetingConfigResponse",
+    "POST /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/rules": "PublicTargetingRuleResponse",
+    "GET /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/rules/{ruleId}": "PublicTargetingRuleResponse",
+    "POST /api/v1/orgs/{org}/projects/{project}/flags/{flag}/variations": "PublicVariationResponse",
+    "GET /api/v1/me": "MeResponse",
+    "GET /api/v1/orgs": "OrganizationResponsePagedResult",
+    "GET /api/v1/orgs/{org}": "OrganizationResponse",
+    "POST /api/v1/orgs/{org}/projects": "ProjectResponse",
+    "GET /api/v1/orgs/{org}/projects": "ProjectResponsePagedResult",
+    "GET /api/v1/orgs/{org}/projects/{project}": "ProjectResponse",
+    "GET /api/v1/orgs/{org}/projects/{project}/default-flag-lifetime/impact": "PublicDefaultFlagLifetimeImpact",
+    "POST /api/v1/orgs/{org}/projects/{project}/environments/{env}/sdk-keys": "PublicCreateSdkKeyResponse",
+    "GET /api/v1/orgs/{org}/projects/{project}/environments/{env}/sdk-keys": "PublicSdkKeyResponsePagedResult",
+    "GET /api/v1/orgs/{org}/projects/{project}/environments/{env}/sdk-keys/{sdkKey}": "PublicSdkKeyResponse",
+    "POST /api/v1/orgs/{org}/projects/{project}/segments": "PublicSegmentResponse",
+    "GET /api/v1/orgs/{org}/projects/{project}/segments": "PublicSegmentResponsePagedResult",
+    "GET /api/v1/orgs/{org}/projects/{project}/segments/{segment}": "PublicSegmentResponse",
+    "GET /api/v1/orgs/{org}/webhooks": "PublicWebhookSubscriptionResponsePagedResult",
+    "POST /api/v1/orgs/{org}/webhooks": "PublicCreateWebhookSubscriptionResponse",
+    "GET /api/v1/orgs/{org}/webhooks/{id}": "PublicWebhookSubscriptionResponse",
+    "POST /api/v1/orgs/{org}/webhooks/{id}/secrets": "PublicRotateWebhookSecretResponse",
+    "POST /api/v1/orgs/{org}/webhooks/{id}/test": "PublicTestWebhookSubscriptionResponse",
+    "GET /api/v1/orgs/{org}/webhooks/{id}/deliveries": "PublicWebhookDeliveryResponsePagedResult"
+  },
+  "$defs": {
+    "ActionCapability": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "allowed": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "One entry in a resource's `_actions` block: may the caller perform it, and if not, why."
+    },
+    "MeResponse": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "email": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "emailVerified": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "organizationId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "role": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "projectScope": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "description": "The authenticated caller's identity, returned by `GET /api/v1/me`. The public API\nauthenticates two kinds of principal, so this is a `type`-discriminated shape.\nA `\"user\"` caller (a session/JWT user or a personal access token, `ffp_...`) carries\n`email` + `emailVerified`. A `\"service_token\"` caller (`ffs_...`) has no\nbacking user row, so it carries `organizationId` + `role` + `projectScope` (the\ntoken's org, its role in that org, and its project allowlist) instead. The type-inapplicable\nfields are omitted from the response body. `projectScope` is omitted for an unrestricted\nservice token (access to every project), never an empty list."
+    },
+    "NextAction": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "method": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "OrganizationResponse": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "slug": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "plan": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Allowed values: Solo, Team, Pro, Business, Enterprise."
+        },
+        "isActive": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "createdAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "Public representation of an organization, returned by both `GET /api/v1/orgs` (list) and\n`GET /api/v1/orgs/{org}` (detail). Drops dashboard-only fields (`BillingEmail` is\nbilling-contact PII, `UpdatedAt` is dashboard audit trivia) from the dashboard's\nOrganizationDto/OrganizationListItemDto."
+    },
+    "OrganizationResponsePagedResult": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "items": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/OrganizationResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "_actions": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ActionCapability"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it."
+        }
+      },
+      "description": "A page of results plus an opaque cursor for the next page, or null when this is the last\npage. Wire keys are frozen: `items` (already lowercase under the camelCase policy) and\n`next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`)."
+    },
+    "ProjectResponse": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "createdAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "updatedAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "defaultFlagLifetimeDays": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "_actions": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ActionCapability"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it."
+        }
+      },
+      "description": "Public representation of a project, returned by `GET /api/v1/orgs/{org}/projects` (list),\n`GET .../projects/{project}` (detail), and the body of a successful create/update. Drops\nthe dashboard-only nested `Environments` collection from ProjectDto — the\npublic API surfaces environments via their own endpoint (Task 6), not embedded here.\nUpdatedAt is only populated from ProjectDto (the detail/create\nshape); ProjectListItemDto doesn't carry it, so list rows leave it `null`.\nDefaultFlagLifetimeDays is the project's default flag lifetime in days, or null (#3194)."
+    },
+    "ProjectResponsePagedResult": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "items": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ProjectResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "_actions": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ActionCapability"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it."
+        }
+      },
+      "description": "A page of results plus an opaque cursor for the next page, or null when this is the last\npage. Wire keys are frozen: `items` (already lowercase under the camelCase policy) and\n`next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`)."
+    },
+    "PublicAddVariationRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "value": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "Request body for\n`POST /api/v1/orgs/{org}/projects/{project}/flags/{flag}/variations`. Named distinctly\nfrom the dashboard's own `AddVariationRequest` —\nsee PublicCreateEnvironmentRequest for the schemaId-collision rationale (both\ncontrollers share one Swagger document)."
+    },
+    "PublicApiErrorEnvelope": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "error": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "message": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "docs_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "fields": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "retry_after": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "did_you_mean": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "next_actions": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/NextAction"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "connection_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "The frozen public-API error contract. `error` codes are stable snake_case strings. Wire keys\nare frozen snake_case too (`error`, `message`, `docs_url`, `fields`,\n`retry_after`) — the global camelCase naming policy would otherwise emit\n`docsUrl`/`retryAfter`, breaking the published spec. !:JsonPropertyName\nalways wins over the policy, so these are pinned explicitly rather than relying on the\nproperty names already being lowercase for the single-word ones.\n`did_you_mean`, `next_actions` and `connection_id` are ADDITIVE optional keys\n(null → omitted via the global `DefaultIgnoreCondition = WhenWritingNull`), so\npre-existing error bodies are byte-for-byte unchanged when they're absent.\n\n`connection_id` is present only on the `sso_required` error: the organization\nrequires single sign-on, and this credential didn't come through its identity provider.\n`connection_id` identifies which SSO connection to sign in with."
+    },
+    "PublicConditionGroupRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "operator": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Allowed values: And, Or."
+        },
+        "conditions": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicConditionRequest"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "description": "Request-side condition group, symmetric with PublicConditionGroupResponse."
+    },
+    "PublicConditionGroupResponse": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "operator": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Allowed values: And, Or."
+        },
+        "conditions": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicConditionResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "description": "A condition group within a PublicTargetingRuleResponse. Maps 1:1 onto\nConditionGroupDto. Operator is a bare wire string naming one of\nthe `ConditionGroupOperator` members (`\"And\"`/`\"Or\"`) —\ngroups are ANDed together at the rule level; within a group, its conditions combine using\nthis operator."
+    },
+    "PublicConditionRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "attribute": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "operator": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Allowed values: Equals, NotEquals, Contains, NotContains, GreaterThan, LessThan, GreaterThanOrEqual, LessThanOrEqual, In, NotIn, MatchesRegex, StartsWith, EndsWith, Before, After, SemverEquals, SemverGreaterThan, SemverGreaterThanOrEqual, SemverLessThan, SemverLessThanOrEqual."
+        },
+        "values": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "negate": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "description": "Request-side condition, symmetric with PublicConditionResponse."
+    },
+    "PublicConditionResponse": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "attribute": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "operator": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Allowed values: Equals, NotEquals, Contains, NotContains, GreaterThan, LessThan, GreaterThanOrEqual, LessThanOrEqual, In, NotIn, MatchesRegex, StartsWith, EndsWith, Before, After, SemverEquals, SemverGreaterThan, SemverGreaterThanOrEqual, SemverLessThan, SemverLessThanOrEqual."
+        },
+        "values": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "negate": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "description": "A single condition within a PublicConditionGroupResponse. Maps 1:1 onto\nConditionDto. Operator is a bare wire string naming one of the\n`OperatorType` members (e.g. `\"Equals\"`, `\"In\"`)."
+    },
+    "PublicCreateEnvironmentRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "color": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sortOrder": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "description": "Request body for `POST /api/v1/orgs/{org}/projects/{project}/environments`. Named\ndistinctly from the dashboard's own `CreateEnvironmentRequest`\n— both controllers share one Swagger document (see `Program.cs`'s `AddSwaggerGen``DocInclusionPredicate` override), and Swashbuckle's default schemaId is the bare type\nname, so an identical name in either namespace throws a schemaId collision at\n`--export-openapi` time."
+    },
+    "PublicCreateFeatureFlagRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "type": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Allowed values: Boolean, String, Number, Json."
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "tags": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "initialVariations": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicCreateVariationDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "clientSideVisible": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "expiresAtUtc": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ownerEmail": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "isPermanent": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "description": "Request body for `POST /api/v1/orgs/{org}/projects/{project}/flags`. Named distinctly\nfrom the dashboard's own `CreateFeatureFlagRequest`\n— see PublicCreateEnvironmentRequest for the\nschemaId-collision rationale (both controllers share one Swagger document). Type\nis passed through verbatim to Type, which itself takes a\nbare string (Boolean/String/Number/Json) rather than the domain enum — invalid values surface\nas the handler's own validation failure, not a controller-level 400. ExpiresAtUtc is\noptional and advisory; a bare date (`2026-12-01`) means the end of that day in UTC, and a full\ntimestamp is stored exactly. It must be in the future and requires the flag-expiration feature\n(400 `EXPIRY_IN_PAST` / `FEATURE_NOT_ENABLED`). OwnerEmail optionally names\nthe owner (an active member, matched case-insensitively; requires the flag-ownership feature —\n400 `OWNER_NOT_MEMBER` / `FEATURE_NOT_ENABLED`). Omitted, the owner is the caller when\nthe caller is a member, so a service token creates an unowned flag. IsPermanent marks\nthe flag permanent (a kill switch, ops toggle or entitlement that is meant to stay; never reported for\ncleanup). It requires the flag-permanence feature and can't be combined with ExpiresAtUtc\n(400 `FEATURE_NOT_ENABLED` / `PERMANENT_FLAG_HAS_EXPIRY`)."
+    },
+    "PublicCreateProjectRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "Request body for `POST /api/v1/orgs/{org}/projects`. Named distinctly from the\ndashboard's own `CreateProjectRequest` — both\ncontrollers share one Swagger document (see `Program.cs`'s `AddSwaggerGen``DocInclusionPredicate` override), and Swashbuckle's default schemaId is the bare type\nname, so an identical name in either namespace throws a schemaId collision at\n`--export-openapi` time."
+    },
+    "PublicCreateSdkKeyRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "type": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Allowed values: ClientSide, ServerSide."
+        }
+      },
+      "description": "Request body for `POST /api/v1/orgs/{org}/projects/{project}/environments/{env}/sdk-keys`.\nType is a bare string (\"ClientSide\" or \"ServerSide\") — the controller parses it\nagainst a NAME allowlist (not a bare TryParse``1(ReadOnlySpan{Char},Boolean,``0@), which would\nsilently accept a numeric string like `\"0\"`) before dispatching. Named distinctly from\nthe dashboard's own `CreateSdkKeyRequest` — both\ncontrollers share one Swagger document, and an identical type name in either namespace throws\na schemaId collision at `--export-openapi` time."
+    },
+    "PublicCreateSdkKeyResponse": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "lastFourCharacters": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "type": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Allowed values: ClientSide, ServerSide."
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "createdAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "warning": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "Response body for a successful `POST .../sdk-keys`. The ONLY place the plaintext\nKey is ever returned — PublicSdkKeyResponse (list/get) carries just\n`LastFourCharacters`. Built directly from CreateSdkKeyResult rather than a\nre-fetch (unlike `FeatureFlagsController.Create`'s re-fetch pattern) because the\nplaintext key only ever exists on the create result — a subsequent\nGetSdkKeyQuery can't recover it."
+    },
+    "PublicCreateSegmentRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "conditions": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicSegmentConditionDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "description": "Request body for `POST /api/v1/orgs/{org}/projects/{project}/segments`. Named distinctly\nfrom the dashboard's own `CreateUserSegmentRequest` — see\nPublicCreateEnvironmentRequest for the schemaId-collision rationale (both\ncontrollers share one Swagger document)."
+    },
+    "PublicCreateTargetingRuleRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "variationId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "rolloutPercentage": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "userSegmentId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "conditionGroups": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicConditionGroupRequest"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "description": "Request body for `POST .../rules`. The Application-side\n`CreateTargetingRuleDto`/`CreateConditionGroupDto`/`CreateConditionDto` all take\ntheir `Operator` as a bare string, re-parsed CASE-SENSITIVELY inside\n`CreateTargetingRuleCommandHandler` — `FlagTargetingController`'s mapping helpers\nvalidate every operator against the enum's member-name allowlist AND canonicalize the casing\n(e.g. `\"in\"` → `\"In\"`) before building the command DTO, so a valid\ncase-insensitive match never trips the handler's strict re-parse."
+    },
+    "PublicCreateVariationDto": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "value": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "A variation supplied at flag-creation time. Maps 1:1 onto\nCreateVariationDto."
+    },
+    "PublicCreateWebhookSubscriptionRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "provider": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Allowed values: GenericHttp."
+        },
+        "eventTypes": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "projectIds": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "environmentIds": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "description": "Creates a webhook subscription. `provider` is `GenericHttp`. Omit `eventTypes`,\n`projectIds` or `environmentIds` (or send an empty list) to receive every event,\nproject or environment. A token restricted to specific projects must list at least one project,\nall of them within its allowlist."
+    },
+    "PublicCreateWebhookSubscriptionResponse": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "secret": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "warning": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "The created subscription's id and its signing secret. The secret is shown only here."
+    },
+    "PublicDefaultFlagLifetimeImpact": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "newlyPastExpiry": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "noLongerPastExpiry": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "description": "Response of `GET .../default-flag-lifetime/impact`: how many temporary flags with no expiry\ndate of their own would newly be past expiry, and how many would stop being past it."
+    },
+    "PublicEnvironmentResponse": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "color": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sortOrder": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "_actions": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ActionCapability"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it."
+        }
+      },
+      "description": "Public representation of an environment, returned by\n`GET /api/v1/orgs/{org}/projects/{project}/environments` (list),\n`GET .../environments/{env}` (detail), and the body of a successful create/update. Drops\ninternal fields (e.g. `ProjectId` is implicit in the route) — mirrors\n`ProjectResponse`'s minimal shape. Named `PublicEnvironmentResponse` rather than\n`EnvironmentResponse` (unlike the sibling `ProjectResponse`, which didn't collide)\nbecause the dashboard already has its own\n`EnvironmentResponse` — see\nPublicCreateEnvironmentRequest for the schemaId-collision rationale."
+    },
+    "PublicEnvironmentResponsePagedResult": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "items": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicEnvironmentResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "_actions": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ActionCapability"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it."
+        }
+      },
+      "description": "A page of results plus an opaque cursor for the next page, or null when this is the last\npage. Wire keys are frozen: `items` (already lowercase under the camelCase policy) and\n`next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`)."
+    },
+    "PublicFlagEnvConfigResponse": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "environmentId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "environmentKey": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "isEnabled": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "defaultVariationId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "strategy": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Allowed values: SingleVariation, PercentageRollout, TargetedRollout."
+        },
+        "prerequisites": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicPrerequisiteDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "_actions": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ActionCapability"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it."
+        }
+      },
+      "description": "Public representation of a flag's config within a single environment, returned by\n`GET .../flags/{flag}/environments` and `GET .../flags/{flag}/environments/{env}`.\nDrops internal/dashboard-only fields present on FlagEnvironmentConfigurationDto\n— Id (an internal row id, not part of the public\ncontract; EnvironmentId is the addressable key), `FeatureFlagId` (implicit\nin the route), the environment's name/color/sort-order (dashboard display fields — the public\ncontract only needs the addressable EnvironmentKey), and `Staleness` (an\ninternal analytics signal)."
+    },
+    "PublicFlagListItem": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "type": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Allowed values: Boolean, String, Number, Json."
+        },
+        "isArchived": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "clientSideVisible": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "tags": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "createdAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "updatedAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "expiresAtUtc": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "owner": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PublicFlagOwner"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "removalPrUrl": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "isPermanent": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "effectiveExpiresAtUtc": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "expirySource": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "Public list-item representation of a feature flag, returned by\n`GET .../flags`. Narrower than PublicFlagResponse — drops\nVariations (a summary-only shape upstream) and\nStaleness, matching the \"list is narrower than detail\"\nsplit already present on the Application-layer DTOs.\nEffectiveExpiresAtUtc is when the flag counts as past expiry, from its own ExpiresAtUtc\nor its project's default lifetime; ExpirySource says which (`explicit` / `project-default`),\nboth null when neither applies."
+    },
+    "PublicFlagListItemPagedResult": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "items": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicFlagListItem"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "_actions": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ActionCapability"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it."
+        }
+      },
+      "description": "A page of results plus an opaque cursor for the next page, or null when this is the last\npage. Wire keys are frozen: `items` (already lowercase under the camelCase policy) and\n`next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`)."
+    },
+    "PublicFlagOwner": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "email": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "A flag's owner as returned on flag reads. Null means the flag is unowned."
+    },
+    "PublicFlagRemovalCandidate": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "treatment": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "blockedBy": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "description": "One dead flag the Featureflip Flag Cleanup Action should remove, returned by\n`GET .../flags/removal-candidates`. `Treatment` is the kill decision: true → keep the\nflag's on-branch, false → keep the off-branch. `Status` is the flag's staleness tier\n(`\"Stale\"` or `\"Dead\"`, never `\"Active\"`) — lets a caller distinguish the two when\n`?staleness=stale` widens the response to include both tiers. This is the ONLY public\nprojection of staleness — PublicFlagResponse and PublicFlagListItem\nstill omit it by design. `BlockedBy` names the live flags that still list this one as a\nprerequisite, sorted by key; while it is non-empty the flag cannot be archived\n(`FLAG_HAS_DEPENDENTS`), so a caller should remove those dependents first."
+    },
+    "PublicFlagRemovalCandidatePagedResult": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "items": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicFlagRemovalCandidate"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "A page of results plus an opaque cursor for the next page, or null when this is the last\npage. Wire keys are frozen: `items` (already lowercase under the camelCase policy) and\n`next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`)."
+    },
+    "PublicFlagResponse": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "type": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Allowed values: Boolean, String, Number, Json."
+        },
+        "isArchived": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "clientSideVisible": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "tags": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "variations": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicVariationResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "createdAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "updatedAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "expiresAtUtc": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "owner": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PublicFlagOwner"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "removalPrUrl": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "isPermanent": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "effectiveExpiresAtUtc": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "expirySource": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "_actions": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ActionCapability"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it."
+        }
+      },
+      "description": "Public detail representation of a feature flag, returned by\n`GET .../flags/{flag}` and the body of a successful create. Drops internal/dashboard-only\nfields present on FeatureFlagDto — notably `ProjectId` (implicit in the\nroute) and `Staleness` (an internal analytics signal, not part of the public contract).\nEffectiveExpiresAtUtc is when the flag counts as past expiry, from its own ExpiresAtUtc\nor its project's default lifetime; ExpirySource says which (`explicit` / `project-default`),\nboth null when neither applies."
+    },
+    "PublicPrerequisiteDto": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "prerequisiteFlagKey": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "expectedVariationKey": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "A single prerequisite entry on a flag's per-environment config. Maps 1:1 onto\nPrerequisiteDto (read side) and PrerequisiteInput (write side)."
+    },
+    "PublicPutTargetingRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "rules": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicCreateTargetingRuleRequest"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "description": "Request body for `PUT .../targeting` — a declarative full replace of the environment's\nordered targeting rule set. Rules are applied in array order (index = priority, so the array\norder IS the evaluation order). Rules is nullable so that an OMITTED `rules`\nfield (a body of `{}`) binds successfully instead of failing ASP.NET Core's implicit\nrequired-property check on non-nullable reference types — both an omitted `rules` field\nand an explicit empty list (`{ \"rules\": [] }`) clear all targeting rules for the\nenvironment. Each element is a PublicCreateTargetingRuleRequest (identical to the\n`POST .../rules` body), so `UserSegmentId` is supported — segment-scoped rules can be\nsubmitted through this endpoint. The replace is atomic (all-or-nothing): the whole rule set is\nswapped in one transaction, or nothing changes."
+    },
+    "PublicReorderRulesRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "ruleIds": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "description": "Request body for `PUT .../rules/reorder`. Must include every existing rule id exactly\nonce — `ReorderTargetingRulesCommandHandler` rejects duplicate, omitted, or unknown rule\nids with `BadRequestException`, surfaced as an HTTP 400 `bad_request` envelope\ncarrying the handler's message."
+    },
+    "PublicRotateWebhookSecretResponse": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "secretId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "secret": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "warning": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "A newly added signing secret. The secret is shown only here."
+    },
+    "PublicSdkKeyResponse": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "type": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Allowed values: ClientSide, ServerSide."
+        },
+        "lastFourCharacters": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "isActive": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "createdAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "lastUsedAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "revokedAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "_actions": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ActionCapability"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it."
+        }
+      },
+      "description": "Public representation of an SDK key, returned by\n`GET /api/v1/orgs/{org}/projects/{project}/environments/{env}/sdk-keys` (list) and\n`GET .../sdk-keys/{sdkKey}` (detail). Deliberately narrower than\nSdkKeyDto — drops `RevokedBy` (an internal user id) and\n`EnvironmentId` (implicit in the route), and carries no plaintext key field: only\nLastFourCharacters is ever exposed once the key has been created. The plaintext\nkey is a one-time value that appears solely in PublicCreateSdkKeyResponse."
+    },
+    "PublicSdkKeyResponsePagedResult": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "items": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicSdkKeyResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "_actions": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ActionCapability"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it."
+        }
+      },
+      "description": "A page of results plus an opaque cursor for the next page, or null when this is the last\npage. Wire keys are frozen: `items` (already lowercase under the camelCase policy) and\n`next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`)."
+    },
+    "PublicSegmentConditionDto": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "attribute": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "operator": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Allowed values: Equals, NotEquals, Contains, NotContains, GreaterThan, LessThan, GreaterThanOrEqual, LessThanOrEqual, In, NotIn, MatchesRegex, StartsWith, EndsWith, Before, After, SemverEquals, SemverGreaterThan, SemverGreaterThanOrEqual, SemverLessThan, SemverLessThanOrEqual."
+        },
+        "values": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "negate": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "description": "A single targeting condition on a segment, used both as input (create/update) and output\n(Conditions). Operator is a bare string on\nboth sides of the wire — on write it's parsed to\nOperatorType by `SegmentsController` (an unknown\nvalue fails closed with a 400, never silently dropped or defaulted); on read it's mapped\nstraight through from Operator, which is already a string."
+    },
+    "PublicSegmentResponse": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "conditions": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicSegmentConditionDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "createdAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "updatedAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "_actions": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ActionCapability"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it."
+        }
+      },
+      "description": "Public representation of a user segment, returned by `GET .../segments`,\n`GET .../segments/{segment}`, and the body of a successful create."
+    },
+    "PublicSegmentResponsePagedResult": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "items": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicSegmentResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "_actions": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ActionCapability"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it."
+        }
+      },
+      "description": "A page of results plus an opaque cursor for the next page, or null when this is the last\npage. Wire keys are frozen: `items` (already lowercase under the camelCase policy) and\n`next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`)."
+    },
+    "PublicSetDefaultFlagLifetimeRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "days": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "description": "Request body for `PUT /api/v1/orgs/{org}/projects/{project}/default-flag-lifetime`. `days`\nis 1–3650; null (or an empty body) removes the default."
+    },
+    "PublicSetFlagExpiryRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "expiresAtUtc": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "Request body for `PUT /api/v1/orgs/{org}/projects/{project}/flags/{flag}/expiry`. Expiry is a\ndedicated sub-resource, deliberately NOT a field on PublicUpdateFeatureFlagRequest: that\nPUT is a full replace, so a new nullable field there would let any client that doesn't know about\nexpiry (the Terraform provider included) wipe it on every update. A bare date means the end of that\nUTC day; a full timestamp is stored exactly."
+    },
+    "PublicSetFlagOwnerRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "email": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "Request body for `PUT /api/v1/orgs/{org}/projects/{project}/flags/{flag}/owner`. A dedicated\nsub-resource for the same reason as expiry: the main flag PUT is a full replace, so an owner field\nthere would let every client that doesn't know about owners wipe one. `email` must belong\nto an active member of the organization (case-insensitive)."
+    },
+    "PublicSetFlagRemovalPrRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "Request body for `PUT /api/v1/orgs/{org}/projects/{project}/flags/{flag}/removal-pr`: the\npull request that removes this flag from code, as opened by the Featureflip Flag Cleanup Action.\nA dedicated sub-resource for the same reason as expiry and owner. `url` must be an https\npull request URL (`https://{host}/{owner}/{repo}/pull/{number}`)."
+    },
+    "PublicTargetingConfigResponse": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "isEnabled": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "rules": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicTargetingRuleResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "_actions": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ActionCapability"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it."
+        }
+      },
+      "description": "The full targeting configuration for a flag in a single environment, returned by\n`GET .../targeting`. Maps 1:1 onto TargetingConfigurationDto — including\nits IsEnabled field, which reflects the parent\n`FlagEnvironmentConfiguration.IsEnabled` (whether the flag is on in this environment at\nall), not anything specific to targeting itself."
+    },
+    "PublicTargetingRuleResponse": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "priority": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "variationId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "rolloutPercentage": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "userSegmentId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "conditionGroups": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicConditionGroupResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "_actions": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ActionCapability"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it."
+        }
+      },
+      "description": "A single targeting rule, returned by `GET .../rules/{ruleId}`,\n`POST .../rules` (201 body), and nested within PublicTargetingConfigResponse.\nMaps 1:1 onto TargetingRuleDto, dropping nothing — every field on the\nApplication DTO is part of the public contract."
+    },
+    "PublicTestWebhookSubscriptionResponse": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "webhookEventId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "webhookDeliveryId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "The queued test event and its delivery. Poll the delivery log for the outcome."
+    },
+    "PublicToggleFlagRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "enabled": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "description": "Request body for `POST .../flags/{flag}/environments/{env}/toggle`. Named distinctly from\nthe dashboard's own `ToggleFlagInEnvironmentRequest`\n(which uses `IsEnabled`) — the public field is named Enabled per the phase-3c\ncontract. Enabled is a NULLABLE `bool?` deliberately: a non-nullable value\ntype would bind an omitted/empty body to `false` with no validation error (ASP.NET's\nimplicit-required only covers non-nullable reference types, not value types), silently disabling\nthe flag. The controller rejects a null Enabled with a `validation_failed` 400\nso the intent is never ambiguous (#1806)."
+    },
+    "PublicUpdateEnvironmentRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "color": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sortOrder": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "description": "Request body for `PUT /api/v1/orgs/{org}/projects/{project}/environments/{env}`. See\nPublicCreateEnvironmentRequest for why this is named distinctly from the\ndashboard's `UpdateEnvironmentRequest`."
+    },
+    "PublicUpdateFeatureFlagRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "tags": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "clientSideVisible": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "description": "Request body for `PUT /api/v1/orgs/{org}/projects/{project}/flags/{flag}`. See\nPublicCreateFeatureFlagRequest for why this is named distinctly from the\ndashboard's `UpdateFeatureFlagRequest`. The flag's key and type are immutable via this\nendpoint (mirrors `UpdateFeatureFlagCommand`, which has no `Key`/`Type`)."
+    },
+    "PublicUpdateFlagEnvConfigRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "defaultVariationId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "strategy": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Allowed values: SingleVariation, PercentageRollout, TargetedRollout."
+        },
+        "prerequisites": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicPrerequisiteDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "description": "Request body for `PUT .../flags/{flag}/environments/{env}`. Named distinctly from the\ndashboard's own `UpdateFlagEnvironmentConfigurationRequest`\n— see PublicCreateEnvironmentRequest for the schemaId-collision rationale (both\ncontrollers share one Swagger document). Strategy is passed through verbatim to\nStrategy\n— the existing command validator name-allowlists it (SingleVariation/PercentageRollout/\nTargetedRollout or null), so an invalid value surfaces as the handler's own 400, not a\ncontroller-level guard. A null Prerequisites leaves prerequisites untouched; a\nnon-null list replaces them wholesale (mirrors UpdateFlagPrerequisitesCommand's\nreplace-all semantics)."
+    },
+    "PublicUpdateProjectRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "Request body for `PUT /api/v1/orgs/{org}/projects/{project}`. See\nPublicCreateProjectRequest for why this is named distinctly from the\ndashboard's `UpdateProjectRequest`."
+    },
+    "PublicUpdateSdkKeyRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "Request body for `PUT /api/v1/orgs/{org}/projects/{project}/environments/{env}/sdk-keys/{sdkKey}`.\nType and key material are immutable via this endpoint (mirrors\nUpdateSdkKeyCommand, which\ncarries no `Type`)."
+    },
+    "PublicUpdateSegmentRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "conditions": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicSegmentConditionDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "description": "Request body for `PUT /api/v1/orgs/{org}/projects/{project}/segments/{segment}`. The\nsegment's key is immutable via this endpoint (mirrors `UpdateUserSegmentCommand`, which\ncarries no `Key`)."
+    },
+    "PublicUpdateTargetingRuleRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "variationId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "rolloutPercentage": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "userSegmentId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "conditionGroups": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicConditionGroupRequest"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "description": "Request body for `PUT .../rules/{ruleId}`. Same shape as\nPublicCreateTargetingRuleRequest — see its remarks on operator\nvalidation/canonicalization, which applies identically here."
+    },
+    "PublicUpdateVariationRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "value": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "Request body for\n`PUT /api/v1/orgs/{org}/projects/{project}/flags/{flag}/variations/{variationId}`. The\nvariation's key is immutable via this endpoint (mirrors\n`UpdateVariationCommand`, which\ncarries no `Key`)."
+    },
+    "PublicUpdateWebhookSubscriptionRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "eventTypes": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "projectIds": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "environmentIds": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "isEnabled": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "description": "Replaces a subscription's configuration (full replace — omitted lists become empty, meaning\n\"all\"). `isEnabled` is required. The provider cannot be changed."
+    },
+    "PublicVariationResponse": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "value": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "_actions": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ActionCapability"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it."
+        }
+      },
+      "description": "A single variation on a flag, as returned in Variations."
+    },
+    "PublicWebhookDeliveryResponse": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "webhookEventId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Allowed values: Pending, Succeeded, DeadLettered."
+        },
+        "attemptCount": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "nextAttemptAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "lastResponseStatusCode": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "lastError": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "completedAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "createdAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "One delivery attempt record. `status` is `Pending` (awaiting its first attempt,\nbacking off, or in flight), `Succeeded` or `DeadLettered`."
+    },
+    "PublicWebhookDeliveryResponsePagedResult": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "items": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicWebhookDeliveryResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "A page of results plus an opaque cursor for the next page, or null when this is the last\npage. Wire keys are frozen: `items` (already lowercase under the camelCase policy) and\n`next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`)."
+    },
+    "PublicWebhookSecretResponse": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "createdAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "retiredAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "A signing secret's id and lifecycle. A secret with no `retiredAt` is active and signs every delivery."
+    },
+    "PublicWebhookSubscriptionResponse": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "provider": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Allowed values: GenericHttp."
+        },
+        "isEnabled": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "eventTypes": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "projectIds": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "environmentIds": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "consecutiveFailureCount": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "autoDisabledAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "createdAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "updatedAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "secrets": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicWebhookSecretResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "overPlanLimit": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "_actions": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ActionCapability"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it."
+        }
+      },
+      "description": "A webhook subscription. Never carries secret material: signing secrets are listed by id and\nlifecycle only — the value itself is returned once, when it is created or rotated.\n`overPlanLimit` is true when the organization has more subscriptions than its plan\nallows, which happens after a downgrade. The oldest subscriptions up to the limit keep\ndelivering. The rest receive nothing and cannot be re-enabled, tested or redelivered to until\nthe plan is upgraded or older subscriptions are deleted."
+    },
+    "PublicWebhookSubscriptionResponsePagedResult": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "items": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicWebhookSubscriptionResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "_actions": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ActionCapability"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it."
+        }
+      },
+      "description": "A page of results plus an opaque cursor for the next page, or null when this is the last\npage. Wire keys are frozen: `items` (already lowercase under the camelCase policy) and\n`next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`)."
+    }
+  }
+}

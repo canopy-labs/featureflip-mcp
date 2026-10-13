@@ -3,6 +3,8 @@ import * as z from 'zod/v4';
 import { enc } from '../client.js';
 import { errorResult, okJson, run } from '../errors.js';
 import type { ToolContext } from './context.js';
+import { apiOutput, apiOutputWith, endpoint, nullable, oneOfOutputs, shape } from './outputs.js';
+import { pagination } from './params.js';
 import type { components } from '../generated/api-types.js';
 
 type Subscription = components['schemas']['PublicWebhookSubscriptionResponse'];
@@ -12,11 +14,6 @@ const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 // Every webhook action requires Admin, reads included, and the whole surface answers 404
 // while webhooks are not enabled for the organization.
 const ACCESS_NOTE = 'Requires an Admin token. A 404 on every webhook call means webhooks are not enabled for the organization.';
-
-const pagination = {
-  limit: z.number().int().min(1).max(100).optional().describe('Page size (default 20)'),
-  cursor: z.string().optional().describe('next_cursor from a previous response'),
-};
 
 export function registerWebhookTools(server: McpServer, ctx: ToolContext): void {
   const base = `/api/v1/orgs/${enc(ctx.org)}/webhooks`;
@@ -85,6 +82,9 @@ export function registerWebhookTools(server: McpServer, ctx: ToolContext): void 
         'event types a subscription can filter on. Empty filter lists mean "all". Paginated via cursor. ' +
         ACCESS_NOTE,
       inputSchema: z.object({ ...pagination }),
+      outputSchema: apiOutputWith('GET /api/v1/orgs/{org}/webhooks', {
+        availableEventTypes: { type: 'array', items: { type: 'string' }, description: 'Event types a subscription can filter on' },
+      }),
       annotations: { readOnlyHint: true },
     },
     async ({ limit, cursor }) =>
@@ -110,6 +110,7 @@ export function registerWebhookTools(server: McpServer, ctx: ToolContext): void 
         id: z.string().describe('Subscription id (from list_webhooks)'),
         ...pagination,
       }),
+      outputSchema: apiOutput('GET /api/v1/orgs/{org}/webhooks/{id}/deliveries'),
       annotations: { readOnlyHint: true },
     },
     async ({ id, limit, cursor }) =>
@@ -131,7 +132,9 @@ export function registerWebhookTools(server: McpServer, ctx: ToolContext): void 
         'active secret. A project-restricted service token must list at least one project, all in its scope. ' +
         ACCESS_NOTE,
       inputSchema: z.object({
-        action: z.enum(['create', 'update', 'delete', 'rotate_secret', 'retire_secret']),
+        action: z
+          .enum(['create', 'update', 'delete', 'rotate_secret', 'retire_secret'])
+          .describe('What to do; every action except create needs id'),
         id: z.string().optional().describe('Subscription id; required for everything except create'),
         name: z.string().optional().describe('Required for create'),
         url: z.string().optional().describe('Receiver URL; required for create'),
@@ -148,6 +151,25 @@ export function registerWebhookTools(server: McpServer, ctx: ToolContext): void 
         secretId: z.string().optional().describe('Required for retire_secret'),
         idempotency_key: z.string().optional().describe('Idempotency-Key header for create / rotate_secret'),
       }),
+      outputSchema: oneOfOutputs(
+        endpoint('POST /api/v1/orgs/{org}/webhooks'),
+        shape(
+          {
+            id: { type: 'string' },
+            updated: { type: 'boolean' },
+            name: nullable('string'),
+            url: nullable('string'),
+            eventTypes: { type: ['array', 'null'], items: { type: 'string' } },
+            projectIds: { type: ['array', 'null'], items: { type: 'string' } },
+            environmentIds: { type: ['array', 'null'], items: { type: 'string' } },
+            isEnabled: nullable('boolean'),
+          },
+          ['id', 'updated'],
+        ),
+        shape({ deleted: { type: 'string' } }, ['deleted']),
+        endpoint('POST /api/v1/orgs/{org}/webhooks/{id}/secrets'),
+        shape({ id: { type: 'string' }, retiredSecretId: { type: 'string' } }, ['id', 'retiredSecretId']),
+      ),
       annotations: { destructiveHint: true },
     },
     async ({ action, id, name, url, eventTypes, projects, environments, enabled, secretId, idempotency_key }) =>
@@ -217,11 +239,15 @@ export function registerWebhookTools(server: McpServer, ctx: ToolContext): void 
         'for a disabled subscription, and redeliver for a delivery that is still Pending. ' +
         ACCESS_NOTE,
       inputSchema: z.object({
-        action: z.enum(['test', 'redeliver']),
+        action: z.enum(['test', 'redeliver']).describe('test sends a synthetic event; redeliver re-sends deliveryId'),
         id: z.string().describe('Subscription id (from list_webhooks)'),
         deliveryId: z.string().optional().describe('Required for redeliver'),
       }),
       // Sends a request to the receiver but changes nothing in Featureflip.
+      outputSchema: oneOfOutputs(
+        endpoint('POST /api/v1/orgs/{org}/webhooks/{id}/test'),
+        shape({ id: { type: 'string' }, redelivered: { type: 'string' } }, ['id', 'redelivered']),
+      ),
       annotations: { destructiveHint: false, openWorldHint: true },
     },
     async ({ action, id, deliveryId }) =>

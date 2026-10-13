@@ -3,6 +3,8 @@ import * as z from 'zod/v4';
 import { enc } from '../client.js';
 import { okJson, run } from '../errors.js';
 import type { ToolContext } from './context.js';
+import { apiOutput, objectOutput } from './outputs.js';
+import { environmentParam, flagParam, projectParam } from './params.js';
 
 const conditionSchema = z.object({
   attribute: z.string().describe('Context attribute name, e.g. plan, country, user_id'),
@@ -39,10 +41,11 @@ export function registerTargetingTools(server: McpServer, ctx: ToolContext): voi
       title: 'Get targeting rules',
       description: 'Get a flag\'s current targeting configuration (enabled flag + ordered rules) in one environment.',
       inputSchema: z.object({
-        project: z.string(),
-        flag: z.string(),
-        environment: z.string(),
+        project: projectParam,
+        flag: flagParam,
+        environment: environmentParam,
       }),
+      outputSchema: apiOutput('GET /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/targeting'),
       annotations: { readOnlyHint: true },
     },
     async ({ project, flag, environment }) =>
@@ -57,11 +60,15 @@ export function registerTargetingTools(server: McpServer, ctx: ToolContext): voi
         'REPLACE all targeting rules of a flag in one environment (full PUT — rules not included are removed). ' +
         'Rules are evaluated in order. Get the current rules first with get_targeting.',
       inputSchema: z.object({
-        project: z.string(),
-        flag: z.string(),
-        environment: z.string(),
-        rules: z.array(ruleSchema),
+        project: projectParam,
+        flag: flagParam,
+        environment: environmentParam,
+        rules: z.array(ruleSchema).describe('The complete ordered rule list; rules left out are deleted'),
       }),
+      outputSchema: objectOutput(
+        { project: { type: 'string' }, flag: { type: 'string' }, environment: { type: 'string' }, rulesReplaced: { type: 'integer' } },
+        ['project', 'flag', 'environment', 'rulesReplaced'],
+      ),
       annotations: { destructiveHint: true },
     },
     async ({ project, flag, environment, rules }) =>
