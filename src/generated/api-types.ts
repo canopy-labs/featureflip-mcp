@@ -114,6 +114,18 @@ export interface paths {
                         "application/json": components["schemas"]["PublicEnvironmentResponse"];
                     };
                 };
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
                 /** @description Authentication is required, or the supplied API token is invalid or expired. */
                 401: {
                     headers: {
@@ -183,7 +195,10 @@ export interface paths {
         get: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Optional. An ETag of this resource. The response is 200 only if it is still the current one; otherwise 412 `precondition_failed`. `*` or no header always reads. */
+                    "If-Match"?: string;
+                };
                 path: {
                     org: string;
                     project: string;
@@ -196,7 +211,7 @@ export interface paths {
                 /** @description OK */
                 200: {
                     headers: {
-                        /** @description Strong ETag of the resource. Send it back as If-Match on a PUT. */
+                        /** @description Strong ETag of the resource's whole body as sent to this caller: it changes whenever anything in the body does. Send it back as If-Match on a PUT. */
                         ETag?: string;
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -231,6 +246,18 @@ export interface paths {
                         "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
+                /** @description The resource's current ETag is not the If-Match one. */
+                412: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
                 /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
                 429: {
                     headers: {
@@ -255,7 +282,7 @@ export interface paths {
             parameters: {
                 query?: never;
                 header?: {
-                    /** @description Optional. The ETag from a GET of this resource. The write applies only if the resource still has that ETag; otherwise 412 `precondition_failed`. `*` or no header applies the write unconditionally. */
+                    /** @description Optional. The ETag from a GET of this resource. The write applies only if the resource still has that ETag, meaning nothing in its body has changed since; otherwise 412 `precondition_failed`. `*` or no header applies the write unconditionally. */
                     "If-Match"?: string;
                 };
                 path: {
@@ -276,7 +303,7 @@ export interface paths {
                 /** @description No Content */
                 204: {
                     headers: {
-                        /** @description Strong ETag of the resource. Send it back as If-Match on a PUT. */
+                        /** @description Strong ETag of the resource's whole body as sent to this caller: it changes whenever anything in the body does. Send it back as If-Match on a PUT. */
                         ETag?: string;
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -379,7 +406,7 @@ export interface paths {
                     };
                     content?: never;
                 };
-                /** @description Bad Request */
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
                 400: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
@@ -579,7 +606,7 @@ export interface paths {
                         "application/json": components["schemas"]["PublicFlagResponse"];
                     };
                 };
-                /** @description Bad Request */
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
                 400: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
@@ -759,7 +786,10 @@ export interface paths {
         get: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Optional. An ETag of this resource. The response is 200 only if it is still the current one; otherwise 412 `precondition_failed`. `*` or no header always reads. */
+                    "If-Match"?: string;
+                };
                 path: {
                     org: string;
                     project: string;
@@ -772,7 +802,7 @@ export interface paths {
                 /** @description OK */
                 200: {
                     headers: {
-                        /** @description Strong ETag of the resource. Send it back as If-Match on a PUT. */
+                        /** @description Strong ETag of the resource's whole body as sent to this caller: it changes whenever anything in the body does. Send it back as If-Match on a PUT. */
                         ETag?: string;
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -797,6 +827,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The resource's current ETag is not the If-Match one. */
+                412: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -833,7 +875,7 @@ export interface paths {
             parameters: {
                 query?: never;
                 header?: {
-                    /** @description Optional. The ETag from a GET of this resource. The write applies only if the resource still has that ETag; otherwise 412 `precondition_failed`. `*` or no header applies the write unconditionally. */
+                    /** @description Optional. The ETag from a GET of this resource. The write applies only if the resource still has that ETag, meaning nothing in its body has changed since; otherwise 412 `precondition_failed`. `*` or no header applies the write unconditionally. */
                     "If-Match"?: string;
                 };
                 path: {
@@ -854,7 +896,7 @@ export interface paths {
                 /** @description No Content */
                 204: {
                     headers: {
-                        /** @description Strong ETag of the resource. Send it back as If-Match on a PUT. */
+                        /** @description Strong ETag of the resource's whole body as sent to this caller: it changes whenever anything in the body does. Send it back as If-Match on a PUT. */
                         ETag?: string;
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -958,7 +1000,7 @@ export interface paths {
                     };
                     content?: never;
                 };
-                /** @description Bad Request */
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
                 400: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
@@ -1074,7 +1116,7 @@ export interface paths {
                     };
                     content?: never;
                 };
-                /** @description Bad Request */
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
                 400: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
@@ -1166,6 +1208,18 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content?: never;
+                };
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
                 };
                 /** @description Authentication is required, or the supplied API token is invalid or expired. */
                 401: {
@@ -1267,7 +1321,7 @@ export interface paths {
                     };
                     content?: never;
                 };
-                /** @description Bad Request */
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
                 400: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
@@ -1359,6 +1413,18 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content?: never;
+                };
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
                 };
                 /** @description Authentication is required, or the supplied API token is invalid or expired. */
                 401: {
@@ -1454,7 +1520,7 @@ export interface paths {
                     };
                     content?: never;
                 };
-                /** @description Bad Request */
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
                 400: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
@@ -1546,6 +1612,18 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content?: never;
+                };
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
                 };
                 /** @description Authentication is required, or the supplied API token is invalid or expired. */
                 401: {
@@ -1646,7 +1724,7 @@ export interface paths {
                     };
                     content?: never;
                 };
-                /** @description Bad Request */
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
                 400: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
@@ -1737,6 +1815,18 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content?: never;
+                };
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
                 };
                 /** @description Authentication is required, or the supplied API token is invalid or expired. */
                 401: {
@@ -1838,7 +1928,7 @@ export interface paths {
                     };
                     content?: never;
                 };
-                /** @description Bad Request */
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
                 400: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
@@ -1943,6 +2033,18 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content?: never;
+                };
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
                 };
                 /** @description Authentication is required, or the supplied API token is invalid or expired. */
                 401: {
@@ -2100,7 +2202,10 @@ export interface paths {
         get: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Optional. An ETag of this resource. The response is 200 only if it is still the current one; otherwise 412 `precondition_failed`. `*` or no header always reads. */
+                    "If-Match"?: string;
+                };
                 path: {
                     org: string;
                     project: string;
@@ -2114,7 +2219,7 @@ export interface paths {
                 /** @description OK */
                 200: {
                     headers: {
-                        /** @description Strong ETag of the resource. Send it back as If-Match on a PUT. */
+                        /** @description Strong ETag of the resource's whole body as sent to this caller: it changes whenever anything in the body does. Send it back as If-Match on a PUT. */
                         ETag?: string;
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -2139,6 +2244,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The resource's current ETag is not the If-Match one. */
+                412: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -2175,7 +2292,7 @@ export interface paths {
             parameters: {
                 query?: never;
                 header?: {
-                    /** @description Optional. The ETag from a GET of this resource. The write applies only if the resource still has that ETag; otherwise 412 `precondition_failed`. `*` or no header applies the write unconditionally. */
+                    /** @description Optional. The ETag from a GET of this resource. The write applies only if the resource still has that ETag, meaning nothing in its body has changed since; otherwise 412 `precondition_failed`. `*` or no header applies the write unconditionally. */
                     "If-Match"?: string;
                 };
                 path: {
@@ -2197,7 +2314,7 @@ export interface paths {
                 /** @description No Content */
                 204: {
                     headers: {
-                        /** @description Strong ETag of the resource. Send it back as If-Match on a PUT. */
+                        /** @description Strong ETag of the resource's whole body as sent to this caller: it changes whenever anything in the body does. Send it back as If-Match on a PUT. */
                         ETag?: string;
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -2332,7 +2449,7 @@ export interface paths {
                     };
                     content?: never;
                 };
-                /** @description Bad Request */
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
                 400: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
@@ -2419,7 +2536,10 @@ export interface paths {
         get: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Optional. An ETag of this resource. The response is 200 only if it is still the current one; otherwise 412 `precondition_failed`. `*` or no header always reads. */
+                    "If-Match"?: string;
+                };
                 path: {
                     org: string;
                     project: string;
@@ -2433,7 +2553,7 @@ export interface paths {
                 /** @description OK */
                 200: {
                     headers: {
-                        /** @description Strong ETag of the resource. Send it back as If-Match on a PUT. */
+                        /** @description Strong ETag of the resource's whole body as sent to this caller: it changes whenever anything in the body does. Send it back as If-Match on a PUT. */
                         ETag?: string;
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -2458,6 +2578,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The resource's current ETag is not the If-Match one. */
+                412: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -2494,7 +2626,7 @@ export interface paths {
             parameters: {
                 query?: never;
                 header?: {
-                    /** @description Optional. The ETag from a GET of this resource. The write applies only if the resource still has that ETag; otherwise 412 `precondition_failed`. `*` or no header applies the write unconditionally. */
+                    /** @description Optional. The ETag from a GET of this resource. The write applies only if the resource still has that ETag, meaning nothing in its body has changed since; otherwise 412 `precondition_failed`. `*` or no header applies the write unconditionally. */
                     "If-Match"?: string;
                 };
                 path: {
@@ -2516,7 +2648,7 @@ export interface paths {
                 /** @description No Content */
                 204: {
                     headers: {
-                        /** @description Strong ETag of the resource. Send it back as If-Match on a PUT. */
+                        /** @description Strong ETag of the resource's whole body as sent to this caller: it changes whenever anything in the body does. Send it back as If-Match on a PUT. */
                         ETag?: string;
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -2656,7 +2788,7 @@ export interface paths {
                         "application/json": components["schemas"]["PublicTargetingRuleResponse"];
                     };
                 };
-                /** @description Bad Request */
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
                 400: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
@@ -2737,7 +2869,10 @@ export interface paths {
         get: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Optional. An ETag of this resource. The response is 200 only if it is still the current one; otherwise 412 `precondition_failed`. `*` or no header always reads. */
+                    "If-Match"?: string;
+                };
                 path: {
                     org: string;
                     project: string;
@@ -2752,7 +2887,7 @@ export interface paths {
                 /** @description OK */
                 200: {
                     headers: {
-                        /** @description Strong ETag of the resource. Send it back as If-Match on a PUT. */
+                        /** @description Strong ETag of the resource's whole body as sent to this caller: it changes whenever anything in the body does. Send it back as If-Match on a PUT. */
                         ETag?: string;
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -2787,6 +2922,18 @@ export interface paths {
                         "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
+                /** @description The resource's current ETag is not the If-Match one. */
+                412: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
                 /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
                 429: {
                     headers: {
@@ -2811,7 +2958,7 @@ export interface paths {
             parameters: {
                 query?: never;
                 header?: {
-                    /** @description Optional. The ETag from a GET of this resource. The write applies only if the resource still has that ETag; otherwise 412 `precondition_failed`. `*` or no header applies the write unconditionally. */
+                    /** @description Optional. The ETag from a GET of this resource. The write applies only if the resource still has that ETag, meaning nothing in its body has changed since; otherwise 412 `precondition_failed`. `*` or no header applies the write unconditionally. */
                     "If-Match"?: string;
                 };
                 path: {
@@ -2834,7 +2981,7 @@ export interface paths {
                 /** @description No Content */
                 204: {
                     headers: {
-                        /** @description Strong ETag of the resource. Send it back as If-Match on a PUT. */
+                        /** @description Strong ETag of the resource's whole body as sent to this caller: it changes whenever anything in the body does. Send it back as If-Match on a PUT. */
                         ETag?: string;
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -2949,6 +3096,18 @@ export interface paths {
                     };
                     content?: never;
                 };
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
                 /** @description Authentication is required, or the supplied API token is invalid or expired. */
                 401: {
                     headers: {
@@ -3048,6 +3207,18 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content?: never;
+                };
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
                 };
                 /** @description Authentication is required, or the supplied API token is invalid or expired. */
                 401: {
@@ -3154,7 +3325,7 @@ export interface paths {
                         "application/json": components["schemas"]["PublicVariationResponse"];
                     };
                 };
-                /** @description Bad Request */
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
                 400: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
@@ -3266,6 +3437,18 @@ export interface paths {
                     };
                     content?: never;
                 };
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
                 /** @description Authentication is required, or the supplied API token is invalid or expired. */
                 401: {
                     headers: {
@@ -3352,7 +3535,7 @@ export interface paths {
                     };
                     content?: never;
                 };
-                /** @description Bad Request */
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
                 400: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
@@ -3729,6 +3912,18 @@ export interface paths {
                         "application/json": components["schemas"]["ProjectResponse"];
                     };
                 };
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
                 /** @description Authentication is required, or the supplied API token is invalid or expired. */
                 401: {
                     headers: {
@@ -3879,6 +4074,18 @@ export interface paths {
                     };
                     content?: never;
                 };
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
                 /** @description Authentication is required, or the supplied API token is invalid or expired. */
                 401: {
                     headers: {
@@ -3958,6 +4165,18 @@ export interface paths {
                     };
                     content?: never;
                 };
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
                 /** @description Authentication is required, or the supplied API token is invalid or expired. */
                 401: {
                     headers: {
@@ -4029,7 +4248,7 @@ export interface paths {
          *     flags with no expiry date of their own then expire that many days after they were created, reported
          *     as `expirySource: "project-default"`. Takes effect at the next hourly staleness run. Requires at
          *     least Member, and the default-flag-lifetime feature to set one (400 `FEATURE_NOT_ENABLED`);
-         *     removing one is always allowed.
+         *     removing one is always allowed. `days` is required; send `{"days": null}` to remove.
          */
         put: {
             parameters: {
@@ -4059,7 +4278,7 @@ export interface paths {
                     };
                     content?: never;
                 };
-                /** @description Bad Request */
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
                 400: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
@@ -4347,7 +4566,7 @@ export interface paths {
                         "application/json": components["schemas"]["PublicCreateSdkKeyResponse"];
                     };
                 };
-                /** @description Bad Request */
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
                 400: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
@@ -4525,6 +4744,18 @@ export interface paths {
                     };
                     content?: never;
                 };
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
                 /** @description Authentication is required, or the supplied API token is invalid or expired. */
                 401: {
                     headers: {
@@ -4620,6 +4851,18 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content?: never;
+                };
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
                 };
                 /** @description Authentication is required, or the supplied API token is invalid or expired. */
                 401: {
@@ -4799,7 +5042,7 @@ export interface paths {
                         "application/json": components["schemas"]["PublicSegmentResponse"];
                     };
                 };
-                /** @description Bad Request */
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
                 400: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
@@ -4886,7 +5129,10 @@ export interface paths {
         get: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Optional. An ETag of this resource. The response is 200 only if it is still the current one; otherwise 412 `precondition_failed`. `*` or no header always reads. */
+                    "If-Match"?: string;
+                };
                 path: {
                     org: string;
                     project: string;
@@ -4899,7 +5145,7 @@ export interface paths {
                 /** @description OK */
                 200: {
                     headers: {
-                        /** @description Strong ETag of the resource. Send it back as If-Match on a PUT. */
+                        /** @description Strong ETag of the resource's whole body as sent to this caller: it changes whenever anything in the body does. Send it back as If-Match on a PUT. */
                         ETag?: string;
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -4934,6 +5180,18 @@ export interface paths {
                         "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
+                /** @description The resource's current ETag is not the If-Match one. */
+                412: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
                 /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
                 429: {
                     headers: {
@@ -4958,7 +5216,7 @@ export interface paths {
             parameters: {
                 query?: never;
                 header?: {
-                    /** @description Optional. The ETag from a GET of this resource. The write applies only if the resource still has that ETag; otherwise 412 `precondition_failed`. `*` or no header applies the write unconditionally. */
+                    /** @description Optional. The ETag from a GET of this resource. The write applies only if the resource still has that ETag, meaning nothing in its body has changed since; otherwise 412 `precondition_failed`. `*` or no header applies the write unconditionally. */
                     "If-Match"?: string;
                 };
                 path: {
@@ -4979,7 +5237,7 @@ export interface paths {
                 /** @description No Content */
                 204: {
                     headers: {
-                        /** @description Strong ETag of the resource. Send it back as If-Match on a PUT. */
+                        /** @description Strong ETag of the resource's whole body as sent to this caller: it changes whenever anything in the body does. Send it back as If-Match on a PUT. */
                         ETag?: string;
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -5091,6 +5349,18 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content?: never;
+                };
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
                 };
                 /** @description Authentication is required, or the supplied API token is invalid or expired. */
                 401: {
@@ -5273,7 +5543,7 @@ export interface paths {
                         "application/json": components["schemas"]["PublicCreateWebhookSubscriptionResponse"];
                     };
                 };
-                /** @description Bad Request */
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
                 400: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
@@ -5451,7 +5721,10 @@ export interface paths {
         get: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Optional. An ETag of this resource. The response is 200 only if it is still the current one; otherwise 412 `precondition_failed`. `*` or no header always reads. */
+                    "If-Match"?: string;
+                };
                 path: {
                     org: string;
                     id: string;
@@ -5463,7 +5736,7 @@ export interface paths {
                 /** @description OK */
                 200: {
                     headers: {
-                        /** @description Strong ETag of the resource. Send it back as If-Match on a PUT. */
+                        /** @description Strong ETag of the resource's whole body as sent to this caller: it changes whenever anything in the body does. Send it back as If-Match on a PUT. */
                         ETag?: string;
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -5510,6 +5783,18 @@ export interface paths {
                         "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
+                /** @description The resource's current ETag is not the If-Match one. */
+                412: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
                 /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
                 429: {
                     headers: {
@@ -5535,7 +5820,7 @@ export interface paths {
             parameters: {
                 query?: never;
                 header?: {
-                    /** @description Optional. The ETag from a GET of this resource. The write applies only if the resource still has that ETag; otherwise 412 `precondition_failed`. `*` or no header applies the write unconditionally. */
+                    /** @description Optional. The ETag from a GET of this resource. The write applies only if the resource still has that ETag, meaning nothing in its body has changed since; otherwise 412 `precondition_failed`. `*` or no header applies the write unconditionally. */
                     "If-Match"?: string;
                 };
                 path: {
@@ -5555,7 +5840,7 @@ export interface paths {
                 /** @description No Content */
                 204: {
                     headers: {
-                        /** @description Strong ETag of the resource. Send it back as If-Match on a PUT. */
+                        /** @description Strong ETag of the resource's whole body as sent to this caller: it changes whenever anything in the body does. Send it back as If-Match on a PUT. */
                         ETag?: string;
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -5667,6 +5952,18 @@ export interface paths {
                     };
                     content?: never;
                 };
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
                 /** @description Authentication is required, or the supplied API token is invalid or expired. */
                 401: {
                     headers: {
@@ -5762,6 +6059,18 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["PublicRotateWebhookSecretResponse"];
+                    };
+                };
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
                 /** @description Authentication is required, or the supplied API token is invalid or expired. */
@@ -5860,7 +6169,7 @@ export interface paths {
                     };
                     content?: never;
                 };
-                /** @description Bad Request */
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
                 400: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
@@ -5968,7 +6277,7 @@ export interface paths {
                         "application/json": components["schemas"]["PublicTestWebhookSubscriptionResponse"];
                     };
                 };
-                /** @description Bad Request */
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
                 400: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
@@ -6174,7 +6483,7 @@ export interface paths {
                     };
                     content?: never;
                 };
-                /** @description Bad Request */
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
                 400: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
@@ -7181,7 +7490,9 @@ export interface components {
         };
         /**
          * @description Request body for `PUT /api/v1/orgs/{org}/projects/{project}/default-flag-lifetime`. `days`
-         *     is 1–3650; null (or an empty body) removes the default.
+         *     is 1–3650, or an explicit null to remove the default. `days` is required: a body without it
+         *     (`{}`, or a misspelled field) is a `validation_failed` 400, never a removal, so a typo
+         *     can't silently wipe the setting (#3788). A request with no body is rejected too.
          */
         PublicSetDefaultFlagLifetimeRequest: {
             /** Format: int32 */

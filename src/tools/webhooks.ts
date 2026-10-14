@@ -196,7 +196,7 @@ export function registerWebhookTools(server: McpServer, ctx: ToolContext): void 
           const projectIds = projects && (await resolveProjects(projects));
           // PUT is a full replace: an omitted list would widen that filter to "all", and a missing
           // isEnabled is a 400. Read the subscription and carry over everything not being changed.
-          const current = await ctx.api.request<Subscription>('GET', hook(id));
+          const { data: current, etag } = await ctx.api.requestWithEtag<Subscription>('GET', hook(id));
           const body = {
             name: name ?? current.name,
             url: url ?? current.url,
@@ -206,7 +206,7 @@ export function registerWebhookTools(server: McpServer, ctx: ToolContext): void 
             isEnabled: enabled ?? current.isEnabled,
           };
           // PUT returns 204 No Content — confirm what was applied instead.
-          await ctx.api.request('PUT', hook(id), { body });
+          await ctx.api.request('PUT', hook(id), { body, ifMatch: etag });
           return okJson({ id, updated: true, ...body });
         }
 

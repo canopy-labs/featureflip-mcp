@@ -31,7 +31,7 @@ describe('full tool surface', () => {
     const readOnly = tools.filter((t) => t.annotations?.readOnlyHint).map((t) => t.name).sort();
     expect(readOnly).toEqual(
       [
-        'list_projects', 'list_environments', 'list_segments', 'get_segment',
+        'list_projects', 'list_environments', 'list_sdk_keys', 'list_segments', 'get_segment',
         'list_flags', 'get_flag', 'flag_status', 'get_targeting', 'find_stale_flags', 'list_removal_candidates',
         'list_webhooks', 'list_webhook_deliveries',
       ].sort(),
@@ -44,14 +44,21 @@ describe('full tool surface', () => {
         // browser/React/Swift SDKs can see the flag at all, so a bad write breaks
         // client-side evaluation the same way a targeting change would.
         'update_flag',
-        'update_targeting', 'manage_variation',
+        'update_targeting', 'manage_targeting_rule', 'manage_variation',
         // Deleting a subscription or retiring a secret stops deliveries a receiver relies on.
         'manage_webhook',
+        // Renaming a project changes nothing served, but the tool is one write surface with create.
+        'manage_project',
+        'manage_environment',
+        // Revoking a key cuts off every app still using it.
+        'manage_sdk_key',
+        // Changing or deleting a segment changes who every rule referencing it serves.
+        'manage_segment',
       ].sort(),
     );
     // The writes that cannot change what any caller is served: pinned so a future
     // tool cannot quietly join them, and so these stay distinguishable from an
-    // unannotated one. set_flag_expiry, set_flag_owner and set_flag_permanent are here because
+    // unannotated one. set_flag_expiry, set_flag_owner, set_flag_permanent and set_default_flag_lifetime are here because
     // expiry, ownership and the permanent marker are advisory only.
     // deliver_webhook sends an event to a receiver but changes nothing in Featureflip.
     const additive = tools
@@ -62,6 +69,8 @@ describe('full tool surface', () => {
       [
         'create_flag', 'restore_flag', 'set_flag_expiry', 'set_flag_owner', 'set_flag_permanent', 'wrap_feature',
         'deliver_webhook',
+        // The default lifetime is advisory like expiry: it decides what is reported as expired.
+        'set_default_flag_lifetime',
       ].sort(),
     );
   });

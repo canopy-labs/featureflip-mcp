@@ -70,6 +70,68 @@ describe('FeatureflipApi.request', () => {
     expect(err).toBeInstanceOf(ApiError);
     expect((err as ApiError).envelope.error).toBe('http_502');
   });
+
+  it('sends If-Match when ifMatch is set, and not otherwise', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
+    const api = new FeatureflipApi({ token: 't', baseUrl: 'https://api.test', fetchImpl });
+    await api.request('PUT', '/x', { body: {}, ifMatch: '"v1"' });
+    await api.request('PUT', '/x', { body: {} });
+    expect(fetchImpl.mock.calls[0][1].headers['If-Match']).toBe('"v1"');
+    expect(fetchImpl.mock.calls[1][1].headers['If-Match']).toBeUndefined();
+  });
+
+  it('quotes a bare ifMatch, and leaves a quoted or weak one alone', async () => {
+    const fetchImpl = vi.fn().mockImplementation(async () => new Response(null, { status: 204 }));
+    const api = new FeatureflipApi({ token: 't', baseUrl: 'https://api.test', fetchImpl });
+    for (const v of ['abc', '"abc"', 'W/"abc"']) await api.request('PUT', '/x', { body: {}, ifMatch: v });
+    expect(fetchImpl.mock.calls.map((c) => c[1].headers['If-Match'])).toEqual(['"abc"', '"abc"', 'W/"abc"']);
+  });
+
+  it('requestWithEtag returns the body and the ETag header', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ key: 'f' }), { status: 200, headers: { 'content-type': 'application/json', ETag: '"abc"' } }),
+    );
+    const api = new FeatureflipApi({ token: 't', baseUrl: 'https://api.test', fetchImpl });
+    await expect(api.requestWithEtag('GET', '/x')).resolves.toEqual({ data: { key: 'f' }, etag: '"abc"' });
+  });
+
+  it('requestWithEtag leaves etag undefined when the response has none', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(jsonResponse(200, { key: 'f' }));
+    const api = new FeatureflipApi({ token: 't', baseUrl: 'https://api.test', fetchImpl });
+    expect((await api.requestWithEtag('GET', '/x')).etag).toBeUndefined();
+  });
+
+  it('never retries a 412', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(jsonResponse(412, { error: 'precondition_failed', message: 'changed' }));
+    const api = new FeatureflipApi({ token: 't', baseUrl: 'https://api.test', fetchImpl, sleep: noSleep });
+    const err = await api.request('PUT', '/x', { body: {}, ifMatch: '"v1"' }).catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(ApiError);
+    expect((err as ApiError).status).toBe(412);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+  });
+
+  it('a PUT carrying If-Match retries a 503 but not a 502/504, which may already have applied', async () => {
+    for (const status of [502, 504]) {
+      const fetchImpl = vi.fn().mockResolvedValue(new Response(null, { status }));
+      const api = new FeatureflipApi({ token: 't', baseUrl: 'https://api.test', fetchImpl, sleep: noSleep });
+      await api.request('PUT', '/x', { body: {}, ifMatch: '"v1"' }).catch(() => undefined);
+      expect(fetchImpl, `status ${status}`).toHaveBeenCalledTimes(1);
+    }
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(new Response(null, { status: 503 }))
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
+    const api = new FeatureflipApi({ token: 't', baseUrl: 'https://api.test', fetchImpl, sleep: noSleep });
+    await api.request('PUT', '/x', { body: {}, ifMatch: '"v1"' });
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+  });
+
+  it('a PUT carrying If-Match does not retry a dropped connection', async () => {
+    const fetchImpl = vi.fn().mockRejectedValue(new TypeError('fetch failed'));
+    const api = new FeatureflipApi({ token: 't', baseUrl: 'https://api.test', fetchImpl, sleep: noSleep });
+    await expect(api.request('PUT', '/x', { body: {}, ifMatch: '"v1"' })).rejects.toThrow('fetch failed');
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('FeatureflipApi.request transient retry', () => {

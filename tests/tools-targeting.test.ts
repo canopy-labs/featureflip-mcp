@@ -74,6 +74,18 @@ describe('update_targeting', () => {
     });
   });
 
+  it('sends an empty conditionGroups list for a rule that omits it, which the API requires', async () => {
+    const { api, calls } = mockApi([
+      { method: 'PUT', path: `${FLAG}/environments/production/targeting`, status: 204 },
+    ]);
+    const client = await connectClient({ api, org: ORG });
+    await client.callTool({
+      name: 'update_targeting',
+      arguments: { project: 'web', flag: 'checkout-v2', environment: 'production', rules: [{ variationId: 'var-t', rolloutPercentage: 10 }] },
+    });
+    expect(calls[0].body).toEqual({ rules: [{ variationId: 'var-t', rolloutPercentage: 10, conditionGroups: [] }] });
+  });
+
   it('defaults an omitted condition `negate` to false in the PUT body', async () => {
     const { api, calls } = mockApi([
       { method: 'PUT', path: `${FLAG}/environments/production/targeting`, status: 204 },

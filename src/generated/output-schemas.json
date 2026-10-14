@@ -2061,7 +2061,7 @@
           ]
         }
       },
-      "description": "Request body for `PUT /api/v1/orgs/{org}/projects/{project}/default-flag-lifetime`. `days`\nis 1–3650; null (or an empty body) removes the default."
+      "description": "Request body for `PUT /api/v1/orgs/{org}/projects/{project}/default-flag-lifetime`. `days`\nis 1–3650, or an explicit null to remove the default. `days` is required: a body without it\n(`{}`, or a misspelled field) is a `validation_failed` 400, never a removal, so a typo\ncan't silently wipe the setting (#3788). A request with no body is rejected too."
     },
     "PublicSetFlagExpiryRequest": {
       "type": [

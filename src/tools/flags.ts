@@ -3,7 +3,8 @@ import * as z from 'zod/v4';
 import { enc } from '../client.js';
 import { okJson, run } from '../errors.js';
 import type { ToolContext } from './context.js';
-import { apiOutput, nullable, objectOutput } from './outputs.js';
+import { apiOutput, apiOutputWith, nullable, objectOutput } from './outputs.js';
+import { etagOutput, ifMatchParam, withEtag } from './etag.js';
 import { flagParam, pagination, projectParam } from './params.js';
 import { ownerFilter, resolveOwner } from './owner.js';
 
@@ -48,11 +49,11 @@ export function registerFlagTools(server: McpServer, ctx: ToolContext): void {
         project: projectParam,
         flag: flagParam,
       }),
-      outputSchema: apiOutput('GET /api/v1/orgs/{org}/projects/{project}/flags/{flag}'),
+      outputSchema: apiOutputWith('GET /api/v1/orgs/{org}/projects/{project}/flags/{flag}', { etag: etagOutput }),
       annotations: { readOnlyHint: true },
     },
     async ({ project, flag }) =>
-      run(async () => okJson(await ctx.api.request('GET', `${base(project)}/${enc(flag)}`))),
+      run(async () => okJson(withEtag(await ctx.api.requestWithEtag<object>('GET', `${base(project)}/${enc(flag)}`)))),
   );
 
   server.registerTool(
@@ -117,7 +118,8 @@ export function registerFlagTools(server: McpServer, ctx: ToolContext): void {
       description:
         'Update flag name/description/tags/clientSideVisible. Changes only the fields you pass and keeps the rest; ' +
         'pass description: "" to clear it. Key and type are immutable. ' +
-        'Use toggle_flag / update_targeting for behavior changes.',
+        'Use toggle_flag / update_targeting for behavior changes. ' +
+        'Pass ifMatch (the etag from get_flag) to refuse the write if the flag changed since you read it.',
       inputSchema: z.object({
         project: projectParam,
         flag: flagParam,
@@ -128,6 +130,7 @@ export function registerFlagTools(server: McpServer, ctx: ToolContext): void {
           .boolean()
           .optional()
           .describe('Expose to client-side SDKs (browser/mobile); false hides the flag from them entirely'),
+        ifMatch: ifMatchParam('get_flag'),
       }),
       outputSchema: objectOutput(
         { project: { type: 'string' }, flag: { type: 'string' }, updated: { type: 'boolean' } },
@@ -135,15 +138,16 @@ export function registerFlagTools(server: McpServer, ctx: ToolContext): void {
       ),
       annotations: { destructiveHint: true },
     },
-    async ({ project, flag, name, description, tags, clientSideVisible }) =>
+    async ({ project, flag, name, description, tags, clientSideVisible, ifMatch }) =>
       run(async () => {
         const path = `${base(project)}/${enc(flag)}`;
         // PUT is a full replace: a missing name is a 400 and a missing description clears it (#3220).
         // Omitted tags / clientSideVisible already mean "unchanged", so only these two are carried over.
-        const current =
+        const read =
           name === undefined || description === undefined
-            ? await ctx.api.request<{ name: string; description: string | null }>('GET', path)
+            ? await ctx.api.requestWithEtag<{ name: string; description: string | null }>('GET', path)
             : undefined;
+        const current = read?.data;
         const body = {
           name: name ?? current?.name,
           description: description ?? current?.description,
@@ -151,7 +155,8 @@ export function registerFlagTools(server: McpServer, ctx: ToolContext): void {
           clientSideVisible,
         };
         // PUT .../flags/{flag} returns 204 No Content — nothing to pass through.
-        await ctx.api.request('PUT', path, { body });
+        // The agent's ifMatch covers its whole read-to-write gap; our own read's ETag covers just this call.
+        await ctx.api.request('PUT', path, { body, ifMatch: ifMatch ?? read?.etag });
         return okJson({ project, flag, updated: true });
       }),
   );

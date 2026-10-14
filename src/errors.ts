@@ -31,6 +31,13 @@ export function errorResult(err: unknown): ToolResult {
           'or a service token does not include this project.',
       );
     }
+    if (err.status === 412) {
+      lines.push(
+        'The resource changed since it was read. If you passed ifMatch, re-read it (get_flag / get_targeting / ' +
+          'get_segment), re-apply your change to what you read, and retry with the new etag. Otherwise the tool ' +
+          'read it itself and lost a race: call it again.',
+      );
+    }
     if (e.docs_url) lines.push(`Docs: ${e.docs_url}`);
     return { content: [{ type: 'text', text: lines.join('\n') }], isError: true };
   }

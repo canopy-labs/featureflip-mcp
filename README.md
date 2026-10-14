@@ -42,8 +42,9 @@ claude mcp add featureflip -e FEATUREFLIP_TOKEN=ffp_your_token -- npx -y @featur
 
 CRUD: `list_projects`, `list_environments`, `list_flags`, `get_flag`, `create_flag`, `update_flag`,
 `delete_flag`, `archive_flag`, `restore_flag`, `set_flag_expiry`, `set_flag_owner`, `set_flag_permanent`,
-`toggle_flag`, `update_flag_environment_config`, `get_targeting`, `update_targeting`, `manage_variation`,
-`list_segments`, `get_segment`
+`toggle_flag`, `update_flag_environment_config`, `get_targeting`, `update_targeting`,
+`manage_targeting_rule`, `manage_variation`, `list_segments`, `get_segment`, `manage_segment`,
+`manage_project`, `set_default_flag_lifetime`, `manage_environment`, `list_sdk_keys`, `manage_sdk_key`
 
 Webhooks (Admin token required): `list_webhooks`, `list_webhook_deliveries`, `manage_webhook`, `deliver_webhook`
 

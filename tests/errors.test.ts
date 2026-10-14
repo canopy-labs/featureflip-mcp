@@ -38,6 +38,15 @@ describe('errorResult', () => {
     expect(errorResult(new Error('boom')).content[0].text).toContain('boom');
     expect(errorResult('bad').content[0].text).toContain('bad');
   });
+
+  it('explains a 412 as a concurrent change and says how to recover', () => {
+    const r = errorResult(new ApiError(412, { error: 'precondition_failed', message: 'If-Match did not match' }));
+    expect(r.isError).toBe(true);
+    expect(r.content[0].text).toContain('changed since it was read');
+    expect(r.content[0].text).toContain('re-apply');
+    // Tools that read before writing (environments, webhooks, rules) recover by being called again.
+    expect(r.content[0].text).toContain('call it again');
+  });
 });
 
 describe('run', () => {

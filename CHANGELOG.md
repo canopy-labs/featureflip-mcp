@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.2.0 — 2026-10-14
+
+### Added
+
+- `set_default_flag_lifetime` sets or removes a project's default flag lifetime. `preview: true` reports how many flags would newly be, or stop being, past expiry, without changing anything. (#3794)
+- `list_sdk_keys` and `manage_sdk_key` (create, rename, revoke). Creating a key returns the full key once, so an agent setting up an SDK can write it into an `.env` file. The list shows only the last four characters.
+- `manage_segment` (create, update, delete). `update_targeting` could already reference a segment that nothing in the MCP server could create. A segment created without `conditions` is sent with an empty list, which the API requires.
+- `manage_project` and `manage_environment` (create, update). Neither can delete.
+- `manage_targeting_rule` adds, updates, removes or reorders one rule without replacing the whole list. A rule added here or through `update_targeting` without `conditionGroups` (segment-only or rollout-only) is sent with an empty list, which the API requires.
+- Optimistic concurrency. `get_flag`, `get_targeting` and `get_segment` return an `etag`, and `update_flag`, `update_targeting` and a `manage_segment` update take it back as `ifMatch`. `manage_segment` refuses `ifMatch` on create and delete, which the API can't make conditional, instead of dropping it and writing unconditionally. (#3808) The write then fails with a 412 if the resource changed after the agent read it, instead of overwriting the other change. Tools that read before writing (`update_flag`, `manage_webhook`, `manage_segment`, `manage_environment`, `manage_targeting_rule`) also send the ETag from their own read.
+
+### Changed
+
+- A write carrying If-Match is no longer retried after a 502 or 504. If the first attempt landed, the retry would fail with a 412 and blame someone else for the agent's own change. A 503 is still retried.
+- An `ifMatch` passed without its surrounding quotes (`abc` instead of `"abc"`) is quoted before it is sent. Otherwise every conditional write would fail with a 412 that looks like a concurrent change.
+
 ## 0.1.13 — 2026-10-13
 
 ### Added

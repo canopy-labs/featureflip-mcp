@@ -11,12 +11,16 @@ export interface Route {
   query?: Record<string, string | null>;
   status?: number;
   json?: unknown;
+  /** Response headers, e.g. { ETag: '"v1"' }. */
+  headers?: Record<string, string>;
 }
 
 export interface RecordedCall {
   method: string;
   url: string;
   body?: unknown;
+  /** Request headers as sent. */
+  headers: Record<string, string>;
 }
 
 export function mockApi(routes: Route[]): { api: FeatureflipApi; calls: RecordedCall[] } {
@@ -25,7 +29,12 @@ export function mockApi(routes: Route[]): { api: FeatureflipApi; calls: Recorded
     const url = String(input);
     const method = init?.method ?? 'GET';
     const { pathname, searchParams } = new URL(url);
-    calls.push({ method, url, body: init?.body ? JSON.parse(String(init.body)) : undefined });
+    calls.push({
+      method,
+      url,
+      body: init?.body ? JSON.parse(String(init.body)) : undefined,
+      headers: { ...((init?.headers as Record<string, string>) ?? {}) },
+    });
     const route = routes.find(
       (r) =>
         r.method === method &&
@@ -39,10 +48,10 @@ export function mockApi(routes: Route[]): { api: FeatureflipApi; calls: Recorded
       );
     }
     const status = route.status ?? 200;
-    if (status === 204) return new Response(null, { status });
+    if (status === 204) return new Response(null, { status, headers: route.headers });
     return new Response(JSON.stringify(route.json ?? {}), {
       status,
-      headers: { 'content-type': 'application/json' },
+      headers: { 'content-type': 'application/json', ...route.headers },
     });
   }) as typeof fetch;
 
