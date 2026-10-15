@@ -6573,10 +6573,10 @@ export interface components {
          *     service token (access to every project), never an empty list.
          */
         MeResponse: {
-            type?: string | null;
+            type: string | null;
             /** Format: uuid */
-            id?: string;
-            name?: string | null;
+            id: string;
+            name: string | null;
             email?: string | null;
             emailVerified?: boolean | null;
             /** Format: uuid */
@@ -6585,8 +6585,8 @@ export interface components {
             projectScope?: string[] | null;
         };
         NextAction: {
-            method?: string | null;
-            path?: string | null;
+            method: string | null;
+            path: string | null;
         };
         /**
          * @description Public representation of an organization, returned by both `GET /api/v1/orgs` (list) and
@@ -6596,17 +6596,17 @@ export interface components {
          */
         OrganizationResponse: {
             /** Format: uuid */
-            id?: string;
-            name?: string | null;
-            slug?: string | null;
+            id: string;
+            name: string | null;
+            slug: string | null;
             /**
              * @description Allowed values: Solo, Team, Pro, Business, Enterprise.
              * @enum {string|null}
              */
-            plan?: "Solo" | "Team" | "Pro" | "Business" | "Enterprise" | null;
-            isActive?: boolean;
+            plan: "Solo" | "Team" | "Pro" | "Business" | "Enterprise" | null;
+            isActive: boolean;
             /** Format: date-time */
-            createdAt?: string;
+            createdAt: string;
         };
         /**
          * @description A page of results plus an opaque cursor for the next page, or null when this is the last
@@ -6614,7 +6614,7 @@ export interface components {
          *     `next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`).
          */
         OrganizationResponsePagedResult: {
-            items?: components["schemas"]["OrganizationResponse"][] | null;
+            items: components["schemas"]["OrganizationResponse"][] | null;
             next_cursor?: string | null;
             /** @description Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it. */
             _actions?: {
@@ -6640,12 +6640,12 @@ export interface components {
          */
         ProjectResponse: {
             /** Format: uuid */
-            id?: string;
-            key?: string | null;
-            name?: string | null;
+            id: string;
+            key: string | null;
+            name: string | null;
             description?: string | null;
             /** Format: date-time */
-            createdAt?: string;
+            createdAt: string;
             /** Format: date-time */
             updatedAt?: string | null;
             /** Format: int32 */
@@ -6661,7 +6661,7 @@ export interface components {
          *     `next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`).
          */
         ProjectResponsePagedResult: {
-            items?: components["schemas"]["ProjectResponse"][] | null;
+            items: components["schemas"]["ProjectResponse"][] | null;
             next_cursor?: string | null;
             /** @description Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it. */
             _actions?: {
@@ -6682,9 +6682,9 @@ export interface components {
          *     }
          */
         PublicAddVariationRequest: {
-            key?: string | null;
-            name?: string | null;
-            value?: string | null;
+            key: string | null;
+            name: string | null;
+            value: string | null;
             description?: string | null;
         };
         /**
@@ -6717,9 +6717,9 @@ export interface components {
          *     }
          */
         PublicApiErrorEnvelope: {
-            error?: string | null;
-            message?: string | null;
-            docs_url?: string | null;
+            error: string | null;
+            message: string | null;
+            docs_url: string | null;
             fields?: {
                 [key: string]: string[];
             } | null;
@@ -6736,8 +6736,8 @@ export interface components {
              * @description Allowed values: And, Or.
              * @enum {string|null}
              */
-            operator?: "And" | "Or" | null;
-            conditions?: components["schemas"]["PublicConditionRequest"][] | null;
+            operator: "And" | "Or" | null;
+            conditions: components["schemas"]["PublicConditionRequest"][] | null;
         };
         /**
          * @description A condition group within a PublicTargetingRuleResponse. Maps 1:1 onto
@@ -6751,18 +6751,18 @@ export interface components {
              * @description Allowed values: And, Or.
              * @enum {string|null}
              */
-            operator?: "And" | "Or" | null;
-            conditions?: components["schemas"]["PublicConditionResponse"][] | null;
+            operator: "And" | "Or" | null;
+            conditions: components["schemas"]["PublicConditionResponse"][] | null;
         };
         /** @description Request-side condition, symmetric with PublicConditionResponse. */
         PublicConditionRequest: {
-            attribute?: string | null;
+            attribute: string | null;
             /**
              * @description Allowed values: Equals, NotEquals, Contains, NotContains, GreaterThan, LessThan, GreaterThanOrEqual, LessThanOrEqual, In, NotIn, MatchesRegex, StartsWith, EndsWith, Before, After, SemverEquals, SemverGreaterThan, SemverGreaterThanOrEqual, SemverLessThan, SemverLessThanOrEqual.
              * @enum {string|null}
              */
-            operator?: "Equals" | "NotEquals" | "Contains" | "NotContains" | "GreaterThan" | "LessThan" | "GreaterThanOrEqual" | "LessThanOrEqual" | "In" | "NotIn" | "MatchesRegex" | "StartsWith" | "EndsWith" | "Before" | "After" | "SemverEquals" | "SemverGreaterThan" | "SemverGreaterThanOrEqual" | "SemverLessThan" | "SemverLessThanOrEqual" | null;
-            values?: string[] | null;
+            operator: "Equals" | "NotEquals" | "Contains" | "NotContains" | "GreaterThan" | "LessThan" | "GreaterThanOrEqual" | "LessThanOrEqual" | "In" | "NotIn" | "MatchesRegex" | "StartsWith" | "EndsWith" | "Before" | "After" | "SemverEquals" | "SemverGreaterThan" | "SemverGreaterThanOrEqual" | "SemverLessThan" | "SemverLessThanOrEqual" | null;
+            values: string[] | null;
             negate?: boolean;
         };
         /**
@@ -6771,14 +6771,14 @@ export interface components {
          *     `OperatorType` members (e.g. `"Equals"`, `"In"`).
          */
         PublicConditionResponse: {
-            attribute?: string | null;
+            attribute: string | null;
             /**
              * @description Allowed values: Equals, NotEquals, Contains, NotContains, GreaterThan, LessThan, GreaterThanOrEqual, LessThanOrEqual, In, NotIn, MatchesRegex, StartsWith, EndsWith, Before, After, SemverEquals, SemverGreaterThan, SemverGreaterThanOrEqual, SemverLessThan, SemverLessThanOrEqual.
              * @enum {string|null}
              */
-            operator?: "Equals" | "NotEquals" | "Contains" | "NotContains" | "GreaterThan" | "LessThan" | "GreaterThanOrEqual" | "LessThanOrEqual" | "In" | "NotIn" | "MatchesRegex" | "StartsWith" | "EndsWith" | "Before" | "After" | "SemverEquals" | "SemverGreaterThan" | "SemverGreaterThanOrEqual" | "SemverLessThan" | "SemverLessThanOrEqual" | null;
-            values?: string[] | null;
-            negate?: boolean;
+            operator: "Equals" | "NotEquals" | "Contains" | "NotContains" | "GreaterThan" | "LessThan" | "GreaterThanOrEqual" | "LessThanOrEqual" | "In" | "NotIn" | "MatchesRegex" | "StartsWith" | "EndsWith" | "Before" | "After" | "SemverEquals" | "SemverGreaterThan" | "SemverGreaterThanOrEqual" | "SemverLessThan" | "SemverLessThanOrEqual" | null;
+            values: string[] | null;
+            negate: boolean;
         };
         /**
          * @description Request body for `POST /api/v1/orgs/{org}/projects/{project}/environments`. Named
@@ -6794,8 +6794,8 @@ export interface components {
          *     }
          */
         PublicCreateEnvironmentRequest: {
-            key?: string | null;
-            name?: string | null;
+            key: string | null;
+            name: string | null;
             color?: string | null;
             /** Format: int32 */
             sortOrder?: number;
@@ -6844,13 +6844,13 @@ export interface components {
          *     }
          */
         PublicCreateFeatureFlagRequest: {
-            key?: string | null;
-            name?: string | null;
+            key: string | null;
+            name: string | null;
             /**
              * @description Allowed values: Boolean, String, Number, Json.
              * @enum {string|null}
              */
-            type?: "Boolean" | "String" | "Number" | "Json" | null;
+            type: "Boolean" | "String" | "Number" | "Json" | null;
             description?: string | null;
             tags?: string[] | null;
             initialVariations?: components["schemas"]["PublicCreateVariationDto"][] | null;
@@ -6873,8 +6873,8 @@ export interface components {
          *     }
          */
         PublicCreateProjectRequest: {
-            key?: string | null;
-            name?: string | null;
+            key: string | null;
+            name: string | null;
             description?: string | null;
         };
         /**
@@ -6892,13 +6892,13 @@ export interface components {
          *     }
          */
         PublicCreateSdkKeyRequest: {
-            name?: string | null;
+            name: string | null;
             description?: string | null;
             /**
              * @description Allowed values: ClientSide, ServerSide.
              * @enum {string|null}
              */
-            type?: "ClientSide" | "ServerSide" | null;
+            type: "ClientSide" | "ServerSide" | null;
         };
         /**
          * @description Response body for a successful `POST .../sdk-keys`. The ONLY place the plaintext
@@ -6919,18 +6919,18 @@ export interface components {
          */
         PublicCreateSdkKeyResponse: {
             /** Format: uuid */
-            id?: string;
-            key?: string | null;
-            lastFourCharacters?: string | null;
+            id: string;
+            key: string | null;
+            lastFourCharacters: string | null;
             /**
              * @description Allowed values: ClientSide, ServerSide.
              * @enum {string|null}
              */
-            type?: "ClientSide" | "ServerSide" | null;
-            name?: string | null;
+            type: "ClientSide" | "ServerSide" | null;
+            name: string | null;
             /** Format: date-time */
-            createdAt?: string;
-            warning?: string | null;
+            createdAt: string;
+            warning: string | null;
         };
         /**
          * @description Request body for `POST /api/v1/orgs/{org}/projects/{project}/segments`. Named distinctly
@@ -6954,10 +6954,10 @@ export interface components {
          *     }
          */
         PublicCreateSegmentRequest: {
-            key?: string | null;
-            name?: string | null;
+            key: string | null;
+            name: string | null;
             description?: string | null;
-            conditions?: components["schemas"]["PublicSegmentConditionDto"][] | null;
+            conditions: components["schemas"]["PublicSegmentConditionDto"][] | null;
         };
         /**
          * @description Request body for `POST .../rules`. The Application-side
@@ -6997,16 +6997,16 @@ export interface components {
             rolloutPercentage?: number | null;
             /** Format: uuid */
             userSegmentId?: string | null;
-            conditionGroups?: components["schemas"]["PublicConditionGroupRequest"][] | null;
+            conditionGroups: components["schemas"]["PublicConditionGroupRequest"][] | null;
         };
         /**
          * @description A variation supplied at flag-creation time. Maps 1:1 onto
          *     CreateVariationDto.
          */
         PublicCreateVariationDto: {
-            key?: string | null;
-            name?: string | null;
-            value?: string | null;
+            key: string | null;
+            name: string | null;
+            value: string | null;
             description?: string | null;
         };
         /**
@@ -7031,13 +7031,13 @@ export interface components {
          *     }
          */
         PublicCreateWebhookSubscriptionRequest: {
-            name?: string | null;
-            url?: string | null;
+            name: string | null;
+            url: string | null;
             /**
              * @description Allowed values: GenericHttp.
              * @enum {string|null}
              */
-            provider?: "GenericHttp" | null;
+            provider: "GenericHttp" | null;
             eventTypes?: string[] | null;
             projectIds?: string[] | null;
             environmentIds?: string[] | null;
@@ -7052,9 +7052,9 @@ export interface components {
          */
         PublicCreateWebhookSubscriptionResponse: {
             /** Format: uuid */
-            id?: string;
-            secret?: string | null;
-            warning?: string | null;
+            id: string;
+            secret: string | null;
+            warning: string | null;
         };
         /**
          * @description Response of `GET .../default-flag-lifetime/impact`: how many temporary flags with no expiry
@@ -7062,9 +7062,9 @@ export interface components {
          */
         PublicDefaultFlagLifetimeImpact: {
             /** Format: int32 */
-            newlyPastExpiry?: number;
+            newlyPastExpiry: number;
             /** Format: int32 */
-            noLongerPastExpiry?: number;
+            noLongerPastExpiry: number;
         };
         /**
          * @description Public representation of an environment, returned by
@@ -7086,12 +7086,12 @@ export interface components {
          */
         PublicEnvironmentResponse: {
             /** Format: uuid */
-            id?: string;
-            key?: string | null;
-            name?: string | null;
+            id: string;
+            key: string | null;
+            name: string | null;
             color?: string | null;
             /** Format: int32 */
-            sortOrder?: number;
+            sortOrder: number;
             /** @description Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it. */
             _actions?: {
                 [key: string]: components["schemas"]["ActionCapability"];
@@ -7103,7 +7103,7 @@ export interface components {
          *     `next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`).
          */
         PublicEnvironmentResponsePagedResult: {
-            items?: components["schemas"]["PublicEnvironmentResponse"][] | null;
+            items: components["schemas"]["PublicEnvironmentResponse"][] | null;
             next_cursor?: string | null;
             /** @description Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it. */
             _actions?: {
@@ -7135,17 +7135,17 @@ export interface components {
          */
         PublicFlagEnvConfigResponse: {
             /** Format: uuid */
-            environmentId?: string;
-            environmentKey?: string | null;
-            isEnabled?: boolean;
+            environmentId: string;
+            environmentKey: string | null;
+            isEnabled: boolean;
             /** Format: uuid */
-            defaultVariationId?: string;
+            defaultVariationId: string;
             /**
              * @description Allowed values: SingleVariation, PercentageRollout, TargetedRollout.
              * @enum {string|null}
              */
-            strategy?: "SingleVariation" | "PercentageRollout" | "TargetedRollout" | null;
-            prerequisites?: components["schemas"]["PublicPrerequisiteDto"][] | null;
+            strategy: "SingleVariation" | "PercentageRollout" | "TargetedRollout" | null;
+            prerequisites: components["schemas"]["PublicPrerequisiteDto"][] | null;
             /** @description Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it. */
             _actions?: {
                 [key: string]: components["schemas"]["ActionCapability"];
@@ -7163,26 +7163,26 @@ export interface components {
          */
         PublicFlagListItem: {
             /** Format: uuid */
-            id?: string;
-            key?: string | null;
-            name?: string | null;
+            id: string;
+            key: string | null;
+            name: string | null;
             /**
              * @description Allowed values: Boolean, String, Number, Json.
              * @enum {string|null}
              */
-            type?: "Boolean" | "String" | "Number" | "Json" | null;
-            isArchived?: boolean;
-            clientSideVisible?: boolean;
-            tags?: string[] | null;
+            type: "Boolean" | "String" | "Number" | "Json" | null;
+            isArchived: boolean;
+            clientSideVisible: boolean;
+            tags: string[] | null;
             /** Format: date-time */
-            createdAt?: string;
+            createdAt: string;
             /** Format: date-time */
-            updatedAt?: string;
+            updatedAt: string;
             /** Format: date-time */
             expiresAtUtc?: string | null;
             owner?: components["schemas"]["PublicFlagOwner"];
             removalPrUrl?: string | null;
-            isPermanent?: boolean;
+            isPermanent: boolean;
             /** Format: date-time */
             effectiveExpiresAtUtc?: string | null;
             expirySource?: string | null;
@@ -7205,14 +7205,15 @@ export interface components {
          *             "q3-launch"
          *           ],
          *           "createdAt": "2026-06-01T12:00:00Z",
-         *           "updatedAt": "2026-06-15T08:30:00Z"
+         *           "updatedAt": "2026-06-15T08:30:00Z",
+         *           "isPermanent": false
          *         }
          *       ],
          *       "next_cursor": "MjA"
          *     }
          */
         PublicFlagListItemPagedResult: {
-            items?: components["schemas"]["PublicFlagListItem"][] | null;
+            items: components["schemas"]["PublicFlagListItem"][] | null;
             next_cursor?: string | null;
             /** @description Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it. */
             _actions?: {
@@ -7222,9 +7223,9 @@ export interface components {
         /** @description A flag's owner as returned on flag reads. Null means the flag is unowned. */
         PublicFlagOwner: {
             /** Format: uuid */
-            id?: string;
-            email?: string | null;
-            name?: string | null;
+            id: string;
+            email: string | null;
+            name: string | null;
         };
         /**
          * @description One dead flag the Featureflip Flag Cleanup Action should remove, returned by
@@ -7238,11 +7239,11 @@ export interface components {
          *     (`FLAG_HAS_DEPENDENTS`), so a caller should remove those dependents first.
          */
         PublicFlagRemovalCandidate: {
-            key?: string | null;
-            reason?: string | null;
-            treatment?: boolean;
-            status?: string | null;
-            blockedBy?: string[] | null;
+            key: string | null;
+            reason: string | null;
+            treatment: boolean;
+            status: string | null;
+            blockedBy: string[] | null;
         };
         /**
          * @description A page of results plus an opaque cursor for the next page, or null when this is the last
@@ -7250,7 +7251,7 @@ export interface components {
          *     `next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`).
          */
         PublicFlagRemovalCandidatePagedResult: {
-            items?: components["schemas"]["PublicFlagRemovalCandidate"][] | null;
+            items: components["schemas"]["PublicFlagRemovalCandidate"][] | null;
             next_cursor?: string | null;
         };
         /**
@@ -7290,33 +7291,34 @@ export interface components {
          *         }
          *       ],
          *       "createdAt": "2026-06-01T12:00:00Z",
-         *       "updatedAt": "2026-06-15T08:30:00Z"
+         *       "updatedAt": "2026-06-15T08:30:00Z",
+         *       "isPermanent": false
          *     }
          */
         PublicFlagResponse: {
             /** Format: uuid */
-            id?: string;
-            key?: string | null;
-            name?: string | null;
+            id: string;
+            key: string | null;
+            name: string | null;
             description?: string | null;
             /**
              * @description Allowed values: Boolean, String, Number, Json.
              * @enum {string|null}
              */
-            type?: "Boolean" | "String" | "Number" | "Json" | null;
-            isArchived?: boolean;
-            clientSideVisible?: boolean;
-            tags?: string[] | null;
-            variations?: components["schemas"]["PublicVariationResponse"][] | null;
+            type: "Boolean" | "String" | "Number" | "Json" | null;
+            isArchived: boolean;
+            clientSideVisible: boolean;
+            tags: string[] | null;
+            variations: components["schemas"]["PublicVariationResponse"][] | null;
             /** Format: date-time */
-            createdAt?: string;
+            createdAt: string;
             /** Format: date-time */
-            updatedAt?: string;
+            updatedAt: string;
             /** Format: date-time */
             expiresAtUtc?: string | null;
             owner?: components["schemas"]["PublicFlagOwner"];
             removalPrUrl?: string | null;
-            isPermanent?: boolean;
+            isPermanent: boolean;
             /** Format: date-time */
             effectiveExpiresAtUtc?: string | null;
             expirySource?: string | null;
@@ -7330,8 +7332,8 @@ export interface components {
          *     PrerequisiteDto (read side) and PrerequisiteInput (write side).
          */
         PublicPrerequisiteDto: {
-            prerequisiteFlagKey?: string | null;
-            expectedVariationKey?: string | null;
+            prerequisiteFlagKey: string | null;
+            expectedVariationKey: string | null;
         };
         /**
          * @description Request body for `PUT .../targeting` — a declarative full replace of the environment's
@@ -7355,14 +7357,14 @@ export interface components {
          *     carrying the handler's message.
          */
         PublicReorderRulesRequest: {
-            ruleIds?: string[] | null;
+            ruleIds: string[] | null;
         };
         /** @description A newly added signing secret. The secret is shown only here. */
         PublicRotateWebhookSecretResponse: {
             /** Format: uuid */
-            secretId?: string;
-            secret?: string | null;
-            warning?: string | null;
+            secretId: string;
+            secret: string | null;
+            warning: string | null;
         };
         /**
          * @description Public representation of an SDK key, returned by
@@ -7385,18 +7387,18 @@ export interface components {
          */
         PublicSdkKeyResponse: {
             /** Format: uuid */
-            id?: string;
-            name?: string | null;
+            id: string;
+            name: string | null;
             description?: string | null;
             /**
              * @description Allowed values: ClientSide, ServerSide.
              * @enum {string|null}
              */
-            type?: "ClientSide" | "ServerSide" | null;
-            lastFourCharacters?: string | null;
-            isActive?: boolean;
+            type: "ClientSide" | "ServerSide" | null;
+            lastFourCharacters: string | null;
+            isActive: boolean;
             /** Format: date-time */
-            createdAt?: string;
+            createdAt: string;
             /** Format: date-time */
             lastUsedAt?: string | null;
             /** Format: date-time */
@@ -7412,7 +7414,7 @@ export interface components {
          *     `next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`).
          */
         PublicSdkKeyResponsePagedResult: {
-            items?: components["schemas"]["PublicSdkKeyResponse"][] | null;
+            items: components["schemas"]["PublicSdkKeyResponse"][] | null;
             next_cursor?: string | null;
             /** @description Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it. */
             _actions?: {
@@ -7428,13 +7430,13 @@ export interface components {
          *     straight through from Operator, which is already a string.
          */
         PublicSegmentConditionDto: {
-            attribute?: string | null;
+            attribute: string | null;
             /**
              * @description Allowed values: Equals, NotEquals, Contains, NotContains, GreaterThan, LessThan, GreaterThanOrEqual, LessThanOrEqual, In, NotIn, MatchesRegex, StartsWith, EndsWith, Before, After, SemverEquals, SemverGreaterThan, SemverGreaterThanOrEqual, SemverLessThan, SemverLessThanOrEqual.
              * @enum {string|null}
              */
-            operator?: "Equals" | "NotEquals" | "Contains" | "NotContains" | "GreaterThan" | "LessThan" | "GreaterThanOrEqual" | "LessThanOrEqual" | "In" | "NotIn" | "MatchesRegex" | "StartsWith" | "EndsWith" | "Before" | "After" | "SemverEquals" | "SemverGreaterThan" | "SemverGreaterThanOrEqual" | "SemverLessThan" | "SemverLessThanOrEqual" | null;
-            values?: string[] | null;
+            operator: "Equals" | "NotEquals" | "Contains" | "NotContains" | "GreaterThan" | "LessThan" | "GreaterThanOrEqual" | "LessThanOrEqual" | "In" | "NotIn" | "MatchesRegex" | "StartsWith" | "EndsWith" | "Before" | "After" | "SemverEquals" | "SemverGreaterThan" | "SemverGreaterThanOrEqual" | "SemverLessThan" | "SemverLessThanOrEqual" | null;
+            values: string[] | null;
             negate?: boolean;
         };
         /**
@@ -7461,15 +7463,15 @@ export interface components {
          */
         PublicSegmentResponse: {
             /** Format: uuid */
-            id?: string;
-            key?: string | null;
-            name?: string | null;
+            id: string;
+            key: string | null;
+            name: string | null;
             description?: string | null;
-            conditions?: components["schemas"]["PublicSegmentConditionDto"][] | null;
+            conditions: components["schemas"]["PublicSegmentConditionDto"][] | null;
             /** Format: date-time */
-            createdAt?: string;
+            createdAt: string;
             /** Format: date-time */
-            updatedAt?: string;
+            updatedAt: string;
             /** @description Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it. */
             _actions?: {
                 [key: string]: components["schemas"]["ActionCapability"];
@@ -7481,7 +7483,7 @@ export interface components {
          *     `next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`).
          */
         PublicSegmentResponsePagedResult: {
-            items?: components["schemas"]["PublicSegmentResponse"][] | null;
+            items: components["schemas"]["PublicSegmentResponse"][] | null;
             next_cursor?: string | null;
             /** @description Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it. */
             _actions?: {
@@ -7496,7 +7498,7 @@ export interface components {
          */
         PublicSetDefaultFlagLifetimeRequest: {
             /** Format: int32 */
-            days?: number | null;
+            days: number | null;
         };
         /**
          * @description Request body for `PUT /api/v1/orgs/{org}/projects/{project}/flags/{flag}/expiry`. Expiry is a
@@ -7535,8 +7537,8 @@ export interface components {
          *     all), not anything specific to targeting itself.
          */
         PublicTargetingConfigResponse: {
-            isEnabled?: boolean;
-            rules?: components["schemas"]["PublicTargetingRuleResponse"][] | null;
+            isEnabled: boolean;
+            rules: components["schemas"]["PublicTargetingRuleResponse"][] | null;
             /** @description Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it. */
             _actions?: {
                 [key: string]: components["schemas"]["ActionCapability"];
@@ -7574,17 +7576,17 @@ export interface components {
          */
         PublicTargetingRuleResponse: {
             /** Format: uuid */
-            id?: string;
+            id: string;
             /** Format: int32 */
-            priority?: number;
+            priority: number;
             description?: string | null;
             /** Format: uuid */
-            variationId?: string;
+            variationId: string;
             /** Format: int32 */
             rolloutPercentage?: number | null;
             /** Format: uuid */
             userSegmentId?: string | null;
-            conditionGroups?: components["schemas"]["PublicConditionGroupResponse"][] | null;
+            conditionGroups: components["schemas"]["PublicConditionGroupResponse"][] | null;
             /** @description Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it. */
             _actions?: {
                 [key: string]: components["schemas"]["ActionCapability"];
@@ -7593,9 +7595,9 @@ export interface components {
         /** @description The queued test event and its delivery. Poll the delivery log for the outcome. */
         PublicTestWebhookSubscriptionResponse: {
             /** Format: uuid */
-            webhookEventId?: string;
+            webhookEventId: string;
             /** Format: uuid */
-            webhookDeliveryId?: string;
+            webhookDeliveryId: string;
         };
         /**
          * @description Request body for `POST .../flags/{flag}/environments/{env}/toggle`. Named distinctly from
@@ -7616,7 +7618,7 @@ export interface components {
          *     dashboard's `UpdateEnvironmentRequest`.
          */
         PublicUpdateEnvironmentRequest: {
-            name?: string | null;
+            name: string | null;
             color?: string | null;
             /** Format: int32 */
             sortOrder?: number;
@@ -7628,7 +7630,7 @@ export interface components {
          *     endpoint (mirrors `UpdateFeatureFlagCommand`, which has no `Key`/`Type`).
          */
         PublicUpdateFeatureFlagRequest: {
-            name?: string | null;
+            name: string | null;
             description?: string | null;
             tags?: string[] | null;
             clientSideVisible?: boolean | null;
@@ -7671,7 +7673,7 @@ export interface components {
          *     dashboard's `UpdateProjectRequest`.
          */
         PublicUpdateProjectRequest: {
-            name?: string | null;
+            name: string | null;
             description?: string | null;
         };
         /**
@@ -7681,7 +7683,7 @@ export interface components {
          *     carries no `Type`).
          */
         PublicUpdateSdkKeyRequest: {
-            name?: string | null;
+            name: string | null;
             description?: string | null;
         };
         /**
@@ -7690,9 +7692,9 @@ export interface components {
          *     carries no `Key`).
          */
         PublicUpdateSegmentRequest: {
-            name?: string | null;
+            name: string | null;
             description?: string | null;
-            conditions?: components["schemas"]["PublicSegmentConditionDto"][] | null;
+            conditions: components["schemas"]["PublicSegmentConditionDto"][] | null;
         };
         /**
          * @description Request body for `PUT .../rules/{ruleId}`. Same shape as
@@ -7707,7 +7709,7 @@ export interface components {
             rolloutPercentage?: number | null;
             /** Format: uuid */
             userSegmentId?: string | null;
-            conditionGroups?: components["schemas"]["PublicConditionGroupRequest"][] | null;
+            conditionGroups: components["schemas"]["PublicConditionGroupRequest"][] | null;
         };
         /**
          * @description Request body for
@@ -7717,8 +7719,8 @@ export interface components {
          *     carries no `Key`).
          */
         PublicUpdateVariationRequest: {
-            name?: string | null;
-            value?: string | null;
+            name: string | null;
+            value: string | null;
             description?: string | null;
         };
         /**
@@ -7726,8 +7728,8 @@ export interface components {
          *     "all"). `isEnabled` is required. The provider cannot be changed.
          */
         PublicUpdateWebhookSubscriptionRequest: {
-            name?: string | null;
-            url?: string | null;
+            name: string | null;
+            url: string | null;
             eventTypes?: string[] | null;
             projectIds?: string[] | null;
             environmentIds?: string[] | null;
@@ -7745,10 +7747,10 @@ export interface components {
          */
         PublicVariationResponse: {
             /** Format: uuid */
-            id?: string;
-            key?: string | null;
-            name?: string | null;
-            value?: string | null;
+            id: string;
+            key: string | null;
+            name: string | null;
+            value: string | null;
             description?: string | null;
             /** @description Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it. */
             _actions?: {
@@ -7761,25 +7763,25 @@ export interface components {
          */
         PublicWebhookDeliveryResponse: {
             /** Format: uuid */
-            id?: string;
+            id: string;
             /** Format: uuid */
-            webhookEventId?: string;
+            webhookEventId: string;
             /**
              * @description Allowed values: Pending, Succeeded, DeadLettered.
              * @enum {string|null}
              */
-            status?: "Pending" | "Succeeded" | "DeadLettered" | null;
+            status: "Pending" | "Succeeded" | "DeadLettered" | null;
             /** Format: int32 */
-            attemptCount?: number;
+            attemptCount: number;
             /** Format: date-time */
-            nextAttemptAt?: string;
+            nextAttemptAt: string;
             /** Format: int32 */
             lastResponseStatusCode?: number | null;
             lastError?: string | null;
             /** Format: date-time */
             completedAt?: string | null;
             /** Format: date-time */
-            createdAt?: string;
+            createdAt: string;
         };
         /**
          * @description A page of results plus an opaque cursor for the next page, or null when this is the last
@@ -7787,15 +7789,15 @@ export interface components {
          *     `next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`).
          */
         PublicWebhookDeliveryResponsePagedResult: {
-            items?: components["schemas"]["PublicWebhookDeliveryResponse"][] | null;
+            items: components["schemas"]["PublicWebhookDeliveryResponse"][] | null;
             next_cursor?: string | null;
         };
         /** @description A signing secret's id and lifecycle. A secret with no `retiredAt` is active and signs every delivery. */
         PublicWebhookSecretResponse: {
             /** Format: uuid */
-            id?: string;
+            id: string;
             /** Format: date-time */
-            createdAt?: string;
+            createdAt: string;
             /** Format: date-time */
             retiredAt?: string | null;
         };
@@ -7823,6 +7825,7 @@ export interface components {
          *         "0197b69f-2b3c-7d4e-9f5a-6b7c8d9e0f1a"
          *       ],
          *       "consecutiveFailureCount": 0,
+         *       "overPlanLimit": false,
          *       "createdAt": "2026-06-01T12:00:00Z",
          *       "updatedAt": "2026-06-15T08:30:00Z",
          *       "secrets": [
@@ -7835,28 +7838,28 @@ export interface components {
          */
         PublicWebhookSubscriptionResponse: {
             /** Format: uuid */
-            id?: string;
-            name?: string | null;
-            url?: string | null;
+            id: string;
+            name: string | null;
+            url: string | null;
             /**
              * @description Allowed values: GenericHttp.
              * @enum {string|null}
              */
-            provider?: "GenericHttp" | null;
-            isEnabled?: boolean;
-            eventTypes?: string[] | null;
-            projectIds?: string[] | null;
-            environmentIds?: string[] | null;
+            provider: "GenericHttp" | null;
+            isEnabled: boolean;
+            eventTypes: string[] | null;
+            projectIds: string[] | null;
+            environmentIds: string[] | null;
             /** Format: int32 */
-            consecutiveFailureCount?: number;
+            consecutiveFailureCount: number;
             /** Format: date-time */
             autoDisabledAt?: string | null;
             /** Format: date-time */
-            createdAt?: string;
+            createdAt: string;
             /** Format: date-time */
-            updatedAt?: string;
-            secrets?: components["schemas"]["PublicWebhookSecretResponse"][] | null;
-            overPlanLimit?: boolean;
+            updatedAt: string;
+            secrets: components["schemas"]["PublicWebhookSecretResponse"][] | null;
+            overPlanLimit: boolean;
             /** @description Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it. */
             _actions?: {
                 [key: string]: components["schemas"]["ActionCapability"];
@@ -7868,7 +7871,7 @@ export interface components {
          *     `next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`).
          */
         PublicWebhookSubscriptionResponsePagedResult: {
-            items?: components["schemas"]["PublicWebhookSubscriptionResponse"][] | null;
+            items: components["schemas"]["PublicWebhookSubscriptionResponse"][] | null;
             next_cursor?: string | null;
             /** @description Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it. */
             _actions?: {

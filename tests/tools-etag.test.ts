@@ -105,3 +105,55 @@ describe('If-Match on writes', () => {
     expect(calls.find((c) => c.method === 'PUT')!.headers['If-Match']).toBe('"w1"');
   });
 });
+
+describe('etag on writes', () => {
+  it('update_flag, update_targeting and manage_segment update return the ETag of what they wrote', async () => {
+    const { api } = mockApi([
+      { method: 'PUT', path: FLAG, status: 204, headers: { ETag: '"f2"' } },
+      { method: 'PUT', path: TARGETING, status: 204, headers: { ETag: '"t2"' } },
+      { method: 'GET', path: SEGMENT, json: { name: 'Beta', description: null, conditions: [] }, headers: { ETag: '"s1"' } },
+      { method: 'PUT', path: SEGMENT, status: 204, headers: { ETag: '"s2"' } },
+    ]);
+    const client = await connectClient({ api, org: ORG });
+    const flag = await client.callTool({
+      name: 'update_flag',
+      arguments: { project: 'web', flag: 'checkout', name: 'N', description: 'D', ifMatch: '"f1"' },
+    });
+    const tgt = await client.callTool({
+      name: 'update_targeting',
+      arguments: { project: 'web', flag: 'checkout', environment: 'production', rules: [], ifMatch: '"t1"' },
+    });
+    const seg = await client.callTool({
+      name: 'manage_segment',
+      arguments: { action: 'update', project: 'web', segment: 'beta', name: 'Beta 2' },
+    });
+    expect(JSON.parse(text(flag)).etag).toBe('"f2"');
+    expect(JSON.parse(text(tgt)).etag).toBe('"t2"');
+    expect(JSON.parse(text(seg)).etag).toBe('"s2"');
+    expect((flag.structuredContent as { etag: string }).etag).toBe('"f2"');
+    expect((tgt.structuredContent as { etag: string }).etag).toBe('"t2"');
+    expect((seg.structuredContent as { etag: string }).etag).toBe('"s2"');
+  });
+
+  it("omits etag when the write's response carried none, without reading it back", async () => {
+    const { api, calls } = mockApi([{ method: 'PUT', path: TARGETING, status: 204 }]);
+    const client = await connectClient({ api, org: ORG });
+    const tgt = await client.callTool({
+      name: 'update_targeting',
+      arguments: { project: 'web', flag: 'checkout', environment: 'production', rules: [] },
+    });
+    expect(tgt.isError).toBeFalsy();
+    expect('etag' in JSON.parse(text(tgt))).toBe(false);
+    expect(calls.map((c) => c.method)).toEqual(['PUT']);
+  });
+
+  it('write tools declare etag in their outputSchema', async () => {
+    const { api } = mockApi([]);
+    const client = await connectClient({ api, org: ORG });
+    const { tools } = await client.listTools();
+    const props = (name: string) => JSON.stringify(tools.find((t) => t.name === name)!.outputSchema);
+    for (const name of ['update_flag', 'update_targeting', 'manage_segment']) {
+      expect(props(name)).toContain('"etag"');
+    }
+  });
+});

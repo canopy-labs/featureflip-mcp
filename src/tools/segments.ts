@@ -4,7 +4,7 @@ import { enc } from '../client.js';
 import { errorResult, okJson, run } from '../errors.js';
 import type { ToolContext } from './context.js';
 import { apiOutput, apiOutputWith, endpoint, nullable, oneOfOutputs, shape } from './outputs.js';
-import { etagOutput, ifMatchParam, withEtag } from './etag.js';
+import { etagOutput, ifMatchParam, withEtag, writtenEtagOutput } from './etag.js';
 import { pagination, projectParam } from './params.js';
 
 export function registerSegmentTools(server: McpServer, ctx: ToolContext): void {
@@ -106,6 +106,7 @@ export function registerSegmentTools(server: McpServer, ctx: ToolContext): void 
             name: nullable('string'),
             description: nullable('string'),
             conditions: { type: ['array', 'null'], items: { type: 'object' } },
+            etag: writtenEtagOutput,
           },
           ['segment', 'updated'],
         ),
@@ -133,7 +134,7 @@ export function registerSegmentTools(server: McpServer, ctx: ToolContext): void 
         if (!segment) return errorResult(new Error(`action=${action} requires segment (see list_segments)`));
         const path = `${base}/${enc(segment)}`;
         if (action === 'update') {
-          const { data: current, etag } = await ctx.api.requestWithEtag<{
+          const { data: current, etag: readEtag } = await ctx.api.requestWithEtag<{
             name: string | null;
             description: string | null;
             conditions: Condition[] | null;
@@ -144,8 +145,8 @@ export function registerSegmentTools(server: McpServer, ctx: ToolContext): void 
             conditions: conditions ?? (current.conditions ?? []).map(plain),
           };
           // PUT returns 204 No Content — confirm what was applied instead.
-          await ctx.api.request('PUT', path, { body, ifMatch: ifMatch ?? etag });
-          return okJson({ segment, updated: true, ...body });
+          const { etag } = await ctx.api.requestWithEtag('PUT', path, { body, ifMatch: ifMatch ?? readEtag });
+          return okJson(withEtag({ data: { segment, updated: true, ...body }, etag }));
         }
         // DELETE returns 204 No Content.
         await ctx.api.request('DELETE', path);

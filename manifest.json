@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "featureflip",
   "display_name": "Featureflip",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Manage Featureflip feature flags from AI agents and editors",
   "long_description": "Create, toggle, target and clean up [Featureflip](https://featureflip.io) feature flags from an MCP client. Covers projects, environments, SDK keys, segments, targeting rules, variations and webhooks, plus workflow tools that find stale flags, list flags that are safe to remove, and wrap a new feature in a flag with the SDK snippet for your language.\n\nNeeds a Featureflip API token: a personal token (`ffp_`) acts as you, a service token (`ffs_`) is a scoped machine identity. Every change is audit-logged against the token.",
   "author": {

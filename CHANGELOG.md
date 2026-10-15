@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.0 — 2026-10-15
+
+### Added
+
+- `update_flag`, `update_targeting` and a `manage_segment` update now return the `etag` of what they wrote, taken from the write's own response. An agent can pass it as `ifMatch` on its next write without reading the resource again. Before this, a second conditional write needed a fresh read first, or it failed with a 412. The ETag is never fetched with a follow-up read, which could pick up someone else's later write. When the API sends no ETag, the field is left out. (#3842)
+
+### Fixed
+
+- A `manage_targeting_rule` update that leaves out `conditionGroups` no longer fails with a `TypeError` when one of the rule's current groups has `conditions: null`. The API contract allows null there. The group is now carried over with an empty list. (#3842)
+
 ## 0.2.0 — 2026-10-14
 
 ### Added

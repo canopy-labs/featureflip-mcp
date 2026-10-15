@@ -4,7 +4,7 @@ import { enc } from '../client.js';
 import { okJson, run } from '../errors.js';
 import type { ToolContext } from './context.js';
 import { apiOutput, apiOutputWith, nullable, objectOutput } from './outputs.js';
-import { etagOutput, ifMatchParam, withEtag } from './etag.js';
+import { etagOutput, ifMatchParam, withEtag, writtenEtagOutput } from './etag.js';
 import { flagParam, pagination, projectParam } from './params.js';
 import { ownerFilter, resolveOwner } from './owner.js';
 
@@ -133,7 +133,7 @@ export function registerFlagTools(server: McpServer, ctx: ToolContext): void {
         ifMatch: ifMatchParam('get_flag'),
       }),
       outputSchema: objectOutput(
-        { project: { type: 'string' }, flag: { type: 'string' }, updated: { type: 'boolean' } },
+        { project: { type: 'string' }, flag: { type: 'string' }, updated: { type: 'boolean' }, etag: writtenEtagOutput },
         ['project', 'flag', 'updated'],
       ),
       annotations: { destructiveHint: true },
@@ -156,8 +156,8 @@ export function registerFlagTools(server: McpServer, ctx: ToolContext): void {
         };
         // PUT .../flags/{flag} returns 204 No Content — nothing to pass through.
         // The agent's ifMatch covers its whole read-to-write gap; our own read's ETag covers just this call.
-        await ctx.api.request('PUT', path, { body, ifMatch: ifMatch ?? read?.etag });
-        return okJson({ project, flag, updated: true });
+        const { etag } = await ctx.api.requestWithEtag('PUT', path, { body, ifMatch: ifMatch ?? read?.etag });
+        return okJson(withEtag({ data: { project, flag, updated: true }, etag }));
       }),
   );
 

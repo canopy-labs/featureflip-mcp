@@ -53,6 +53,27 @@ describe('manage_targeting_rule', () => {
     expect(calls[1].headers['If-Match']).toBe('"r1"');
   });
 
+  it('update carries over a group whose conditions are null as an empty list', async () => {
+    const { api, calls } = mockApi([
+      {
+        method: 'GET',
+        path: `${RULES}/r1`,
+        json: {
+          id: 'r1', description: null, variationId: 'v-on', rolloutPercentage: null, userSegmentId: null,
+          conditionGroups: [{ id: 'g1', operator: 'Or', conditions: null }],
+        },
+      },
+      { method: 'PUT', path: `${RULES}/r1`, status: 204 },
+    ]);
+    const client = await connectClient({ api, org: ORG });
+    const r = await client.callTool({
+      name: 'manage_targeting_rule',
+      arguments: { action: 'update', ...at, ruleId: 'r1', rule: { variationId: 'v-off' } },
+    });
+    expect(r.isError).toBeFalsy();
+    expect((calls[1].body as { conditionGroups: unknown }).conditionGroups).toEqual([{ operator: 'Or', conditions: [] }]);
+  });
+
   it('remove DELETEs the rule', async () => {
     const { api, calls } = mockApi([{ method: 'DELETE', path: `${RULES}/r1`, status: 204 }]);
     const client = await connectClient({ api, org: ORG });

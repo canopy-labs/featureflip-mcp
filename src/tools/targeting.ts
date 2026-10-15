@@ -4,7 +4,7 @@ import { enc } from '../client.js';
 import { errorResult, okJson, run } from '../errors.js';
 import type { ToolContext } from './context.js';
 import { apiOutputWith, endpoint, objectOutput, oneOfOutputs, shape } from './outputs.js';
-import { etagOutput, ifMatchParam, withEtag } from './etag.js';
+import { etagOutput, ifMatchParam, withEtag, writtenEtagOutput } from './etag.js';
 import { environmentParam, flagParam, projectParam } from './params.js';
 
 const conditionSchema = z.object({
@@ -78,7 +78,13 @@ export function registerTargetingTools(server: McpServer, ctx: ToolContext): voi
         ifMatch: ifMatchParam('get_targeting'),
       }),
       outputSchema: objectOutput(
-        { project: { type: 'string' }, flag: { type: 'string' }, environment: { type: 'string' }, rulesReplaced: { type: 'integer' } },
+        {
+          project: { type: 'string' },
+          flag: { type: 'string' },
+          environment: { type: 'string' },
+          rulesReplaced: { type: 'integer' },
+          etag: writtenEtagOutput,
+        },
         ['project', 'flag', 'environment', 'rulesReplaced'],
       ),
       annotations: { destructiveHint: true },
@@ -87,11 +93,11 @@ export function registerTargetingTools(server: McpServer, ctx: ToolContext): voi
       run(async () => {
         // PUT .../environments/{env}/targeting returns 204 No Content — nothing to pass
         // through, so confirm the applied state instead of echoing an (undefined) response body.
-        await ctx.api.request('PUT', targetingUrl(project, flag, environment), {
+        const { etag } = await ctx.api.requestWithEtag('PUT', targetingUrl(project, flag, environment), {
           body: { rules: rules.map(withGroups) },
           ifMatch,
         });
-        return okJson({ project, flag, environment, rulesReplaced: rules.length });
+        return okJson(withEtag({ data: { project, flag, environment, rulesReplaced: rules.length }, etag }));
       }),
   );
 
@@ -101,7 +107,10 @@ export function registerTargetingTools(server: McpServer, ctx: ToolContext): voi
     rolloutPercentage: number | null;
     userSegmentId: string | null;
     conditionGroups:
-      | { operator: string; conditions: { attribute: string; operator: string; values: string[]; negate: boolean }[] }[]
+      | {
+          operator: string;
+          conditions: { attribute: string; operator: string; values: string[]; negate: boolean }[] | null;
+        }[]
       | null;
   };
 
@@ -162,7 +171,7 @@ export function registerTargetingTools(server: McpServer, ctx: ToolContext): voi
               rule.conditionGroups ??
               (current.conditionGroups ?? []).map((g) => ({
                 operator: g.operator,
-                conditions: g.conditions.map((c) => ({
+                conditions: (g.conditions ?? []).map((c) => ({
                   attribute: c.attribute,
                   operator: c.operator,
                   values: c.values,

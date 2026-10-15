@@ -12,6 +12,16 @@ export const etagOutput = {
     'instead of overwriting a change made since.',
 };
 
+// The PUT's own response carries the ETag of what it wrote, so an agent can chain a second
+// conditional write without re-reading. It is never fetched with a follow-up GET: that could
+// return the ETag of someone else's later write, and the next ifMatch would then overwrite it.
+export const writtenEtagOutput = {
+  type: 'string',
+  description:
+    'ETag of what this write left behind. Pass it as ifMatch on the next update to chain writes without ' +
+    're-reading. Absent when the API sent none; read the resource again before the next conditional write.',
+};
+
 export function ifMatchParam(getTool: string) {
   return z
     .string()
