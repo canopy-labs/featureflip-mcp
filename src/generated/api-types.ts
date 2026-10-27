@@ -82,7 +82,8 @@ export interface paths {
         put?: never;
         /**
          * Creates an environment in the resolved project.
-         * @description Requires at least Member.
+         * @description Requires at least Member. An environment past
+         *     the plan's per-project environment cap is a 403 `plan_limit_reached`.
          */
         post: {
             parameters: {
@@ -574,7 +575,8 @@ export interface paths {
          *     Type is passed through verbatim to
          *     Type (a bare string) — an invalid value surfaces as
          *     the handler's own validation failure. Re-fetches via GetFeatureFlagQuery so
-         *     the response reflects exactly what was persisted (e.g. server-assigned variation ids).
+         *     the response reflects exactly what was persisted (e.g. server-assigned variation ids). A flag
+         *     past the plan's per-project cap on active flags is a 403 `plan_limit_reached`.
          */
         post: {
             parameters: {
@@ -2009,7 +2011,9 @@ export interface paths {
         put?: never;
         /**
          * Restores a previously archived flag.
-         * @description Requires at least Member.
+         * @description Requires at least Member. An archived flag doesn't count
+         *     toward the plan's per-project flag cap, so restoring one into a full project is a 403
+         *     `plan_limit_reached`.
          */
         post: {
             parameters: {
@@ -2519,6 +2523,112 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/evaluations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Gets evaluation counts for the flag in one environment.
+         * @description Counts every evaluation over the last `days` UTC days (7, 30 or 90; default 7),
+         *     starting no earlier than the flag's creation day. These are evaluation counts, not unique
+         *     users. They come from SDK-reported events, so an environment whose SDKs report none reads
+         *     zero: no evaluations reported, not necessarily no traffic. Sources are ordered live rules in
+         *     evaluation order, then deleted rules, then fallthrough, off, prerequisite, error, notFound
+         *     and unknown. On a percentage-rollout rule, `rollout.flagged` is true when the served
+         *     split is statistically off the configured weights (p < 0.001 and at least 2 percentage
+         *     points off for some variation).
+         */
+        get: {
+            parameters: {
+                query?: {
+                    days?: 7 | 30 | 90;
+                };
+                header?: never;
+                path: {
+                    org: string;
+                    project: string;
+                    flag: string;
+                    env: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicFlagEvaluationsResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Authentication is required, or the supplied API token is invalid or expired. */
+                401: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
+                429: {
+                    headers: {
+                        /** @description Number of seconds to wait before retrying the request. */
+                        "Retry-After"?: number;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/targeting": {
         parameters: {
             query?: never;
@@ -2620,7 +2730,9 @@ export interface paths {
          * Declaratively replaces the resolved flag's entire targeting rule set in the resolved environment.
          * @description The ordered Rules list is applied in
          *     array order (= evaluation order); an empty or omitted list clears all rules. Segment-scoped
-         *     rules are supported. The replace is atomic. Requires at least Member.
+         *     rules are supported. The replace is atomic. A rule identical to an existing one keeps that
+         *     rule's id (moving it to its new position); only new or changed rules get new ids.
+         *     Requires at least Member.
          */
         put: {
             parameters: {
@@ -3881,7 +3993,8 @@ export interface paths {
         put?: never;
         /**
          * Creates a project in the resolved organization.
-         * @description Requires at least Member.
+         * @description Requires at least Member. A project past the
+         *     plan's project cap is a 403 `plan_limit_reached`.
          */
         post: {
             parameters: {
@@ -5512,7 +5625,8 @@ export interface paths {
         /**
          * Creates a webhook subscription.
          * @description Requires Admin. The response carries the signing secret,
-         *     which is never shown again. Supports the `Idempotency-Key` header.
+         *     which is never shown again. Supports the `Idempotency-Key` header. A subscription past
+         *     the plan's webhook cap is a 403 `plan_limit_reached`.
          */
         post: {
             parameters: {
@@ -5814,7 +5928,8 @@ export interface paths {
         /**
          * Replaces a webhook subscription's configuration.
          * @description Requires Admin. Omitted lists become empty,
-         *     which means "all".
+         *     which means "all". Re-enabling a subscription that is over the plan's webhook allowance (after
+         *     a downgrade) is a 403 `plan_limit_reached`.
          */
         put: {
             parameters: {
@@ -6251,7 +6366,8 @@ export interface paths {
          * Queues one synthetic `flag.toggled` event for this subscription alone.
          * @description Requires Admin.
          *     Delivery is asynchronous — read the delivery log for the outcome. Refused with a 400 when
-         *     the subscription is disabled.
+         *     the subscription is disabled, and with a 403 `plan_limit_reached` when it is over the
+         *     plan's webhook allowance.
          */
         post: {
             parameters: {
@@ -6458,7 +6574,8 @@ export interface paths {
          * Queues a finished delivery (succeeded or dead-lettered) to be sent again, restarting its retry schedule.
          * @description Requires Admin. Refused with a 400 when the delivery is still pending, when
          *     the subscription is disabled, or when the subscription's current project, environment or
-         *     event-type filters no longer cover the delivery's event.
+         *     event-type filters no longer cover the delivery's event. Refused with a 403
+         *     `plan_limit_reached` when the subscription is over the plan's webhook allowance.
          */
         post: {
             parameters: {
@@ -6573,10 +6690,10 @@ export interface components {
          *     service token (access to every project), never an empty list.
          */
         MeResponse: {
-            type: string | null;
+            type: string;
             /** Format: uuid */
             id: string;
-            name: string | null;
+            name: string;
             email?: string | null;
             emailVerified?: boolean | null;
             /** Format: uuid */
@@ -6585,8 +6702,8 @@ export interface components {
             projectScope?: string[] | null;
         };
         NextAction: {
-            method: string | null;
-            path: string | null;
+            method: string;
+            path: string;
         };
         /**
          * @description Public representation of an organization, returned by both `GET /api/v1/orgs` (list) and
@@ -6597,13 +6714,13 @@ export interface components {
         OrganizationResponse: {
             /** Format: uuid */
             id: string;
-            name: string | null;
-            slug: string | null;
+            name: string;
+            slug: string;
             /**
              * @description Allowed values: Solo, Team, Pro, Business, Enterprise.
-             * @enum {string|null}
+             * @enum {string}
              */
-            plan: "Solo" | "Team" | "Pro" | "Business" | "Enterprise" | null;
+            plan: "Solo" | "Team" | "Pro" | "Business" | "Enterprise";
             isActive: boolean;
             /** Format: date-time */
             createdAt: string;
@@ -6614,7 +6731,7 @@ export interface components {
          *     `next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`).
          */
         OrganizationResponsePagedResult: {
-            items: components["schemas"]["OrganizationResponse"][] | null;
+            items: components["schemas"]["OrganizationResponse"][];
             next_cursor?: string | null;
             /** @description Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it. */
             _actions?: {
@@ -6641,8 +6758,8 @@ export interface components {
         ProjectResponse: {
             /** Format: uuid */
             id: string;
-            key: string | null;
-            name: string | null;
+            key: string;
+            name: string;
             description?: string | null;
             /** Format: date-time */
             createdAt: string;
@@ -6661,7 +6778,7 @@ export interface components {
          *     `next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`).
          */
         ProjectResponsePagedResult: {
-            items: components["schemas"]["ProjectResponse"][] | null;
+            items: components["schemas"]["ProjectResponse"][];
             next_cursor?: string | null;
             /** @description Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it. */
             _actions?: {
@@ -6682,9 +6799,9 @@ export interface components {
          *     }
          */
         PublicAddVariationRequest: {
-            key: string | null;
-            name: string | null;
-            value: string | null;
+            key: string;
+            name: string;
+            value: string;
             description?: string | null;
         };
         /**
@@ -6701,6 +6818,8 @@ export interface components {
          *     `connection_id` is present only on the `sso_required` error: the organization
          *     requires single sign-on, and this credential didn't come through its identity provider.
          *     `connection_id` identifies which SSO connection to sign in with.
+         *     `plan_limit` is present only on the `plan_limit_reached` error: which plan cap the
+         *     request would have exceeded, so a client can branch on it without parsing `message`.
          * @example {
          *       "error": "not_found",
          *       "message": "Flag 'new-checkout-flw' was not found in project 'checkout'.",
@@ -6717,9 +6836,9 @@ export interface components {
          *     }
          */
         PublicApiErrorEnvelope: {
-            error: string | null;
-            message: string | null;
-            docs_url: string | null;
+            error: string;
+            message: string;
+            docs_url: string;
             fields?: {
                 [key: string]: string[];
             } | null;
@@ -6729,15 +6848,16 @@ export interface components {
             next_actions?: components["schemas"]["NextAction"][] | null;
             /** Format: uuid */
             connection_id?: string | null;
+            plan_limit?: components["schemas"]["PublicPlanLimit"];
         };
         /** @description Request-side condition group, symmetric with PublicConditionGroupResponse. */
         PublicConditionGroupRequest: {
             /**
              * @description Allowed values: And, Or.
-             * @enum {string|null}
+             * @enum {string}
              */
-            operator: "And" | "Or" | null;
-            conditions: components["schemas"]["PublicConditionRequest"][] | null;
+            operator: "And" | "Or";
+            conditions: components["schemas"]["PublicConditionRequest"][];
         };
         /**
          * @description A condition group within a PublicTargetingRuleResponse. Maps 1:1 onto
@@ -6749,20 +6869,20 @@ export interface components {
         PublicConditionGroupResponse: {
             /**
              * @description Allowed values: And, Or.
-             * @enum {string|null}
+             * @enum {string}
              */
-            operator: "And" | "Or" | null;
-            conditions: components["schemas"]["PublicConditionResponse"][] | null;
+            operator: "And" | "Or";
+            conditions: components["schemas"]["PublicConditionResponse"][];
         };
         /** @description Request-side condition, symmetric with PublicConditionResponse. */
         PublicConditionRequest: {
-            attribute: string | null;
+            attribute: string;
             /**
              * @description Allowed values: Equals, NotEquals, Contains, NotContains, GreaterThan, LessThan, GreaterThanOrEqual, LessThanOrEqual, In, NotIn, MatchesRegex, StartsWith, EndsWith, Before, After, SemverEquals, SemverGreaterThan, SemverGreaterThanOrEqual, SemverLessThan, SemverLessThanOrEqual.
-             * @enum {string|null}
+             * @enum {string}
              */
-            operator: "Equals" | "NotEquals" | "Contains" | "NotContains" | "GreaterThan" | "LessThan" | "GreaterThanOrEqual" | "LessThanOrEqual" | "In" | "NotIn" | "MatchesRegex" | "StartsWith" | "EndsWith" | "Before" | "After" | "SemverEquals" | "SemverGreaterThan" | "SemverGreaterThanOrEqual" | "SemverLessThan" | "SemverLessThanOrEqual" | null;
-            values: string[] | null;
+            operator: "Equals" | "NotEquals" | "Contains" | "NotContains" | "GreaterThan" | "LessThan" | "GreaterThanOrEqual" | "LessThanOrEqual" | "In" | "NotIn" | "MatchesRegex" | "StartsWith" | "EndsWith" | "Before" | "After" | "SemverEquals" | "SemverGreaterThan" | "SemverGreaterThanOrEqual" | "SemverLessThan" | "SemverLessThanOrEqual";
+            values: string[];
             negate?: boolean;
         };
         /**
@@ -6771,14 +6891,26 @@ export interface components {
          *     `OperatorType` members (e.g. `"Equals"`, `"In"`).
          */
         PublicConditionResponse: {
-            attribute: string | null;
+            attribute: string;
             /**
              * @description Allowed values: Equals, NotEquals, Contains, NotContains, GreaterThan, LessThan, GreaterThanOrEqual, LessThanOrEqual, In, NotIn, MatchesRegex, StartsWith, EndsWith, Before, After, SemverEquals, SemverGreaterThan, SemverGreaterThanOrEqual, SemverLessThan, SemverLessThanOrEqual.
-             * @enum {string|null}
+             * @enum {string}
              */
-            operator: "Equals" | "NotEquals" | "Contains" | "NotContains" | "GreaterThan" | "LessThan" | "GreaterThanOrEqual" | "LessThanOrEqual" | "In" | "NotIn" | "MatchesRegex" | "StartsWith" | "EndsWith" | "Before" | "After" | "SemverEquals" | "SemverGreaterThan" | "SemverGreaterThanOrEqual" | "SemverLessThan" | "SemverLessThanOrEqual" | null;
-            values: string[] | null;
+            operator: "Equals" | "NotEquals" | "Contains" | "NotContains" | "GreaterThan" | "LessThan" | "GreaterThanOrEqual" | "LessThanOrEqual" | "In" | "NotIn" | "MatchesRegex" | "StartsWith" | "EndsWith" | "Before" | "After" | "SemverEquals" | "SemverGreaterThan" | "SemverGreaterThanOrEqual" | "SemverLessThan" | "SemverLessThanOrEqual";
+            values: string[];
             negate: boolean;
+        };
+        /** @description A variation's configured share of a rollout rule. */
+        PublicConfiguredWeight: {
+            /** @description The variation's key. */
+            variationKey: string;
+            /** @description The variation's name, or null when the key no longer matches one of the flag's variations. */
+            name?: string | null;
+            /**
+             * Format: int32
+             * @description Percent of the rule's traffic.
+             */
+            weight: number;
         };
         /**
          * @description Request body for `POST /api/v1/orgs/{org}/projects/{project}/environments`. Named
@@ -6794,8 +6926,8 @@ export interface components {
          *     }
          */
         PublicCreateEnvironmentRequest: {
-            key: string | null;
-            name: string | null;
+            key: string;
+            name: string;
             color?: string | null;
             /** Format: int32 */
             sortOrder?: number;
@@ -6844,13 +6976,13 @@ export interface components {
          *     }
          */
         PublicCreateFeatureFlagRequest: {
-            key: string | null;
-            name: string | null;
+            key: string;
+            name: string;
             /**
              * @description Allowed values: Boolean, String, Number, Json.
-             * @enum {string|null}
+             * @enum {string}
              */
-            type: "Boolean" | "String" | "Number" | "Json" | null;
+            type: "Boolean" | "String" | "Number" | "Json";
             description?: string | null;
             tags?: string[] | null;
             initialVariations?: components["schemas"]["PublicCreateVariationDto"][] | null;
@@ -6873,8 +7005,8 @@ export interface components {
          *     }
          */
         PublicCreateProjectRequest: {
-            key: string | null;
-            name: string | null;
+            key: string;
+            name: string;
             description?: string | null;
         };
         /**
@@ -6892,13 +7024,13 @@ export interface components {
          *     }
          */
         PublicCreateSdkKeyRequest: {
-            name: string | null;
+            name: string;
             description?: string | null;
             /**
              * @description Allowed values: ClientSide, ServerSide.
-             * @enum {string|null}
+             * @enum {string}
              */
-            type: "ClientSide" | "ServerSide" | null;
+            type: "ClientSide" | "ServerSide";
         };
         /**
          * @description Response body for a successful `POST .../sdk-keys`. The ONLY place the plaintext
@@ -6920,17 +7052,17 @@ export interface components {
         PublicCreateSdkKeyResponse: {
             /** Format: uuid */
             id: string;
-            key: string | null;
-            lastFourCharacters: string | null;
+            key: string;
+            lastFourCharacters: string;
             /**
              * @description Allowed values: ClientSide, ServerSide.
-             * @enum {string|null}
+             * @enum {string}
              */
-            type: "ClientSide" | "ServerSide" | null;
-            name: string | null;
+            type: "ClientSide" | "ServerSide";
+            name: string;
             /** Format: date-time */
             createdAt: string;
-            warning: string | null;
+            warning: string;
         };
         /**
          * @description Request body for `POST /api/v1/orgs/{org}/projects/{project}/segments`. Named distinctly
@@ -6954,10 +7086,10 @@ export interface components {
          *     }
          */
         PublicCreateSegmentRequest: {
-            key: string | null;
-            name: string | null;
+            key: string;
+            name: string;
             description?: string | null;
-            conditions: components["schemas"]["PublicSegmentConditionDto"][] | null;
+            conditions: components["schemas"]["PublicSegmentConditionDto"][];
         };
         /**
          * @description Request body for `POST .../rules`. The Application-side
@@ -6997,16 +7129,16 @@ export interface components {
             rolloutPercentage?: number | null;
             /** Format: uuid */
             userSegmentId?: string | null;
-            conditionGroups: components["schemas"]["PublicConditionGroupRequest"][] | null;
+            conditionGroups: components["schemas"]["PublicConditionGroupRequest"][];
         };
         /**
          * @description A variation supplied at flag-creation time. Maps 1:1 onto
          *     CreateVariationDto.
          */
         PublicCreateVariationDto: {
-            key: string | null;
-            name: string | null;
-            value: string | null;
+            key: string;
+            name: string;
+            value: string;
             description?: string | null;
         };
         /**
@@ -7031,13 +7163,13 @@ export interface components {
          *     }
          */
         PublicCreateWebhookSubscriptionRequest: {
-            name: string | null;
-            url: string | null;
+            name: string;
+            url: string;
             /**
              * @description Allowed values: GenericHttp.
-             * @enum {string|null}
+             * @enum {string}
              */
-            provider: "GenericHttp" | null;
+            provider: "GenericHttp";
             eventTypes?: string[] | null;
             projectIds?: string[] | null;
             environmentIds?: string[] | null;
@@ -7053,8 +7185,8 @@ export interface components {
         PublicCreateWebhookSubscriptionResponse: {
             /** Format: uuid */
             id: string;
-            secret: string | null;
-            warning: string | null;
+            secret: string;
+            warning: string;
         };
         /**
          * @description Response of `GET .../default-flag-lifetime/impact`: how many temporary flags with no expiry
@@ -7087,8 +7219,8 @@ export interface components {
         PublicEnvironmentResponse: {
             /** Format: uuid */
             id: string;
-            key: string | null;
-            name: string | null;
+            key: string;
+            name: string;
             color?: string | null;
             /** Format: int32 */
             sortOrder: number;
@@ -7103,12 +7235,61 @@ export interface components {
          *     `next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`).
          */
         PublicEnvironmentResponsePagedResult: {
-            items: components["schemas"]["PublicEnvironmentResponse"][] | null;
+            items: components["schemas"]["PublicEnvironmentResponse"][];
             next_cursor?: string | null;
             /** @description Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it. */
             _actions?: {
                 [key: string]: components["schemas"]["ActionCapability"];
             };
+        };
+        /** @description The evaluations one part of the targeting served. */
+        PublicEvaluationSource: {
+            /**
+             * @description One of rule, fallthrough, off, prerequisite, error, notFound or unknown (an SDK that reports no reason, or evaluations recorded before sources were). Allowed values: rule, fallthrough, off, prerequisite, error, notFound, unknown.
+             * @enum {string}
+             */
+            source: "rule" | "fallthrough" | "off" | "prerequisite" | "error" | "notFound" | "unknown";
+            /**
+             * Format: uuid
+             * @description For a rule, its id (rules have no key). Null otherwise, or when the SDK didn't say which rule.
+             */
+            ruleId?: string | null;
+            /** @description For a live rule, its description or a generated label. Null otherwise. */
+            ruleLabel?: string | null;
+            /** @description False when the rule is no longer in the environment's targeting. */
+            ruleExists: boolean;
+            /**
+             * Format: int64
+             * @description Evaluations this source served.
+             */
+            count: number;
+            /**
+             * Format: double
+             * @description Count as a fraction (0 to 1) of all sources' counts combined.
+             */
+            share: number;
+            /** @description What this source served, with shares of this source's count. */
+            variations: components["schemas"]["PublicEvaluationVariation"][];
+            rollout?: components["schemas"]["PublicRolloutCheck"];
+        };
+        /** @description One variation's evaluations. */
+        PublicEvaluationVariation: {
+            /** @description The variation served, or null for evaluations recorded without one. */
+            variationKey?: string | null;
+            /** @description The variation's name, or null when the key no longer matches one of the flag's variations. */
+            name?: string | null;
+            /** @description False when the key no longer matches one of the flag's variations. */
+            exists: boolean;
+            /**
+             * Format: int64
+             * @description Evaluations that served this variation.
+             */
+            count: number;
+            /**
+             * Format: double
+             * @description Count as a fraction (0 to 1) of the parent total: the window's total, or for a source's variations that source's count. 0 when the parent total is 0.
+             */
+            share: number;
         };
         /**
          * @description Public representation of a flag's config within a single environment, returned by
@@ -7136,20 +7317,143 @@ export interface components {
         PublicFlagEnvConfigResponse: {
             /** Format: uuid */
             environmentId: string;
-            environmentKey: string | null;
+            environmentKey: string;
             isEnabled: boolean;
             /** Format: uuid */
             defaultVariationId: string;
             /**
              * @description Allowed values: SingleVariation, PercentageRollout, TargetedRollout.
-             * @enum {string|null}
+             * @enum {string}
              */
-            strategy: "SingleVariation" | "PercentageRollout" | "TargetedRollout" | null;
-            prerequisites: components["schemas"]["PublicPrerequisiteDto"][] | null;
+            strategy: "SingleVariation" | "PercentageRollout" | "TargetedRollout";
+            prerequisites: components["schemas"]["PublicPrerequisiteDto"][];
             /** @description Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it. */
             _actions?: {
                 [key: string]: components["schemas"]["ActionCapability"];
             };
+        };
+        /**
+         * @description What a flag served in one environment over the window, returned by
+         *     `GET .../flags/{flag}/environments/{env}/evaluations` (#4225). These are evaluation
+         *     counts, not unique users. They come from SDK-reported events, so an environment whose SDKs
+         *     report none reads zero: no evaluations reported, not necessarily no traffic. The public
+         *     counterpart of FlagEvaluationAnalyticsDto, keyed by environment key instead of
+         *     id and without the dashboard's daily series.
+         * @example {
+         *       "environmentKey": "production",
+         *       "days": 7,
+         *       "fromUtc": "2026-06-14T00:00:00Z",
+         *       "toUtc": "2026-06-20T09:15:00Z",
+         *       "totalCount": 10000,
+         *       "lastEvaluatedAtUtc": "2026-06-20T09:15:00Z",
+         *       "variations": [
+         *         {
+         *           "variationKey": "true",
+         *           "name": "On",
+         *           "exists": true,
+         *           "count": 4080,
+         *           "share": 0.408
+         *         },
+         *         {
+         *           "variationKey": "false",
+         *           "name": "Off",
+         *           "exists": true,
+         *           "count": 5920,
+         *           "share": 0.592
+         *         }
+         *       ],
+         *       "sources": [
+         *         {
+         *           "source": "rule",
+         *           "ruleId": "0197b6a3-5e6f-7a7b-8c8d-9e0f1a2b3c4d",
+         *           "ruleLabel": "Beta users 50/50",
+         *           "ruleExists": true,
+         *           "count": 8000,
+         *           "share": 0.8,
+         *           "variations": [
+         *             {
+         *               "variationKey": "true",
+         *               "name": "On",
+         *               "exists": true,
+         *               "count": 4080,
+         *               "share": 0.51
+         *             },
+         *             {
+         *               "variationKey": "false",
+         *               "name": "Off",
+         *               "exists": true,
+         *               "count": 3920,
+         *               "share": 0.49
+         *             }
+         *           ],
+         *           "rollout": {
+         *             "configured": [
+         *               {
+         *                 "variationKey": "true",
+         *                 "name": "On",
+         *                 "weight": 50
+         *               },
+         *               {
+         *                 "variationKey": "false",
+         *                 "name": "Off",
+         *                 "weight": 50
+         *               }
+         *             ],
+         *             "evaluable": true,
+         *             "pValue": 0.074,
+         *             "flagged": false
+         *           }
+         *         },
+         *         {
+         *           "source": "fallthrough",
+         *           "ruleExists": false,
+         *           "count": 2000,
+         *           "share": 0.2,
+         *           "variations": [
+         *             {
+         *               "variationKey": "false",
+         *               "name": "Off",
+         *               "exists": true,
+         *               "count": 2000,
+         *               "share": 1
+         *             }
+         *           ]
+         *         }
+         *       ]
+         *     }
+         */
+        PublicFlagEvaluationsResponse: {
+            /** @description The environment's key. */
+            environmentKey: string;
+            /**
+             * Format: int32
+             * @description The window requested: 7, 30 or 90.
+             */
+            days: number;
+            /**
+             * Format: date-time
+             * @description Start of the window: UTC midnight `days - 1` days ago, or the flag's creation day if later.
+             */
+            fromUtc: string;
+            /**
+             * Format: date-time
+             * @description When the counts were read.
+             */
+            toUtc: string;
+            /**
+             * Format: int64
+             * @description Evaluations in the window. Evaluation counts, not unique users.
+             */
+            totalCount: number;
+            /**
+             * Format: date-time
+             * @description The last reported evaluation, or null if none was reported.
+             */
+            lastEvaluatedAtUtc?: string | null;
+            /** @description Evaluations per variation over the window. */
+            variations: components["schemas"]["PublicEvaluationVariation"][];
+            /** @description Evaluations per part of the targeting that served them: live rules in evaluation order, then deleted rules, then fallthrough, off, prerequisite, error, notFound and unknown. */
+            sources: components["schemas"]["PublicEvaluationSource"][];
         };
         /**
          * @description Public list-item representation of a feature flag, returned by
@@ -7164,16 +7468,16 @@ export interface components {
         PublicFlagListItem: {
             /** Format: uuid */
             id: string;
-            key: string | null;
-            name: string | null;
+            key: string;
+            name: string;
             /**
              * @description Allowed values: Boolean, String, Number, Json.
-             * @enum {string|null}
+             * @enum {string}
              */
-            type: "Boolean" | "String" | "Number" | "Json" | null;
+            type: "Boolean" | "String" | "Number" | "Json";
             isArchived: boolean;
             clientSideVisible: boolean;
-            tags: string[] | null;
+            tags: string[];
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
@@ -7213,7 +7517,7 @@ export interface components {
          *     }
          */
         PublicFlagListItemPagedResult: {
-            items: components["schemas"]["PublicFlagListItem"][] | null;
+            items: components["schemas"]["PublicFlagListItem"][];
             next_cursor?: string | null;
             /** @description Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it. */
             _actions?: {
@@ -7224,8 +7528,8 @@ export interface components {
         PublicFlagOwner: {
             /** Format: uuid */
             id: string;
-            email: string | null;
-            name: string | null;
+            email: string;
+            name: string;
         };
         /**
          * @description One dead flag the Featureflip Flag Cleanup Action should remove, returned by
@@ -7239,11 +7543,11 @@ export interface components {
          *     (`FLAG_HAS_DEPENDENTS`), so a caller should remove those dependents first.
          */
         PublicFlagRemovalCandidate: {
-            key: string | null;
-            reason: string | null;
+            key: string;
+            reason: string;
             treatment: boolean;
-            status: string | null;
-            blockedBy: string[] | null;
+            status: string;
+            blockedBy: string[];
         };
         /**
          * @description A page of results plus an opaque cursor for the next page, or null when this is the last
@@ -7251,7 +7555,7 @@ export interface components {
          *     `next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`).
          */
         PublicFlagRemovalCandidatePagedResult: {
-            items: components["schemas"]["PublicFlagRemovalCandidate"][] | null;
+            items: components["schemas"]["PublicFlagRemovalCandidate"][];
             next_cursor?: string | null;
         };
         /**
@@ -7298,18 +7602,18 @@ export interface components {
         PublicFlagResponse: {
             /** Format: uuid */
             id: string;
-            key: string | null;
-            name: string | null;
+            key: string;
+            name: string;
             description?: string | null;
             /**
              * @description Allowed values: Boolean, String, Number, Json.
-             * @enum {string|null}
+             * @enum {string}
              */
-            type: "Boolean" | "String" | "Number" | "Json" | null;
+            type: "Boolean" | "String" | "Number" | "Json";
             isArchived: boolean;
             clientSideVisible: boolean;
-            tags: string[] | null;
-            variations: components["schemas"]["PublicVariationResponse"][] | null;
+            tags: string[];
+            variations: components["schemas"]["PublicVariationResponse"][];
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
@@ -7328,12 +7632,24 @@ export interface components {
             };
         };
         /**
+         * @description The cap behind a `plan_limit_reached` error. `resource` is the capped collection
+         *     (`projects`, `environments`, `flags`, `webhooks`, `members`);
+         *     `plan` is the plan's wire name, as `GET /api/v1/orgs/{org}` returns it; `max` is
+         *     the cap. The environment and flag caps are per project.
+         */
+        PublicPlanLimit: {
+            resource: string;
+            plan: string;
+            /** Format: int32 */
+            max: number;
+        };
+        /**
          * @description A single prerequisite entry on a flag's per-environment config. Maps 1:1 onto
          *     PrerequisiteDto (read side) and PrerequisiteInput (write side).
          */
         PublicPrerequisiteDto: {
-            prerequisiteFlagKey: string | null;
-            expectedVariationKey: string | null;
+            prerequisiteFlagKey: string;
+            expectedVariationKey: string;
         };
         /**
          * @description Request body for `PUT .../targeting` — a declarative full replace of the environment's
@@ -7357,14 +7673,38 @@ export interface components {
          *     carrying the handler's message.
          */
         PublicReorderRulesRequest: {
-            ruleIds: string[] | null;
+            ruleIds: string[];
+        };
+        /** @description A percentage-rollout rule's configured split beside a sample-ratio check of what it served. */
+        PublicRolloutCheck: {
+            /** @description The configured weights, in percent; they sum to 100. */
+            configured: components["schemas"]["PublicConfiguredWeight"][];
+            /**
+             * Format: date-time
+             * @description The last time the split may have changed (the rule was edited, or a variation was added), or null if it hasn't since the rule was created. A change inside the window mixes two splits.
+             */
+            splitChangedAtUtc?: string | null;
+            /** @description Whether the check could run. See NotEvaluableReason when false. */
+            evaluable: boolean;
+            /**
+             * Format: double
+             * @description The sample-ratio test's p-value, or null when not evaluable.
+             */
+            pValue?: number | null;
+            /** @description True only when the served split is both unlikely under the configured weights (p < 0.001) and at least 2 percentage points off for some variation. */
+            flagged: boolean;
+            /**
+             * @description too-little-traffic or unexpected-variation when the check couldn't run; null otherwise. Allowed values: too-little-traffic, unexpected-variation.
+             * @enum {string|null}
+             */
+            notEvaluableReason?: "too-little-traffic" | "unexpected-variation" | null;
         };
         /** @description A newly added signing secret. The secret is shown only here. */
         PublicRotateWebhookSecretResponse: {
             /** Format: uuid */
             secretId: string;
-            secret: string | null;
-            warning: string | null;
+            secret: string;
+            warning: string;
         };
         /**
          * @description Public representation of an SDK key, returned by
@@ -7388,14 +7728,14 @@ export interface components {
         PublicSdkKeyResponse: {
             /** Format: uuid */
             id: string;
-            name: string | null;
+            name: string;
             description?: string | null;
             /**
              * @description Allowed values: ClientSide, ServerSide.
-             * @enum {string|null}
+             * @enum {string}
              */
-            type: "ClientSide" | "ServerSide" | null;
-            lastFourCharacters: string | null;
+            type: "ClientSide" | "ServerSide";
+            lastFourCharacters: string;
             isActive: boolean;
             /** Format: date-time */
             createdAt: string;
@@ -7414,7 +7754,7 @@ export interface components {
          *     `next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`).
          */
         PublicSdkKeyResponsePagedResult: {
-            items: components["schemas"]["PublicSdkKeyResponse"][] | null;
+            items: components["schemas"]["PublicSdkKeyResponse"][];
             next_cursor?: string | null;
             /** @description Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it. */
             _actions?: {
@@ -7430,13 +7770,13 @@ export interface components {
          *     straight through from Operator, which is already a string.
          */
         PublicSegmentConditionDto: {
-            attribute: string | null;
+            attribute: string;
             /**
              * @description Allowed values: Equals, NotEquals, Contains, NotContains, GreaterThan, LessThan, GreaterThanOrEqual, LessThanOrEqual, In, NotIn, MatchesRegex, StartsWith, EndsWith, Before, After, SemverEquals, SemverGreaterThan, SemverGreaterThanOrEqual, SemverLessThan, SemverLessThanOrEqual.
-             * @enum {string|null}
+             * @enum {string}
              */
-            operator: "Equals" | "NotEquals" | "Contains" | "NotContains" | "GreaterThan" | "LessThan" | "GreaterThanOrEqual" | "LessThanOrEqual" | "In" | "NotIn" | "MatchesRegex" | "StartsWith" | "EndsWith" | "Before" | "After" | "SemverEquals" | "SemverGreaterThan" | "SemverGreaterThanOrEqual" | "SemverLessThan" | "SemverLessThanOrEqual" | null;
-            values: string[] | null;
+            operator: "Equals" | "NotEquals" | "Contains" | "NotContains" | "GreaterThan" | "LessThan" | "GreaterThanOrEqual" | "LessThanOrEqual" | "In" | "NotIn" | "MatchesRegex" | "StartsWith" | "EndsWith" | "Before" | "After" | "SemverEquals" | "SemverGreaterThan" | "SemverGreaterThanOrEqual" | "SemverLessThan" | "SemverLessThanOrEqual";
+            values: string[];
             negate?: boolean;
         };
         /**
@@ -7464,10 +7804,10 @@ export interface components {
         PublicSegmentResponse: {
             /** Format: uuid */
             id: string;
-            key: string | null;
-            name: string | null;
+            key: string;
+            name: string;
             description?: string | null;
-            conditions: components["schemas"]["PublicSegmentConditionDto"][] | null;
+            conditions: components["schemas"]["PublicSegmentConditionDto"][];
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
@@ -7483,7 +7823,7 @@ export interface components {
          *     `next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`).
          */
         PublicSegmentResponsePagedResult: {
-            items: components["schemas"]["PublicSegmentResponse"][] | null;
+            items: components["schemas"]["PublicSegmentResponse"][];
             next_cursor?: string | null;
             /** @description Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it. */
             _actions?: {
@@ -7538,7 +7878,7 @@ export interface components {
          */
         PublicTargetingConfigResponse: {
             isEnabled: boolean;
-            rules: components["schemas"]["PublicTargetingRuleResponse"][] | null;
+            rules: components["schemas"]["PublicTargetingRuleResponse"][];
             /** @description Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it. */
             _actions?: {
                 [key: string]: components["schemas"]["ActionCapability"];
@@ -7586,7 +7926,7 @@ export interface components {
             rolloutPercentage?: number | null;
             /** Format: uuid */
             userSegmentId?: string | null;
-            conditionGroups: components["schemas"]["PublicConditionGroupResponse"][] | null;
+            conditionGroups: components["schemas"]["PublicConditionGroupResponse"][];
             /** @description Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it. */
             _actions?: {
                 [key: string]: components["schemas"]["ActionCapability"];
@@ -7618,7 +7958,7 @@ export interface components {
          *     dashboard's `UpdateEnvironmentRequest`.
          */
         PublicUpdateEnvironmentRequest: {
-            name: string | null;
+            name: string;
             color?: string | null;
             /** Format: int32 */
             sortOrder?: number;
@@ -7630,7 +7970,7 @@ export interface components {
          *     endpoint (mirrors `UpdateFeatureFlagCommand`, which has no `Key`/`Type`).
          */
         PublicUpdateFeatureFlagRequest: {
-            name: string | null;
+            name: string;
             description?: string | null;
             tags?: string[] | null;
             clientSideVisible?: boolean | null;
@@ -7673,7 +8013,7 @@ export interface components {
          *     dashboard's `UpdateProjectRequest`.
          */
         PublicUpdateProjectRequest: {
-            name: string | null;
+            name: string;
             description?: string | null;
         };
         /**
@@ -7683,7 +8023,7 @@ export interface components {
          *     carries no `Type`).
          */
         PublicUpdateSdkKeyRequest: {
-            name: string | null;
+            name: string;
             description?: string | null;
         };
         /**
@@ -7692,9 +8032,9 @@ export interface components {
          *     carries no `Key`).
          */
         PublicUpdateSegmentRequest: {
-            name: string | null;
+            name: string;
             description?: string | null;
-            conditions: components["schemas"]["PublicSegmentConditionDto"][] | null;
+            conditions: components["schemas"]["PublicSegmentConditionDto"][];
         };
         /**
          * @description Request body for `PUT .../rules/{ruleId}`. Same shape as
@@ -7709,7 +8049,7 @@ export interface components {
             rolloutPercentage?: number | null;
             /** Format: uuid */
             userSegmentId?: string | null;
-            conditionGroups: components["schemas"]["PublicConditionGroupRequest"][] | null;
+            conditionGroups: components["schemas"]["PublicConditionGroupRequest"][];
         };
         /**
          * @description Request body for
@@ -7719,8 +8059,8 @@ export interface components {
          *     carries no `Key`).
          */
         PublicUpdateVariationRequest: {
-            name: string | null;
-            value: string | null;
+            name: string;
+            value: string;
             description?: string | null;
         };
         /**
@@ -7728,8 +8068,8 @@ export interface components {
          *     "all"). `isEnabled` is required. The provider cannot be changed.
          */
         PublicUpdateWebhookSubscriptionRequest: {
-            name: string | null;
-            url: string | null;
+            name: string;
+            url: string;
             eventTypes?: string[] | null;
             projectIds?: string[] | null;
             environmentIds?: string[] | null;
@@ -7748,9 +8088,9 @@ export interface components {
         PublicVariationResponse: {
             /** Format: uuid */
             id: string;
-            key: string | null;
-            name: string | null;
-            value: string | null;
+            key: string;
+            name: string;
+            value: string;
             description?: string | null;
             /** @description Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it. */
             _actions?: {
@@ -7768,9 +8108,9 @@ export interface components {
             webhookEventId: string;
             /**
              * @description Allowed values: Pending, Succeeded, DeadLettered.
-             * @enum {string|null}
+             * @enum {string}
              */
-            status: "Pending" | "Succeeded" | "DeadLettered" | null;
+            status: "Pending" | "Succeeded" | "DeadLettered";
             /** Format: int32 */
             attemptCount: number;
             /** Format: date-time */
@@ -7789,7 +8129,7 @@ export interface components {
          *     `next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`).
          */
         PublicWebhookDeliveryResponsePagedResult: {
-            items: components["schemas"]["PublicWebhookDeliveryResponse"][] | null;
+            items: components["schemas"]["PublicWebhookDeliveryResponse"][];
             next_cursor?: string | null;
         };
         /** @description A signing secret's id and lifecycle. A secret with no `retiredAt` is active and signs every delivery. */
@@ -7839,17 +8179,17 @@ export interface components {
         PublicWebhookSubscriptionResponse: {
             /** Format: uuid */
             id: string;
-            name: string | null;
-            url: string | null;
+            name: string;
+            url: string;
             /**
              * @description Allowed values: GenericHttp.
-             * @enum {string|null}
+             * @enum {string}
              */
-            provider: "GenericHttp" | null;
+            provider: "GenericHttp";
             isEnabled: boolean;
-            eventTypes: string[] | null;
-            projectIds: string[] | null;
-            environmentIds: string[] | null;
+            eventTypes: string[];
+            projectIds: string[];
+            environmentIds: string[];
             /** Format: int32 */
             consecutiveFailureCount: number;
             /** Format: date-time */
@@ -7858,7 +8198,7 @@ export interface components {
             createdAt: string;
             /** Format: date-time */
             updatedAt: string;
-            secrets: components["schemas"]["PublicWebhookSecretResponse"][] | null;
+            secrets: components["schemas"]["PublicWebhookSecretResponse"][];
             overPlanLimit: boolean;
             /** @description Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it. */
             _actions?: {
@@ -7871,7 +8211,7 @@ export interface components {
          *     `next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`).
          */
         PublicWebhookSubscriptionResponsePagedResult: {
-            items: components["schemas"]["PublicWebhookSubscriptionResponse"][] | null;
+            items: components["schemas"]["PublicWebhookSubscriptionResponse"][];
             next_cursor?: string | null;
             /** @description Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it. */
             _actions?: {

@@ -3,7 +3,7 @@ import * as z from 'zod/v4';
 import { enc } from '../client.js';
 import { okJson, run } from '../errors.js';
 import type { ToolContext } from './context.js';
-import { nullable, objectOutput, shape } from './outputs.js';
+import { apiOutput, nullable, objectOutput, shape } from './outputs.js';
 import { environmentParam, flagParam, projectParam } from './params.js';
 import type { components } from '../generated/api-types.js';
 
@@ -11,6 +11,7 @@ const strategies = z.enum(['SingleVariation', 'PercentageRollout', 'TargetedRoll
 
 type FlagDetail = components['schemas']['PublicFlagResponse'];
 type EnvConfig = components['schemas']['PublicFlagEnvConfigResponse'];
+type Evaluations = components['schemas']['PublicFlagEvaluationsResponse'];
 
 export function registerFlagEnvironmentTools(server: McpServer, ctx: ToolContext): void {
   const flagBase = (project: string, flag: string) =>
@@ -134,5 +135,37 @@ export function registerFlagEnvironmentTools(server: McpServer, ctx: ToolContext
           })),
         });
       }),
+  );
+
+  server.registerTool(
+    'flag_evaluations',
+    {
+      title: 'Flag evaluations in environment',
+      description:
+        'What a flag actually served in ONE environment over the last 7, 30 or 90 days: total evaluations, the split ' +
+        'by variation, and which rule (or fallthrough, off, prerequisite, error) served what. Percentage-rollout rules ' +
+        'include their configured weights and a sample-ratio check; rollout.flagged=true means the served split is ' +
+        'statistically off the configured weights. These are evaluation counts, NOT unique users. Counts come from ' +
+        'SDK-reported events, so zero means no evaluations were reported, not necessarily no traffic.',
+      inputSchema: z.object({
+        project: projectParam,
+        flag: flagParam,
+        environment: environmentParam,
+        days: z
+          .union([z.literal(7), z.literal(30), z.literal(90)])
+          .optional()
+          .describe('Window in UTC days: 7 (default), 30 or 90'),
+      }),
+      outputSchema: apiOutput('GET /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/evaluations'),
+      annotations: { readOnlyHint: true },
+    },
+    async ({ project, flag, environment, days }) =>
+      run(async () =>
+        okJson(
+          await ctx.api.request<Evaluations>('GET', `${flagBase(project, flag)}/environments/${enc(environment)}/evaluations`, {
+            query: { days: days ?? 7 },
+          }),
+        ),
+      ),
   );
 }

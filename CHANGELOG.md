@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.0 — 2026-10-27
+
+### Added
+
+- `flag_evaluations` reports what a flag served in one environment over the last 7, 30 or 90 days. It returns the total evaluations, the split by variation, and which rule (or the fallthrough, off, a prerequisite or an error) served what. A percentage-rollout rule also returns its configured weights and a sample-ratio check, and `rollout.flagged` is true when the served split is statistically off them. These are evaluation counts, not unique users. Zero means no SDK reported an evaluation, not necessarily that there was no traffic. Needs the API's new `GET .../flags/{flag}/environments/{env}/evaluations`. (#4225)
+
 ## 0.3.0 — 2026-10-15
 
 ### Added

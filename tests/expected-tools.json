@@ -22,6 +22,7 @@
   "toggle_flag",
   "update_flag_environment_config",
   "flag_status",
+  "flag_evaluations",
   "get_targeting",
   "update_targeting",
   "manage_targeting_rule",

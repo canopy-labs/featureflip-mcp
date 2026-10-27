@@ -93,4 +93,80 @@ describe('per-environment tools', () => {
     expect(tools.find((t) => t.name === 'update_flag_environment_config')?.annotations?.destructiveHint).toBe(true);
     expect(tools.find((t) => t.name === 'flag_status')?.annotations?.readOnlyHint).toBe(true);
   });
+
+  const EVALUATIONS = {
+    environmentKey: 'production',
+    days: 30,
+    fromUtc: '2026-09-27T00:00:00Z',
+    toUtc: '2026-10-26T12:00:00Z',
+    totalCount: 120,
+    lastEvaluatedAtUtc: '2026-10-26T11:59:00Z',
+    variations: [{ variationKey: 'true', name: 'On', exists: true, count: 120, share: 1 }],
+    sources: [
+      {
+        source: 'fallthrough',
+        ruleId: null,
+        ruleLabel: null,
+        ruleExists: false,
+        count: 120,
+        share: 1,
+        variations: [{ variationKey: 'true', name: 'On', exists: true, count: 120, share: 1 }],
+        rollout: null,
+      },
+    ],
+  };
+
+  it('flag_evaluations GETs the evaluations endpoint with days and passes the body through', async () => {
+    // Real controller: FlagEvaluationsController.Get (?days=7|30|90).
+    const { api, calls } = mockApi([
+      { method: 'GET', path: `${FLAG}/environments/production/evaluations`, query: { days: '30' }, json: EVALUATIONS },
+    ]);
+    const client = await connectClient({ api, org: ORG });
+    const result = await client.callTool({
+      name: 'flag_evaluations',
+      arguments: { project: 'web', flag: 'checkout-v2', environment: 'production', days: 30 },
+    });
+    expect(result.isError).toBeFalsy();
+    expect(calls).toHaveLength(1);
+    expect(result.structuredContent).toEqual(EVALUATIONS);
+  });
+
+  it('flag_evaluations defaults days to 7', async () => {
+    const { api } = mockApi([
+      {
+        method: 'GET',
+        path: `${FLAG}/environments/production/evaluations`,
+        query: { days: '7' },
+        json: { ...EVALUATIONS, days: 7 },
+      },
+    ]);
+    const client = await connectClient({ api, org: ORG });
+    const result = await client.callTool({
+      name: 'flag_evaluations',
+      arguments: { project: 'web', flag: 'checkout-v2', environment: 'production' },
+    });
+    expect(result.isError).toBeFalsy();
+    expect((result.structuredContent as { days: number }).days).toBe(7);
+  });
+
+  it('flag_evaluations rejects a window other than 7, 30 or 90', async () => {
+    const { api, calls } = mockApi([]);
+    const client = await connectClient({ api, org: ORG });
+    const result = await client.callTool({
+      name: 'flag_evaluations',
+      arguments: { project: 'web', flag: 'checkout-v2', environment: 'production', days: 14 },
+    });
+    expect(result.isError).toBe(true);
+    expect(calls).toHaveLength(0);
+  });
+
+  it('flag_evaluations tells agents the counts are evaluations, not users', async () => {
+    const { api } = mockApi([]);
+    const client = await connectClient({ api, org: ORG });
+    const { tools } = await client.listTools();
+    const tool = tools.find((t) => t.name === 'flag_evaluations');
+    expect(tool?.annotations?.readOnlyHint).toBe(true);
+    expect(tool?.description).toContain('NOT unique users');
+    expect(tool?.description).toContain('zero means no evaluations were reported');
+  });
 });

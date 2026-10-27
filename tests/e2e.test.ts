@@ -32,7 +32,7 @@ describe('full tool surface', () => {
     expect(readOnly).toEqual(
       [
         'list_projects', 'list_environments', 'list_sdk_keys', 'list_segments', 'get_segment',
-        'list_flags', 'get_flag', 'flag_status', 'get_targeting', 'find_stale_flags', 'list_removal_candidates',
+        'list_flags', 'get_flag', 'flag_status', 'flag_evaluations', 'get_targeting', 'find_stale_flags', 'list_removal_candidates',
         'list_webhooks', 'list_webhook_deliveries',
       ].sort(),
     );

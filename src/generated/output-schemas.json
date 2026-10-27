@@ -8,6 +8,7 @@
     "GET /api/v1/orgs/{org}/projects/{project}/flags/removal-candidates": "PublicFlagRemovalCandidatePagedResult",
     "GET /api/v1/orgs/{org}/projects/{project}/flags/{flag}": "PublicFlagResponse",
     "GET /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}": "PublicFlagEnvConfigResponse",
+    "GET /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/evaluations": "PublicFlagEvaluationsResponse",
     "GET /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/targeting": "PublicTargetingConfigResponse",
     "POST /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/rules": "PublicTargetingRuleResponse",
     "GET /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/rules/{ruleId}": "PublicTargetingRuleResponse",
@@ -461,9 +462,19 @@
             "string",
             "null"
           ]
+        },
+        "plan_limit": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PublicPlanLimit"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
-      "description": "The frozen public-API error contract. `error` codes are stable snake_case strings. Wire keys\nare frozen snake_case too (`error`, `message`, `docs_url`, `fields`,\n`retry_after`) — the global camelCase naming policy would otherwise emit\n`docsUrl`/`retryAfter`, breaking the published spec. !:JsonPropertyName\nalways wins over the policy, so these are pinned explicitly rather than relying on the\nproperty names already being lowercase for the single-word ones.\n`did_you_mean`, `next_actions` and `connection_id` are ADDITIVE optional keys\n(null → omitted via the global `DefaultIgnoreCondition = WhenWritingNull`), so\npre-existing error bodies are byte-for-byte unchanged when they're absent.\n\n`connection_id` is present only on the `sso_required` error: the organization\nrequires single sign-on, and this credential didn't come through its identity provider.\n`connection_id` identifies which SSO connection to sign in with."
+      "description": "The frozen public-API error contract. `error` codes are stable snake_case strings. Wire keys\nare frozen snake_case too (`error`, `message`, `docs_url`, `fields`,\n`retry_after`) — the global camelCase naming policy would otherwise emit\n`docsUrl`/`retryAfter`, breaking the published spec. !:JsonPropertyName\nalways wins over the policy, so these are pinned explicitly rather than relying on the\nproperty names already being lowercase for the single-word ones.\n`did_you_mean`, `next_actions` and `connection_id` are ADDITIVE optional keys\n(null → omitted via the global `DefaultIgnoreCondition = WhenWritingNull`), so\npre-existing error bodies are byte-for-byte unchanged when they're absent.\n\n`connection_id` is present only on the `sso_required` error: the organization\nrequires single sign-on, and this credential didn't come through its identity provider.\n`connection_id` identifies which SSO connection to sign in with.\n`plan_limit` is present only on the `plan_limit_reached` error: which plan cap the\nrequest would have exceeded, so a client can branch on it without parsing `message`."
     },
     "PublicConditionGroupRequest": {
       "type": [
@@ -608,6 +619,36 @@
         }
       },
       "description": "A single condition within a PublicConditionGroupResponse. Maps 1:1 onto\nConditionDto. Operator is a bare wire string naming one of the\n`OperatorType` members (e.g. `\"Equals\"`, `\"In\"`)."
+    },
+    "PublicConfiguredWeight": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "variationKey": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The variation's key."
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The variation's name, or null when the key no longer matches one of the flag's variations."
+        },
+        "weight": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Percent of the rule's traffic."
+        }
+      },
+      "description": "A variation's configured share of a rollout rule."
     },
     "PublicCreateEnvironmentRequest": {
       "type": [
@@ -1176,6 +1217,128 @@
       },
       "description": "A page of results plus an opaque cursor for the next page, or null when this is the last\npage. Wire keys are frozen: `items` (already lowercase under the camelCase policy) and\n`next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`)."
     },
+    "PublicEvaluationSource": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "One of rule, fallthrough, off, prerequisite, error, notFound or unknown (an SDK that reports no reason, or evaluations recorded before sources were). Allowed values: rule, fallthrough, off, prerequisite, error, notFound, unknown."
+        },
+        "ruleId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "For a rule, its id (rules have no key). Null otherwise, or when the SDK didn't say which rule."
+        },
+        "ruleLabel": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "For a live rule, its description or a generated label. Null otherwise."
+        },
+        "ruleExists": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "False when the rule is no longer in the environment's targeting."
+        },
+        "count": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Evaluations this source served."
+        },
+        "share": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Count as a fraction (0 to 1) of all sources' counts combined."
+        },
+        "variations": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicEvaluationVariation"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "What this source served, with shares of this source's count."
+        },
+        "rollout": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PublicRolloutCheck"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "description": "The evaluations one part of the targeting served."
+    },
+    "PublicEvaluationVariation": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "variationKey": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The variation served, or null for evaluations recorded without one."
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The variation's name, or null when the key no longer matches one of the flag's variations."
+        },
+        "exists": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "False when the key no longer matches one of the flag's variations."
+        },
+        "count": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Evaluations that served this variation."
+        },
+        "share": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Count as a fraction (0 to 1) of the parent total: the window's total, or for a source's variations that source's count. 0 when the parent total is 0."
+        }
+      },
+      "description": "One variation's evaluations."
+    },
     "PublicFlagEnvConfigResponse": {
       "type": [
         "object",
@@ -1248,6 +1411,91 @@
         }
       },
       "description": "Public representation of a flag's config within a single environment, returned by\n`GET .../flags/{flag}/environments` and `GET .../flags/{flag}/environments/{env}`.\nDrops internal/dashboard-only fields present on FlagEnvironmentConfigurationDto\n— Id (an internal row id, not part of the public\ncontract; EnvironmentId is the addressable key), `FeatureFlagId` (implicit\nin the route), the environment's name/color/sort-order (dashboard display fields — the public\ncontract only needs the addressable EnvironmentKey), and `Staleness` (an\ninternal analytics signal)."
+    },
+    "PublicFlagEvaluationsResponse": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "environmentKey": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The environment's key."
+        },
+        "days": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "The window requested: 7, 30 or 90."
+        },
+        "fromUtc": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Start of the window: UTC midnight `days - 1` days ago, or the flag's creation day if later."
+        },
+        "toUtc": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "When the counts were read."
+        },
+        "totalCount": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Evaluations in the window. Evaluation counts, not unique users."
+        },
+        "lastEvaluatedAtUtc": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The last reported evaluation, or null if none was reported."
+        },
+        "variations": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicEvaluationVariation"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "Evaluations per variation over the window."
+        },
+        "sources": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicEvaluationSource"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "Evaluations per part of the targeting that served them: live rules in evaluation order, then deleted rules, then fallthrough, off, prerequisite, error, notFound and unknown."
+        }
+      },
+      "description": "What a flag served in one environment over the window, returned by\n`GET .../flags/{flag}/environments/{env}/evaluations` (#4225). These are evaluation\ncounts, not unique users. They come from SDK-reported events, so an environment whose SDKs\nreport none reads zero: no evaluations reported, not necessarily no traffic. The public\ncounterpart of FlagEvaluationAnalyticsDto, keyed by environment key instead of\nid and without the dashboard's daily series."
     },
     "PublicFlagListItem": {
       "type": [
@@ -1659,6 +1907,33 @@
       },
       "description": "Public detail representation of a feature flag, returned by\n`GET .../flags/{flag}` and the body of a successful create. Drops internal/dashboard-only\nfields present on FeatureFlagDto — notably `ProjectId` (implicit in the\nroute) and `Staleness` (an internal analytics signal, not part of the public contract).\nEffectiveExpiresAtUtc is when the flag counts as past expiry, from its own ExpiresAtUtc\nor its project's default lifetime; ExpirySource says which (`explicit` / `project-default`),\nboth null when neither applies."
     },
+    "PublicPlanLimit": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "resource": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "plan": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "max": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "description": "The cap behind a `plan_limit_reached` error. `resource` is the capped collection\n(`projects`, `environments`, `flags`, `webhooks`, `members`);\n`plan` is the plan's wire name, as `GET /api/v1/orgs/{org}` returns it; `max` is\nthe cap. The environment and flag caps are per project."
+    },
     "PublicPrerequisiteDto": {
       "type": [
         "object",
@@ -1725,6 +2000,67 @@
         }
       },
       "description": "Request body for `PUT .../rules/reorder`. Must include every existing rule id exactly\nonce — `ReorderTargetingRulesCommandHandler` rejects duplicate, omitted, or unknown rule\nids with `BadRequestException`, surfaced as an HTTP 400 `bad_request` envelope\ncarrying the handler's message."
+    },
+    "PublicRolloutCheck": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "configured": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicConfiguredWeight"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "The configured weights, in percent; they sum to 100."
+        },
+        "splitChangedAtUtc": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The last time the split may have changed (the rule was edited, or a variation was added), or null if it hasn't since the rule was created. A change inside the window mixes two splits."
+        },
+        "evaluable": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Whether the check could run. See NotEvaluableReason when false."
+        },
+        "pValue": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "The sample-ratio test's p-value, or null when not evaluable."
+        },
+        "flagged": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "True only when the served split is both unlikely under the configured weights (p < 0.001) and at least 2 percentage points off for some variation."
+        },
+        "notEvaluableReason": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "too-little-traffic or unexpected-variation when the check couldn't run; null otherwise. Allowed values: too-little-traffic, unexpected-variation."
+        }
+      },
+      "description": "A percentage-rollout rule's configured split beside a sample-ratio check of what it served."
     },
     "PublicRotateWebhookSecretResponse": {
       "type": [

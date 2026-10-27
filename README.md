@@ -13,7 +13,7 @@ from AI coding assistants (Claude Code, Cursor, Copilot, Cline) and autonomous a
 ### Claude Code
 
 ```bash
-claude mcp add featureflip -e FEATUREFLIP_TOKEN=ffp_your_token -- npx -y @featureflip/mcp
+claude mcp add featureflip -e FEATUREFLIP_TOKEN=ffp_your_token -- npx -y @featureflip/mcp@latest
 ```
 
 ### Cursor / Cline / generic JSON config
@@ -23,12 +23,15 @@ claude mcp add featureflip -e FEATUREFLIP_TOKEN=ffp_your_token -- npx -y @featur
   "mcpServers": {
     "featureflip": {
       "command": "npx",
-      "args": ["-y", "@featureflip/mcp"],
+      "args": ["-y", "@featureflip/mcp@latest"],
       "env": { "FEATUREFLIP_TOKEN": "ffp_your_token" }
     }
   }
 }
 ```
+
+Keep the `@latest`. Without a version, npx reuses the copy it downloaded the first time and never
+checks npm again, so tools added in later releases would never show up in your client.
 
 ## Configuration
 
@@ -48,7 +51,7 @@ CRUD: `list_projects`, `list_environments`, `list_flags`, `get_flag`, `create_fl
 
 Webhooks (Admin token required): `list_webhooks`, `list_webhook_deliveries`, `manage_webhook`, `deliver_webhook`
 
-Workflows: `flag_status` (cross-environment view), `find_stale_flags` (cleanup candidates),
+Workflows: `flag_status` (cross-environment view), `flag_evaluations` (what a flag served in one environment: evaluation counts by variation and rule), `find_stale_flags` (cleanup candidates),
 `list_removal_candidates` (flags safe to remove, with the prerequisite dependents to remove first),
 `wrap_feature` (create flag + get the SDK snippet for your language)
 
