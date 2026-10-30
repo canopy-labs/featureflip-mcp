@@ -114,7 +114,7 @@ import io.featureflip.client.EvaluationContext;
 FeatureflipClient client = FeatureflipClient.get(System.getenv("FEATUREFLIP_SDK_KEY"));
 client.waitForInitialization();
 boolean enabled = client.boolVariation("${flagKey}",
-    EvaluationContext.of(userId), false);
+    EvaluationContext.builder(userId).build(), false);
 if (enabled) {
     // new code path
 }`,

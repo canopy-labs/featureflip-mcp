@@ -74,6 +74,90 @@ describe('manage_targeting_rule', () => {
     expect((calls[1].body as { conditionGroups: unknown }).conditionGroups).toEqual([{ operator: 'Or', conditions: [] }]);
   });
 
+  it('update carries over bucketBy when the rule leaves it out', async () => {
+    // PUT is a full replace, and the API keeps a null bucketBy anyway; carrying it keeps the body honest (#4224).
+    const { api, calls } = mockApi([
+      {
+        method: 'GET',
+        path: `${RULES}/r1`,
+        json: {
+          id: 'r1', description: null, variationId: 'v-on', rolloutPercentage: 50, bucketBy: 'accountId',
+          userSegmentId: null, conditionGroups: [],
+        },
+      },
+      { method: 'PUT', path: `${RULES}/r1`, status: 204 },
+    ]);
+    const client = await connectClient({ api, org: ORG });
+    await client.callTool({
+      name: 'manage_targeting_rule',
+      arguments: { action: 'update', ...at, ruleId: 'r1', rule: { rolloutPercentage: 30 } },
+    });
+    expect((calls[1].body as { bucketBy: unknown }).bucketBy).toBe('accountId');
+  });
+
+  it('update of a fixed rule does not carry its stored bucketBy into a rollout', async () => {
+    // A fixed rule never hashes, so it has no bucket-by to keep. One saved before the API reset it can still
+    // report a custom value; sending it would bucket the new rollout by an attribute nobody chose (#4607).
+    const { api, calls } = mockApi([
+      {
+        method: 'GET',
+        path: `${RULES}/r1`,
+        json: {
+          id: 'r1', description: null, variationId: 'v-on', rolloutPercentage: null, bucketBy: 'org_id',
+          userSegmentId: null, conditionGroups: [],
+        },
+      },
+      { method: 'PUT', path: `${RULES}/r1`, status: 204 },
+    ]);
+    const client = await connectClient({ api, org: ORG });
+    await client.callTool({
+      name: 'manage_targeting_rule',
+      arguments: { action: 'update', ...at, ruleId: 'r1', rule: { rolloutPercentage: 30 } },
+    });
+    expect(calls[1].body).not.toHaveProperty('bucketBy');
+  });
+
+  it('update with bucketBy sends the new value', async () => {
+    const { api, calls } = mockApi([
+      {
+        method: 'GET',
+        path: `${RULES}/r1`,
+        json: {
+          id: 'r1', description: null, variationId: 'v-on', rolloutPercentage: 50, bucketBy: 'accountId',
+          userSegmentId: null, conditionGroups: [],
+        },
+      },
+      { method: 'PUT', path: `${RULES}/r1`, status: 204 },
+    ]);
+    const client = await connectClient({ api, org: ORG });
+    await client.callTool({
+      name: 'manage_targeting_rule',
+      arguments: { action: 'update', ...at, ruleId: 'r1', rule: { bucketBy: 'anonymous_id' } },
+    });
+    expect((calls[1].body as { bucketBy: unknown }).bucketBy).toBe('anonymous_id');
+  });
+
+  it('add sends bucketBy', async () => {
+    const { api, calls } = mockApi([{ method: 'POST', path: RULES, status: 201, json: { id: 'r1', priority: 0 } }]);
+    const client = await connectClient({ api, org: ORG });
+    await client.callTool({
+      name: 'manage_targeting_rule',
+      arguments: { action: 'add', ...at, rule: { variationId: 'v-on', rolloutPercentage: 50, bucketBy: 'anonymous_id' } },
+    });
+    expect(calls[0].body).toEqual({ variationId: 'v-on', rolloutPercentage: 50, bucketBy: 'anonymous_id', conditionGroups: [] });
+  });
+
+  it('rejects a blank bucketBy without calling the API', async () => {
+    const { api, calls } = mockApi([]);
+    const client = await connectClient({ api, org: ORG });
+    const r = await client.callTool({
+      name: 'manage_targeting_rule',
+      arguments: { action: 'add', ...at, rule: { variationId: 'v-on', bucketBy: '' } },
+    });
+    expect(r.isError).toBe(true);
+    expect(calls).toHaveLength(0);
+  });
+
   it('remove DELETEs the rule', async () => {
     const { api, calls } = mockApi([{ method: 'DELETE', path: `${RULES}/r1`, status: 204 }]);
     const client = await connectClient({ api, org: ORG });

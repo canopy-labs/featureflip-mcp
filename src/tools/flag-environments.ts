@@ -145,7 +145,10 @@ export function registerFlagEnvironmentTools(server: McpServer, ctx: ToolContext
         'What a flag actually served in ONE environment over the last 7, 30 or 90 days: total evaluations, the split ' +
         'by variation, and which rule (or fallthrough, off, prerequisite, error) served what. Percentage-rollout rules ' +
         'include their configured weights and a sample-ratio check; rollout.flagged=true means the served split is ' +
-        'statistically off the configured weights. These are evaluation counts, NOT unique users. Counts come from ' +
+        'statistically off the configured weights. A live rollout rule is always listed, with count 0 and no variations ' +
+        'when it served nothing. rollout.unreached is set when a live rollout rule got no evaluations ' +
+        'while the flag\'s rules got 100 or more: usually the context lacks rollout.bucketBy, or an earlier rule or the ' +
+        'conditions catch the traffic. These are evaluation counts, NOT unique users. Counts come from ' +
         'SDK-reported events, so zero means no evaluations were reported, not necessarily no traffic.',
       inputSchema: z.object({
         project: projectParam,

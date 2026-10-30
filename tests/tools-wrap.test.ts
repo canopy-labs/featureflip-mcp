@@ -13,6 +13,18 @@ describe('snippetFor', () => {
     }
   });
 
+  it('the Java snippet builds its context with the real builder API', () => {
+    const code = snippetFor('java', 'f').code;
+    expect(code).toContain('EvaluationContext.builder(userId).build()');
+    expect(code).not.toContain('EvaluationContext.of(');
+  });
+
+  it('no snippet keys its context on the camelCase alias', () => {
+    for (const lang of LANGUAGES) {
+      expect(snippetFor(lang, 'f').code, lang).not.toMatch(/\buserId:|"userId"|'userId'/);
+    }
+  });
+
   it('server SDKs use sdk key, client SDKs use client key', () => {
     expect(snippetFor('node', 'f').code).toContain('sdkKey');
     expect(snippetFor('browser', 'f').code).toContain('clientKey');

@@ -964,6 +964,13 @@
               }
             ]
           }
+        },
+        "bucketBy": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Context attribute the rollout hashes on (default `user_id`; `userId` is accepted as an alias). A context without it skips this rule, even at 100%. Changing it reshuffles who is in the rollout. A fixed rule (no `rolloutPercentage`) never hashes and always stores `user_id`. When omitted on `PUT .../targeting`, a rollout keeps the value of the existing rollout it edits: the existing rule with the same targeting, told apart from others with that targeting by its variation, then its description, then its position. Any other rule gets `user_id`. The request is refused with 400 until it sends `bucketBy` for a rollout whose edited rule it can't tell when the answer changes its attribute: the rollout shares only its targeting with several rules that bucket differently, or it matches no existing rule while the request removes a rollout bucketed by another attribute. On create, omitting it gives `user_id`."
         }
       },
       "description": "Request body for `POST .../rules`. The Application-side\n`CreateTargetingRuleDto`/`CreateConditionGroupDto`/`CreateConditionDto` all take\ntheir `Operator` as a bare string, re-parsed CASE-SENSITIVELY inside\n`CreateTargetingRuleCommandHandler` — `FlagTargetingController`'s mapping helpers\nvalidate every operator against the enum's member-name allowlist AND canonicalize the casing\n(e.g. `\"in\"` → `\"In\"`) before building the command DTO, so a valid\ncase-insensitive match never trips the handler's strict re-parse."
@@ -1492,7 +1499,7 @@
               }
             ]
           },
-          "description": "Evaluations per part of the targeting that served them: live rules in evaluation order, then deleted rules, then fallthrough, off, prerequisite, error, notFound and unknown."
+          "description": "Evaluations per part of the targeting that served them: live rules in evaluation order, then deleted rules, then fallthrough, off, prerequisite, error, notFound and unknown. A live percentage-rollout rule is always listed, with a count of 0 and no variations when it served nothing in the window, so its rollout check (and rollout.unreached) has a row."
         }
       },
       "description": "What a flag served in one environment over the window, returned by\n`GET .../flags/{flag}/environments/{env}/evaluations` (#4225). These are evaluation\ncounts, not unique users. They come from SDK-reported events, so an environment whose SDKs\nreport none reads zero: no evaluations reported, not necessarily no traffic. The public\ncounterpart of FlagEvaluationAnalyticsDto, keyed by environment key instead of\nid and without the dashboard's daily series."
@@ -2058,9 +2065,49 @@
             "null"
           ],
           "description": "too-little-traffic or unexpected-variation when the check couldn't run; null otherwise. Allowed values: too-little-traffic, unexpected-variation."
+        },
+        "bucketBy": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The context attribute the rollout hashes on. A context without it skips the rule, even at 100%."
+        },
+        "unreached": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PublicRolloutUnreached"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "description": "A percentage-rollout rule's configured split beside a sample-ratio check of what it served."
+    },
+    "PublicRolloutUnreached": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "eligibleEvaluations": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Evaluations that reached the flag's rules or fallthrough since SinceUtc, while this rule served none."
+        },
+        "sinceUtc": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The window start, or the first UTC midnight after the rule last changed when that is later."
+        }
+      },
+      "description": "A live rollout rule that no evaluations reached."
     },
     "PublicRotateWebhookSecretResponse": {
       "type": [
@@ -2528,6 +2575,13 @@
             "null"
           ]
         },
+        "bucketBy": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Context attribute the rollout hashes on (default `user_id`; `userId` is accepted as an alias). A context without it skips this rule, even at 100%. Lookup is exact and case-sensitive, except `user_id`/`userId`, which both read the user id."
+        },
         "userSegmentId": {
           "type": [
             "string",
@@ -2834,6 +2888,13 @@
               }
             ]
           }
+        },
+        "bucketBy": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Context attribute the rollout hashes on (default `user_id`; `userId` is accepted as an alias). Omit to keep the current value. A fixed rule (no `rolloutPercentage`) never hashes and always stores `user_id`, so one made a rollout without `bucketBy` gets `user_id`. A context without it skips this rule, even at 100%. Changing it reshuffles who is in the rollout."
         }
       },
       "description": "Request body for `PUT .../rules/{ruleId}`. Same shape as\nPublicCreateTargetingRuleRequest — see its remarks on operator\nvalidation/canonicalization, which applies identically here."

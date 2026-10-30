@@ -74,6 +74,19 @@ describe('update_targeting', () => {
     });
   });
 
+  it('passes bucketBy through', async () => {
+    const { api, calls } = mockApi([
+      { method: 'PUT', path: `${FLAG}/environments/production/targeting`, status: 204 },
+    ]);
+    const client = await connectClient({ api, org: ORG });
+    const rules = [{ variationId: 'var-t', rolloutPercentage: 25, bucketBy: 'accountId', conditionGroups: [] }];
+    await client.callTool({
+      name: 'update_targeting',
+      arguments: { project: 'web', flag: 'checkout-v2', environment: 'production', rules },
+    });
+    expect(calls[0].body).toEqual({ rules });
+  });
+
   it('sends an empty conditionGroups list for a rule that omits it, which the API requires', async () => {
     const { api, calls } = mockApi([
       { method: 'PUT', path: `${FLAG}/environments/production/targeting`, status: 204 },

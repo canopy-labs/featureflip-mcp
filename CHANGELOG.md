@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.0 — 2026-10-30
+
+### Added
+
+- `manage_targeting_rule` and `update_targeting` take an optional `bucketBy` on a rule: the context attribute its percentage rollout hashes on, such as `anonymous_id` or `accountId`. It defaults to `user_id`. A visitor whose context lacks the attribute skips the rule, even at 100%. A `manage_targeting_rule` update that leaves it out keeps the rule's current value, except that a fixed rule has none: one made a rollout that way gets `user_id` (#4607). `flag_evaluations` now returns `rollout.bucketBy`, and `rollout.unreached` when a live rollout rule got no evaluations while 100 or more reached the flag's rules. (#4224)
+
 ## 0.4.0 — 2026-10-27
 
 ### Added

@@ -20,6 +20,16 @@ const ruleSchema = z.object({
   description: z.string().optional(),
   variationId: z.string().optional().describe('Variation served when the rule matches'),
   rolloutPercentage: z.number().int().min(0).max(100).optional().describe('Percentage rollout for this rule'),
+  bucketBy: z
+    .string()
+    .trim()
+    .min(1)
+    .max(255)
+    .optional()
+    .describe(
+      'Context attribute the rollout hashes on (default `user_id`; `userId` is accepted as an alias). Visitors whose context lacks it skip this rule, ' +
+        'even at 100%. Changing it reshuffles who is in the rollout. Omit to keep the current value.',
+    ),
   userSegmentId: z.string().optional().describe('Match users in this segment (see list_segments)'),
   conditionGroups: z
     .array(
@@ -105,6 +115,7 @@ export function registerTargetingTools(server: McpServer, ctx: ToolContext): voi
     description: string | null;
     variationId: string;
     rolloutPercentage: number | null;
+    bucketBy: string | null;
     userSegmentId: string | null;
     conditionGroups:
       | {
@@ -162,10 +173,14 @@ export function registerTargetingTools(server: McpServer, ctx: ToolContext): voi
           const { data: current, etag } = await ctx.api.requestWithEtag<RuleResponse>('GET', path);
           // PUT is a full replace. Carry over what isn't being changed, as the request shape only:
           // the GET body also has id, priority, _actions and nested ids the PUT does not take.
+          // A fixed rule has no bucket-by to carry (it never hashes), so leave it out and let the API
+          // decide: it keeps a rollout's value and gives a rule turning into one the default (#4607).
+          const bucketBy = rule.bucketBy ?? (current.rolloutPercentage == null ? undefined : current.bucketBy);
           const body = {
             description: rule.description ?? current.description,
             variationId: rule.variationId ?? current.variationId,
             rolloutPercentage: rule.rolloutPercentage ?? current.rolloutPercentage,
+            ...(bucketBy == null ? {} : { bucketBy }),
             userSegmentId: rule.userSegmentId ?? current.userSegmentId,
             conditionGroups:
               rule.conditionGroups ??

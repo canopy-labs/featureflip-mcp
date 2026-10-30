@@ -1,6 +1,6 @@
 {
   "name": "@featureflip/mcp",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "mcpName": "io.github.canopy-labs/featureflip",
   "description": "MCP server for managing Featureflip feature flags from AI agents and editors",
   "keywords": [

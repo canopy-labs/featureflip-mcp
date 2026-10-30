@@ -7103,6 +7103,7 @@ export interface components {
          *       "description": "North American users get the new flow at 25%.",
          *       "variationId": "0197b6a0-6a1b-7d4f-8c2e-2f3a4b5c6d7e",
          *       "rolloutPercentage": 25,
+         *       "bucketBy": "user_id",
          *       "conditionGroups": [
          *         {
          *           "operator": "And",
@@ -7130,6 +7131,8 @@ export interface components {
             /** Format: uuid */
             userSegmentId?: string | null;
             conditionGroups: components["schemas"]["PublicConditionGroupRequest"][];
+            /** @description Context attribute the rollout hashes on (default `user_id`; `userId` is accepted as an alias). A context without it skips this rule, even at 100%. Changing it reshuffles who is in the rollout. A fixed rule (no `rolloutPercentage`) never hashes and always stores `user_id`. When omitted on `PUT .../targeting`, a rollout keeps the value of the existing rollout it edits: the existing rule with the same targeting, told apart from others with that targeting by its variation, then its description, then its position. Any other rule gets `user_id`. The request is refused with 400 until it sends `bucketBy` for a rollout whose edited rule it can't tell when the answer changes its attribute: the rollout shares only its targeting with several rules that bucket differently, or it matches no existing rule while the request removes a rollout bucketed by another attribute. On create, omitting it gives `user_id`. */
+            bucketBy?: string | null;
         };
         /**
          * @description A variation supplied at flag-creation time. Maps 1:1 onto
@@ -7401,7 +7404,8 @@ export interface components {
          *             ],
          *             "evaluable": true,
          *             "pValue": 0.074,
-         *             "flagged": false
+         *             "flagged": false,
+         *             "bucketBy": "user_id"
          *           }
          *         },
          *         {
@@ -7452,7 +7456,7 @@ export interface components {
             lastEvaluatedAtUtc?: string | null;
             /** @description Evaluations per variation over the window. */
             variations: components["schemas"]["PublicEvaluationVariation"][];
-            /** @description Evaluations per part of the targeting that served them: live rules in evaluation order, then deleted rules, then fallthrough, off, prerequisite, error, notFound and unknown. */
+            /** @description Evaluations per part of the targeting that served them: live rules in evaluation order, then deleted rules, then fallthrough, off, prerequisite, error, notFound and unknown. A live percentage-rollout rule is always listed, with a count of 0 and no variations when it served nothing in the window, so its rollout check (and rollout.unreached) has a row. */
             sources: components["schemas"]["PublicEvaluationSource"][];
         };
         /**
@@ -7698,6 +7702,22 @@ export interface components {
              * @enum {string|null}
              */
             notEvaluableReason?: "too-little-traffic" | "unexpected-variation" | null;
+            /** @description The context attribute the rollout hashes on. A context without it skips the rule, even at 100%. */
+            bucketBy: string;
+            unreached?: components["schemas"]["PublicRolloutUnreached"];
+        };
+        /** @description A live rollout rule that no evaluations reached. */
+        PublicRolloutUnreached: {
+            /**
+             * Format: int64
+             * @description Evaluations that reached the flag's rules or fallthrough since SinceUtc, while this rule served none.
+             */
+            eligibleEvaluations: number;
+            /**
+             * Format: date-time
+             * @description The window start, or the first UTC midnight after the rule last changed when that is later.
+             */
+            sinceUtc: string;
         };
         /** @description A newly added signing secret. The secret is shown only here. */
         PublicRotateWebhookSecretResponse: {
@@ -7895,6 +7915,7 @@ export interface components {
          *       "description": "North American users get the new flow at 25%.",
          *       "variationId": "0197b6a0-6a1b-7d4f-8c2e-2f3a4b5c6d7e",
          *       "rolloutPercentage": 25,
+         *       "bucketBy": "user_id",
          *       "userSegmentId": "0197b6a1-3c4d-7e5f-8a6b-7c8d9e0f1a2b",
          *       "conditionGroups": [
          *         {
@@ -7924,6 +7945,8 @@ export interface components {
             variationId: string;
             /** Format: int32 */
             rolloutPercentage?: number | null;
+            /** @description Context attribute the rollout hashes on (default `user_id`; `userId` is accepted as an alias). A context without it skips this rule, even at 100%. Lookup is exact and case-sensitive, except `user_id`/`userId`, which both read the user id. */
+            bucketBy: string;
             /** Format: uuid */
             userSegmentId?: string | null;
             conditionGroups: components["schemas"]["PublicConditionGroupResponse"][];
@@ -8050,6 +8073,8 @@ export interface components {
             /** Format: uuid */
             userSegmentId?: string | null;
             conditionGroups: components["schemas"]["PublicConditionGroupRequest"][];
+            /** @description Context attribute the rollout hashes on (default `user_id`; `userId` is accepted as an alias). Omit to keep the current value. A fixed rule (no `rolloutPercentage`) never hashes and always stores `user_id`, so one made a rollout without `bucketBy` gets `user_id`. A context without it skips this rule, even at 100%. Changing it reshuffles who is in the rollout. */
+            bucketBy?: string | null;
         };
         /**
          * @description Request body for

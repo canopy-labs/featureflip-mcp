@@ -89,7 +89,7 @@ describe('full tool surface', () => {
 
   it('describes every input parameter of every tool', async () => {
     // An undescribed parameter is all an agent sees of it: a name and a type.
-    // Smithery's quality score also counts these, and 54 of 113 were bare
+    // Registry quality scores also count these, and 54 of 113 were bare
     // before this test existed, mostly copies of limit/cursor/project.
     const { api } = mockApi([]);
     const client = await connectClient({ api, org: 'acme' });
@@ -101,5 +101,15 @@ describe('full tool surface', () => {
         .map(([param]) => `${tool.name}.${param}`),
     );
     expect(bare).toEqual([]);
+  });
+
+  it('describes the Bucket by default as user_id, with userId as an alias', async () => {
+    const { api } = mockApi([]);
+    const client = await connectClient({ api, org: 'acme' });
+    const { tools } = await client.listTools();
+
+    const text = JSON.stringify(tools.map((t) => t.inputSchema));
+    expect(text).toContain('default `user_id`; `userId` is accepted as an alias');
+    expect(text).not.toContain('default userId');
   });
 });

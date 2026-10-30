@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 // Packs the built server as an MCP Bundle (.mcpb): the archive Claude Desktop
-// installs in one click, and the only way Smithery lists a stdio server (its
-// other route is a hosted Streamable HTTP endpoint, which we do not run — #2588).
+// installs in one click (#2588).
 //
 // Run after `npm run build`. The bundle is dist/ + bin/ + the runtime
 // dependencies, with manifest.json on top. Two fields of that manifest are
