@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.6.0 — 2026-11-03
+
+### Added
+
+- `manage_webhook` takes an optional `provider` on create: `GenericHttp` (the default) or `Slack`, so an agent can send flag changes to a Slack channel. Needs the API's Slack destination (#4649). (#4664)
+
+### Changed
+
+- `manage_webhook` refuses a Slack incoming webhook URL (`https://hooks.slack.com/services/...`) on a `GenericHttp` subscription, at create or update. Slack rejects the generic JSON payload, so that subscription would fail every delivery until auto-disable paused it. It also refuses `provider` on any action except create, because a subscription's provider can't change, and refuses `rotate_secret` on a Slack subscription, whose signing secret is never used. (#4664)
+
 ## 0.5.0 — 2026-10-30
 
 ### Added

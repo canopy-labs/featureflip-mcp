@@ -15,6 +15,33 @@ const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 // while webhooks are not enabled for the organization.
 const ACCESS_NOTE = 'Requires an Admin token. A 404 on every webhook call means webhooks are not enabled for the organization.';
 
+/**
+ * A Slack incoming webhook URL, by the same test the API applies to a Slack subscription's url.
+ * Slack answers our JSON envelope with a 400, so a generic subscription pointed here can never
+ * deliver: it looks healthy until auto-disable pauses it.
+ */
+function isSlackWebhookUrl(url: string): boolean {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return false;
+  }
+  return (
+    parsed.protocol === 'https:' &&
+    parsed.port === '' &&
+    !parsed.username &&
+    !parsed.password &&
+    parsed.hostname === 'hooks.slack.com' &&
+    parsed.pathname.startsWith('/services/')
+  );
+}
+
+// The message never repeats the url: anyone holding a Slack webhook URL can post to that channel.
+const SLACK_URL_AS_GENERIC =
+  'url is a Slack incoming webhook URL. Slack rejects the generic JSON payload, so every delivery would fail. ' +
+  'Create the subscription with provider: "Slack" instead.';
+
 export function registerWebhookTools(server: McpServer, ctx: ToolContext): void {
   const base = `/api/v1/orgs/${enc(ctx.org)}/webhooks`;
   const hook = (id: string) => `${base}/${enc(id)}`;
@@ -123,13 +150,16 @@ export function registerWebhookTools(server: McpServer, ctx: ToolContext): void 
       title: 'Create, update, or delete a webhook subscription, or rotate its secret',
       description:
         'action=create requires name + url and returns the signing secret. action=update/delete/rotate_secret/' +
-        'retire_secret require id. update changes only the fields you pass and keeps the rest; pass an empty ' +
-        'list to widen that filter back to "all". projects take project keys or ids; environments take ' +
-        '"<project>/<environment>" keys (e.g. "web/production") or ids. eventTypes come from list_webhooks ' +
-        '→ availableEventTypes. create and rotate_secret return a secret that is NEVER shown again: relay it ' +
-        'to the user verbatim so they can store it. rotate_secret adds a new active secret while the old one ' +
-        'keeps signing; retire_secret (secretId from list_webhooks) removes one and is refused for the last ' +
-        'active secret. A project-restricted service token must list at least one project, all in its scope. ' +
+        'retire_secret require id. provider (create only, default GenericHttp) is the destination type: a Slack ' +
+        'incoming webhook URL (https://hooks.slack.com/services/...) needs provider: "Slack", which posts ' +
+        "readable channel messages; a subscription's provider can never change. update changes only the " +
+        'fields you pass and keeps the rest; pass an empty list to widen that filter back to "all". projects ' +
+        'take project keys or ids; environments take "<project>/<environment>" keys (e.g. "web/production") ' +
+        'or ids. eventTypes come from list_webhooks → availableEventTypes. create and rotate_secret return a ' +
+        'secret that is NEVER shown again: relay it to the user verbatim so they can store it. Slack ' +
+        "doesn't verify signatures, so a Slack subscription's secret is unused and rotate_secret is refused " +
+        'for one. rotate_secret adds a new active secret while the old one keeps signing; retire_secret ' +
+        '(secretId from list_webhooks) removes one and is refused for the last active secret. A project-restricted service token must list at least one project, all in its scope. ' +
         ACCESS_NOTE,
       inputSchema: z.object({
         action: z
@@ -138,6 +168,10 @@ export function registerWebhookTools(server: McpServer, ctx: ToolContext): void 
         id: z.string().optional().describe('Subscription id; required for everything except create'),
         name: z.string().optional().describe('Required for create'),
         url: z.string().optional().describe('Receiver URL; required for create'),
+        provider: z
+          .enum(['GenericHttp', 'Slack'])
+          .optional()
+          .describe('create only. Slack for a hooks.slack.com/services/ URL; GenericHttp (default) for your own endpoint'),
         eventTypes: z.array(z.string()).optional().describe('Event types to send; empty or omitted = all'),
         projects: z
           .array(z.string())
@@ -172,18 +206,30 @@ export function registerWebhookTools(server: McpServer, ctx: ToolContext): void 
       ),
       annotations: { destructiveHint: true },
     },
-    async ({ action, id, name, url, eventTypes, projects, environments, enabled, secretId, idempotency_key }) =>
+    async ({ action, id, name, url, provider, eventTypes, projects, environments, enabled, secretId, idempotency_key }) =>
       run(async () => {
+        if (provider && action !== 'create') {
+          return errorResult(
+            new Error(
+              `provider applies only to action=create: a subscription's provider can't change. ` +
+                'To switch destination type, create a new subscription and delete this one.',
+            ),
+          );
+        }
+
         if (action === 'create') {
           if (!name || !url) return errorResult(new Error('action=create requires name and url'));
+          const destination = provider ?? 'GenericHttp';
+          if (destination === 'GenericHttp' && isSlackWebhookUrl(url)) {
+            return errorResult(new Error(SLACK_URL_AS_GENERIC));
+          }
           // Resolve environments first: it validates every entry before making any request.
           const environmentIds = environments && (await resolveEnvironments(environments));
           const projectIds = projects && (await resolveProjects(projects));
           // POST returns 201 with { id, secret, warning } — pass it through so the secret reaches the user.
           return okJson(
             await ctx.api.request('POST', base, {
-              // GenericHttp is the only provider the API accepts.
-              body: { name, url, provider: 'GenericHttp', eventTypes, projectIds, environmentIds },
+              body: { name, url, provider: destination, eventTypes, projectIds, environmentIds },
               idempotencyKey: idempotency_key,
             }),
           );
@@ -197,6 +243,11 @@ export function registerWebhookTools(server: McpServer, ctx: ToolContext): void 
           // PUT is a full replace: an omitted list would widen that filter to "all", and a missing
           // isEnabled is a 400. Read the subscription and carry over everything not being changed.
           const { data: current, etag } = await ctx.api.requestWithEtag<Subscription>('GET', hook(id));
+          if (url && current.provider === 'GenericHttp' && isSlackWebhookUrl(url)) {
+            return errorResult(
+              new Error(`${SLACK_URL_AS_GENERIC} This subscription is GenericHttp, and a provider can't change.`),
+            );
+          }
           const body = {
             name: name ?? current.name,
             url: url ?? current.url,
@@ -216,6 +267,17 @@ export function registerWebhookTools(server: McpServer, ctx: ToolContext): void 
         }
 
         if (action === 'rotate_secret') {
+          // The API allows it, but the new secret would be one more thing the user is told to store for nothing.
+          const current = await ctx.api.request<Subscription>('GET', hook(id));
+          if (current.provider === 'Slack') {
+            return errorResult(
+              new Error(
+                "This is a Slack subscription. Slack doesn't verify signatures, so its signing secret is unused and " +
+                  'rotating it changes nothing. If the Slack webhook URL leaked, create a new incoming webhook in ' +
+                  'Slack, update this subscription to the new url, and delete the old webhook in Slack.',
+              ),
+            );
+          }
           // POST returns 201 with { secretId, secret, warning } — the only time this secret is shown.
           return okJson(
             await ctx.api.request('POST', `${hook(id)}/secrets`, { idempotencyKey: idempotency_key }),

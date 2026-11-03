@@ -7150,7 +7150,7 @@ export interface components {
          *     project or environment. A token restricted to specific projects must list at least one project,
          *     all of them within its allowlist.
          * @example {
-         *       "name": "Checkout flag changes to Slack relay",
+         *       "name": "Checkout flag changes to deploy pipeline",
          *       "url": "https://hooks.acme.example/featureflip",
          *       "provider": "GenericHttp",
          *       "eventTypes": [
@@ -7169,10 +7169,10 @@ export interface components {
             name: string;
             url: string;
             /**
-             * @description Allowed values: GenericHttp.
+             * @description Allowed values: GenericHttp, Slack.
              * @enum {string}
              */
-            provider: "GenericHttp";
+            provider: "GenericHttp" | "Slack";
             eventTypes?: string[] | null;
             projectIds?: string[] | null;
             environmentIds?: string[] | null;
@@ -8175,7 +8175,7 @@ export interface components {
          *     the plan is upgraded or older subscriptions are deleted.
          * @example {
          *       "id": "0197b6a4-6f7a-7b8c-9d0e-1f2a3b4c5d6e",
-         *       "name": "Checkout flag changes to Slack relay",
+         *       "name": "Checkout flag changes to deploy pipeline",
          *       "url": "https://hooks.acme.example/featureflip",
          *       "provider": "GenericHttp",
          *       "isEnabled": true,
@@ -8207,10 +8207,10 @@ export interface components {
             name: string;
             url: string;
             /**
-             * @description Allowed values: GenericHttp.
+             * @description Allowed values: GenericHttp, Slack.
              * @enum {string}
              */
-            provider: "GenericHttp";
+            provider: "GenericHttp" | "Slack";
             isEnabled: boolean;
             eventTypes: string[];
             projectIds: string[];

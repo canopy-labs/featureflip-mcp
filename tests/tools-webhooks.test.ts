@@ -25,6 +25,9 @@ const existing = {
   secrets: [],
 };
 
+const SLACK_URL = 'https://hooks.slack.com/services/T0/B0/abc';
+const slackHook = { ...existing, name: 'Releases', url: SLACK_URL, provider: 'Slack' };
+
 describe('webhook tools', () => {
   it('list_webhooks returns the page plus the event types a subscription can filter on', async () => {
     const { api, calls } = mockApi([
@@ -144,6 +147,51 @@ describe('webhook tools', () => {
       expect(result.isError).toBe(true);
       expect(calls).toHaveLength(0);
     });
+
+    it('creates a Slack destination when asked for one', async () => {
+      const { api, calls } = mockApi([{ method: 'POST', path: HOOKS, status: 201, json: { id: HOOK_ID, secret: 's' } }]);
+      const client = await connectClient({ api, org: ORG });
+
+      const result = await client.callTool({
+        name: 'manage_webhook',
+        arguments: { action: 'create', name: 'Releases', url: SLACK_URL, provider: 'Slack' },
+      });
+
+      expect(result.isError).toBeFalsy();
+      expect(calls[0].body).toEqual({ name: 'Releases', url: SLACK_URL, provider: 'Slack' });
+    });
+
+    it.each([undefined, 'GenericHttp'])(
+      'refuses a Slack webhook URL as a generic endpoint (provider %s), since Slack rejects every delivery',
+      async (provider) => {
+        const { api, calls } = mockApi([]);
+        const client = await connectClient({ api, org: ORG });
+
+        const result = await client.callTool({
+          name: 'manage_webhook',
+          arguments: { action: 'create', name: 'n', url: 'https://HOOKS.slack.com/services/T0/B0/x', provider },
+        });
+
+        expect(result.isError).toBe(true);
+        expect(text(result)).toContain('provider: "Slack"');
+        // Anyone holding a Slack webhook URL can post to the channel, so the error doesn't repeat it.
+        expect(text(result)).not.toContain('slack.com/services');
+        expect(calls).toHaveLength(0);
+      },
+    );
+
+    it('still creates a generic endpoint on another hooks.slack.com path', async () => {
+      const { api, calls } = mockApi([{ method: 'POST', path: HOOKS, status: 201, json: { id: HOOK_ID, secret: 's' } }]);
+      const client = await connectClient({ api, org: ORG });
+
+      const result = await client.callTool({
+        name: 'manage_webhook',
+        arguments: { action: 'create', name: 'n', url: 'https://hooks.slack.com/workflows/T0/A0/x' },
+      });
+
+      expect(result.isError).toBeFalsy();
+      expect(calls[0].body).toMatchObject({ provider: 'GenericHttp' });
+    });
   });
 
   describe('manage_webhook update', () => {
@@ -217,12 +265,68 @@ describe('webhook tools', () => {
       expect(result.isError).toBe(true);
       expect(calls).toHaveLength(0);
     });
+
+    it('refuses provider, which a subscription can never change, rather than ignoring it', async () => {
+      const { api, calls } = mockApi([]);
+      const client = await connectClient({ api, org: ORG });
+
+      const result = await client.callTool({
+        name: 'manage_webhook',
+        arguments: { action: 'update', id: HOOK_ID, provider: 'Slack' },
+      });
+
+      expect(result.isError).toBe(true);
+      expect(text(result)).toMatch(/provider/);
+      expect(calls).toHaveLength(0);
+    });
+
+    it('refuses pointing a generic subscription at a Slack webhook URL', async () => {
+      const { api, calls } = mockApi([{ method: 'GET', path: `${HOOKS}/${HOOK_ID}`, json: existing }]);
+      const client = await connectClient({ api, org: ORG });
+
+      const result = await client.callTool({
+        name: 'manage_webhook',
+        arguments: { action: 'update', id: HOOK_ID, url: SLACK_URL },
+      });
+
+      expect(result.isError).toBe(true);
+      expect(text(result)).toContain('provider: "Slack"');
+      expect(calls.some((c) => c.method === 'PUT')).toBe(false);
+    });
+
+    it('moves a Slack subscription to a new Slack webhook URL', async () => {
+      const { api, calls } = mockApi([
+        { method: 'GET', path: `${HOOKS}/${HOOK_ID}`, json: slackHook },
+        { method: 'PUT', path: `${HOOKS}/${HOOK_ID}`, status: 204 },
+      ]);
+      const client = await connectClient({ api, org: ORG });
+
+      const result = await client.callTool({
+        name: 'manage_webhook',
+        arguments: { action: 'update', id: HOOK_ID, url: 'https://hooks.slack.com/services/T0/B9/new' },
+      });
+
+      expect(result.isError).toBeFalsy();
+      expect(calls.find((c) => c.method === 'PUT')!.body).toMatchObject({ url: 'https://hooks.slack.com/services/T0/B9/new' });
+    });
+  });
+
+  it('manage_webhook rotate_secret refuses a Slack subscription, which never uses its secret', async () => {
+    const { api, calls } = mockApi([{ method: 'GET', path: `${HOOKS}/${HOOK_ID}`, json: slackHook }]);
+    const client = await connectClient({ api, org: ORG });
+
+    const result = await client.callTool({ name: 'manage_webhook', arguments: { action: 'rotate_secret', id: HOOK_ID } });
+
+    expect(result.isError).toBe(true);
+    expect(text(result)).toMatch(/Slack/);
+    expect(calls.some((c) => c.method === 'POST')).toBe(false);
   });
 
   it('manage_webhook delete / rotate_secret / retire_secret hit their endpoints', async () => {
     const SECRET_ID = '66666666-6666-4666-8666-666666666666';
     const { api, calls } = mockApi([
       { method: 'DELETE', path: `${HOOKS}/${HOOK_ID}`, status: 204 },
+      { method: 'GET', path: `${HOOKS}/${HOOK_ID}`, json: existing },
       { method: 'POST', path: `${HOOKS}/${HOOK_ID}/secrets`, status: 201, json: { secretId: SECRET_ID, secret: 'whsec_new', warning: 'Store this secret securely — it will not be shown again.' } },
       { method: 'DELETE', path: `${HOOKS}/${HOOK_ID}/secrets/${SECRET_ID}`, status: 204 },
     ]);
@@ -238,7 +342,8 @@ describe('webhook tools', () => {
     expect(payload(del)).toEqual({ deleted: HOOK_ID });
     expect(payload(rotated)).toMatchObject({ secretId: SECRET_ID, secret: 'whsec_new' });
     expect(payload(retired)).toEqual({ id: HOOK_ID, retiredSecretId: SECRET_ID });
-    expect(calls.map((c) => c.method)).toEqual(['DELETE', 'POST', 'DELETE']);
+    // rotate_secret reads the subscription first, to refuse a Slack one.
+    expect(calls.map((c) => c.method)).toEqual(['DELETE', 'GET', 'POST', 'DELETE']);
   });
 
   it('manage_webhook retire_secret requires secretId', async () => {
