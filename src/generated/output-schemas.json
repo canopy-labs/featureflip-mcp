@@ -660,25 +660,43 @@
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "description": "The environment's key."
         },
         "name": {
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "description": "The environment's display name."
         },
         "color": {
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "description": "The environment's display color, or null."
         },
         "sortOrder": {
           "type": [
             "integer",
             "null"
-          ]
+          ],
+          "description": "Position among the project's environments."
+        },
+        "requireChangeReason": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Require a change reason (X-Intent-Reason) on every change to flags in this environment. Business plan and above."
+        },
+        "requireConfirmation": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Ask dashboard users to type the environment key before a change lands. Dashboard only; not enforced by the API."
         }
       },
       "description": "Request body for `POST /api/v1/orgs/{org}/projects/{project}/environments`. Named\ndistinctly from the dashboard's own `CreateEnvironmentRequest`\n— both controllers share one Swagger document (see `Program.cs`'s `AddSwaggerGen``DocInclusionPredicate` override), and Swashbuckle's default schemaId is the bare type\nname, so an identical name in either namespace throws a schemaId collision at\n`--export-openapi` time."
@@ -767,7 +785,7 @@
           ]
         }
       },
-      "description": "Request body for `POST /api/v1/orgs/{org}/projects/{project}/flags`. Named distinctly\nfrom the dashboard's own `CreateFeatureFlagRequest`\n— see PublicCreateEnvironmentRequest for the\nschemaId-collision rationale (both controllers share one Swagger document). Type\nis passed through verbatim to Type, which itself takes a\nbare string (Boolean/String/Number/Json) rather than the domain enum — invalid values surface\nas the handler's own validation failure, not a controller-level 400. ExpiresAtUtc is\noptional and advisory; a bare date (`2026-12-01`) means the end of that day in UTC, and a full\ntimestamp is stored exactly. It must be in the future and requires the flag-expiration feature\n(400 `EXPIRY_IN_PAST` / `FEATURE_NOT_ENABLED`). OwnerEmail optionally names\nthe owner (an active member, matched case-insensitively; requires the flag-ownership feature —\n400 `OWNER_NOT_MEMBER` / `FEATURE_NOT_ENABLED`). Omitted, the owner is the caller when\nthe caller is a member, so a service token creates an unowned flag. IsPermanent marks\nthe flag permanent (a kill switch, ops toggle or entitlement that is meant to stay; never reported for\ncleanup). It requires the flag-permanence feature and can't be combined with ExpiresAtUtc\n(400 `FEATURE_NOT_ENABLED` / `PERMANENT_FLAG_HAS_EXPIRY`)."
+      "description": "Request body for `POST /api/v1/orgs/{org}/projects/{project}/flags`. Named distinctly\nfrom the dashboard's own `CreateFeatureFlagRequest`\n— see PublicCreateEnvironmentRequest for the\nschemaId-collision rationale (both controllers share one Swagger document). Type\nis passed through verbatim to Type, which itself takes a\nbare string (Boolean/String/Number/Json) rather than the domain enum — invalid values surface\nas the handler's own validation failure, not a controller-level 400. ExpiresAtUtc is\noptional and advisory; a bare date (`2026-12-01`) means the end of that day in UTC, and a full\ntimestamp is stored exactly. It must be in the future and requires the flag-expiration feature\n(400 `EXPIRY_IN_PAST` / `FEATURE_NOT_ENABLED`). OwnerEmail optionally names\nthe owner (an active member, matched case-insensitively; requires a plan that includes flag owners,\nPro and above — 400 `OWNER_NOT_MEMBER` / `PLAN_FEATURE_UNAVAILABLE`). Omitted, the owner is the caller when\nthe caller is a member, so a service token creates an unowned flag. IsPermanent marks\nthe flag permanent (a kill switch, ops toggle or entitlement that is meant to stay; never reported for\ncleanup). It requires the flag-permanence feature and can't be combined with ExpiresAtUtc\n(400 `FEATURE_NOT_ENABLED` / `PERMANENT_FLAG_HAS_EXPIRY`)."
     },
     "PublicCreateProjectRequest": {
       "type": [
@@ -1031,7 +1049,7 @@
             "string",
             "null"
           ],
-          "description": "Allowed values: GenericHttp, Slack."
+          "description": "Allowed values: GenericHttp, Slack, Datadog, Grafana."
         },
         "eventTypes": {
           "type": [
@@ -1068,9 +1086,15 @@
               "null"
             ]
           }
+        },
+        "credential": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       },
-      "description": "Creates a webhook subscription. `provider` is `GenericHttp`. Omit `eventTypes`,\n`projectIds` or `environmentIds` (or send an empty list) to receive every event,\nproject or environment. A token restricted to specific projects must list at least one project,\nall of them within its allowlist."
+      "description": "Creates a webhook subscription. `provider` is `GenericHttp`, `Slack` (an incoming\nwebhook url), `Datadog` (your site's Events API url) or `Grafana` (your Grafana's\n`/api/annotations` url). Datadog and Grafana also need `credential`: a Datadog API key\nor a Grafana service account token. It is stored encrypted and never returned. Omit `eventTypes`,\n`projectIds` or `environmentIds` (or send an empty list) to receive every event,\nproject or environment. A token restricted to specific projects must list at least one project,\nall of them within its allowlist."
     },
     "PublicCreateWebhookSubscriptionResponse": {
       "type": [
@@ -1130,31 +1154,50 @@
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "description": "The environment's id."
         },
         "key": {
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "description": "The environment's key."
         },
         "name": {
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "description": "The environment's display name."
         },
         "color": {
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "description": "The environment's display color, or null."
         },
         "sortOrder": {
           "type": [
             "integer",
             "null"
-          ]
+          ],
+          "description": "Position among the project's environments."
+        },
+        "requireChangeReason": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Require a change reason (X-Intent-Reason) on every change to flags in this environment. Business plan and above."
+        },
+        "requireConfirmation": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Ask dashboard users to type the environment key before a change lands. Dashboard only; not enforced by the API."
         },
         "_actions": {
           "type": [
@@ -2670,19 +2713,36 @@
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "description": "The environment's display name."
         },
         "color": {
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "description": "The environment's display color, or null."
         },
         "sortOrder": {
           "type": [
             "integer",
             "null"
-          ]
+          ],
+          "description": "Position among the project's environments."
+        },
+        "requireChangeReason": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Require a change reason (X-Intent-Reason) on every change to flags in this environment. Business plan and above. Omit on update to leave unchanged. Turning it off needs Admin or Owner and an X-Intent-Reason."
+        },
+        "requireConfirmation": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Ask dashboard users to type the environment key before a change lands. Dashboard only; not enforced by the API. Omit on update to leave unchanged. Turning it off needs Admin or Owner and an X-Intent-Reason."
         }
       },
       "description": "Request body for `PUT /api/v1/orgs/{org}/projects/{project}/environments/{env}`. See\nPublicCreateEnvironmentRequest for why this is named distinctly from the\ndashboard's `UpdateEnvironmentRequest`."
@@ -2985,9 +3045,15 @@
             "boolean",
             "null"
           ]
+        },
+        "credential": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       },
-      "description": "Replaces a subscription's configuration (full replace — omitted lists become empty, meaning\n\"all\"). `isEnabled` is required. The provider cannot be changed."
+      "description": "Replaces a subscription's configuration (full replace — omitted lists become empty, meaning\n\"all\"). `isEnabled` is required. The provider cannot be changed. `credential`\nreplaces a Datadog or Grafana subscription's stored credential; omit it to keep the current\none, unless the `url` changes, which needs the credential sent again."
     },
     "PublicVariationResponse": {
       "type": [
@@ -3196,7 +3262,7 @@
             "string",
             "null"
           ],
-          "description": "Allowed values: GenericHttp, Slack."
+          "description": "Allowed values: GenericHttp, Slack, Datadog, Grafana."
         },
         "isEnabled": {
           "type": [

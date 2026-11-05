@@ -4,7 +4,7 @@ import { enc } from '../client.js';
 import { errorResult, okJson, run } from '../errors.js';
 import type { ToolContext } from './context.js';
 import { apiOutput, nullable, oneOfOutputs, shape } from './outputs.js';
-import { environmentParam, pagination, projectParam } from './params.js';
+import { environmentParam, pagination, projectParam, reasonParam } from './params.js';
 
 // The plaintext key exists only in the create response; list and get carry its last four
 // characters. It is returned so an agent wiring up an SDK can put it in an .env file.
@@ -39,7 +39,8 @@ export function registerSdkKeyTools(server: McpServer, ctx: ToolContext): void {
         'Manage an environment\'s SDK keys. action=create needs name + type and returns the full key ONCE ' +
         '(ServerSide for backend SDKs, ClientSide for browser/mobile). action=rename needs sdkKey and changes ' +
         'only the fields you pass. action=revoke needs sdkKey and stops the key working immediately; apps still ' +
-        'using it lose flag updates. To rotate: create a new key, deploy it, then revoke the old one.',
+        'using it lose flag updates; revoking a critical environment\'s key needs a reason. To rotate: create a new ' +
+        'key, deploy it, then revoke the old one.',
       inputSchema: z.object({
         action: z.enum(['create', 'rename', 'revoke']).describe('create needs name + type; rename and revoke need sdkKey'),
         project: projectParam,
@@ -51,6 +52,7 @@ export function registerSdkKeyTools(server: McpServer, ctx: ToolContext): void {
           .enum(['ServerSide', 'ClientSide'])
           .optional()
           .describe('Required for create: ServerSide for backend SDKs, ClientSide for browser/mobile SDKs'),
+        reason: reasonParam,
       }),
       outputSchema: oneOfOutputs(
         // create: the API body plus a warning; spelled out because oneOf members can't use apiOutputWith.
@@ -63,7 +65,7 @@ export function registerSdkKeyTools(server: McpServer, ctx: ToolContext): void {
       ),
       annotations: { destructiveHint: true },
     },
-    async ({ action, project, environment, sdkKey, name, description, type }) =>
+    async ({ action, project, environment, sdkKey, name, description, type, reason }) =>
       run(async () => {
         const base = keys(project, environment);
         if (action === 'create') {
@@ -84,7 +86,7 @@ export function registerSdkKeyTools(server: McpServer, ctx: ToolContext): void {
           return okJson({ sdkKey, renamed: true, ...body });
         }
         // POST .../revoke returns 204 No Content.
-        await ctx.api.request('POST', `${path}/revoke`);
+        await ctx.api.request('POST', `${path}/revoke`, { reason });
         return okJson({ revoked: sdkKey });
       }),
   );

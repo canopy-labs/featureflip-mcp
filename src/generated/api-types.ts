@@ -276,8 +276,10 @@ export interface paths {
             };
         };
         /**
-         * Updates an environment's name/color/sort order.
+         * Updates an environment's name/color/sort order and critical settings.
          * @description Requires at least Member.
+         *     Turning `requireChangeReason` or `requireConfirmation` off requires Admin or Owner (403
+         *     otherwise) and a change reason (422 otherwise); turning either on does not.
          */
         put: {
             parameters: {
@@ -285,6 +287,8 @@ export interface paths {
                 header?: {
                     /** @description Optional. The ETag from a GET of this resource. The write applies only if the resource still has that ETag, meaning nothing in its body has changed since; otherwise 412 `precondition_failed`. `*` or no header applies the write unconditionally. */
                     "If-Match"?: string;
+                    /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
+                    "X-Intent-Reason"?: string;
                 };
                 path: {
                     org: string;
@@ -361,6 +365,18 @@ export interface paths {
                         "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
+                /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
+                422: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
                 /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
                 429: {
                     headers: {
@@ -380,14 +396,18 @@ export interface paths {
         post?: never;
         /**
          * Deletes an environment.
-         * @description Requires at least Member. Deleting a project's last environment
+         * @description Requires at least Member, and a change reason when the environment requires
+         *     one. Deleting a project's last environment
          *     throws the existing `LAST_ENVIRONMENT`ValidationException, which the
          *     exception filter maps to a 400 `validation_failed` envelope.
          */
         delete: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
+                    "X-Intent-Reason"?: string;
+                };
                 path: {
                     org: string;
                     project: string;
@@ -445,6 +465,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
+                422: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -869,7 +901,8 @@ export interface paths {
         };
         /**
          * Updates a flag's name/description/tags/client-side visibility.
-         * @description Requires at least Member.
+         * @description Requires at least Member. Changing
+         *     client-side visibility needs a change reason when any environment of the project requires one.
          *     Key and type are immutable via this endpoint (mirrors UpdateFeatureFlagCommand,
          *     which carries no `Key`/`Type`).
          */
@@ -879,6 +912,8 @@ export interface paths {
                 header?: {
                     /** @description Optional. The ETag from a GET of this resource. The write applies only if the resource still has that ETag, meaning nothing in its body has changed since; otherwise 412 `precondition_failed`. `*` or no header applies the write unconditionally. */
                     "If-Match"?: string;
+                    /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
+                    "X-Intent-Reason"?: string;
                 };
                 path: {
                     org: string;
@@ -955,6 +990,18 @@ export interface paths {
                         "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
+                /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
+                422: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
                 /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
                 429: {
                     headers: {
@@ -982,7 +1029,10 @@ export interface paths {
         delete: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
+                    "X-Intent-Reason"?: string;
+                };
                 path: {
                     org: string;
                     project: string;
@@ -1040,6 +1090,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
+                422: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -1291,8 +1353,8 @@ export interface paths {
         /**
          * Assigns the flag's owner by email.
          * @description Requires at least Member. The email must belong to an
-         *     active member of the organization (400 `OWNER_NOT_MEMBER`) and the flag-ownership feature
-         *     must be enabled (400 `FEATURE_NOT_ENABLED`).
+         *     active member of the organization (400 `OWNER_NOT_MEMBER`), and the organization's plan
+         *     must include flag owners, Pro and above (400 `PLAN_FEATURE_UNAVAILABLE`).
          */
         put: {
             parameters: {
@@ -1390,8 +1452,8 @@ export interface paths {
         post?: never;
         /**
          * Leaves the flag unowned.
-         * @description Requires at least Member. Always allowed, even when the
-         *      flag-ownership feature is disabled.
+         * @description Requires at least Member. Always allowed, including on a
+         *      plan without flag owners.
          */
         delete: {
             parameters: {
@@ -1910,7 +1972,10 @@ export interface paths {
                      */
                     force?: boolean;
                 };
-                header?: never;
+                header?: {
+                    /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
+                    "X-Intent-Reason"?: string;
+                };
                 path: {
                     org: string;
                     project: string;
@@ -1968,6 +2033,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
+                422: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -2018,7 +2095,10 @@ export interface paths {
         post: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
+                    "X-Intent-Reason"?: string;
+                };
                 path: {
                     org: string;
                     project: string;
@@ -2076,6 +2156,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
+                422: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -2298,6 +2390,8 @@ export interface paths {
                 header?: {
                     /** @description Optional. The ETag from a GET of this resource. The write applies only if the resource still has that ETag, meaning nothing in its body has changed since; otherwise 412 `precondition_failed`. `*` or no header applies the write unconditionally. */
                     "If-Match"?: string;
+                    /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
+                    "X-Intent-Reason"?: string;
                 };
                 path: {
                     org: string;
@@ -2387,6 +2481,18 @@ export interface paths {
                         "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
+                /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
+                422: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
                 /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
                 429: {
                     headers: {
@@ -2426,7 +2532,10 @@ export interface paths {
         post: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
+                    "X-Intent-Reason"?: string;
+                };
                 path: {
                     org: string;
                     project: string;
@@ -2491,6 +2600,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
+                422: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -2740,6 +2861,8 @@ export interface paths {
                 header?: {
                     /** @description Optional. The ETag from a GET of this resource. The write applies only if the resource still has that ETag, meaning nothing in its body has changed since; otherwise 412 `precondition_failed`. `*` or no header applies the write unconditionally. */
                     "If-Match"?: string;
+                    /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
+                    "X-Intent-Reason"?: string;
                 };
                 path: {
                     org: string;
@@ -2829,6 +2952,18 @@ export interface paths {
                         "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
+                /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
+                422: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
                 /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
                 429: {
                     headers: {
@@ -2871,7 +3006,10 @@ export interface paths {
         post: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
+                    "X-Intent-Reason"?: string;
+                };
                 path: {
                     org: string;
                     project: string;
@@ -2938,6 +3076,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
+                422: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -3072,6 +3222,8 @@ export interface paths {
                 header?: {
                     /** @description Optional. The ETag from a GET of this resource. The write applies only if the resource still has that ETag, meaning nothing in its body has changed since; otherwise 412 `precondition_failed`. `*` or no header applies the write unconditionally. */
                     "If-Match"?: string;
+                    /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
+                    "X-Intent-Reason"?: string;
                 };
                 path: {
                     org: string;
@@ -3162,6 +3314,18 @@ export interface paths {
                         "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
+                /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
+                422: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
                 /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
                 429: {
                     headers: {
@@ -3186,7 +3350,10 @@ export interface paths {
         delete: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
+                    "X-Intent-Reason"?: string;
+                };
                 path: {
                     org: string;
                     project: string;
@@ -3256,6 +3423,18 @@ export interface paths {
                         "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
+                /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
+                422: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
                 /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
                 429: {
                     headers: {
@@ -3293,7 +3472,10 @@ export interface paths {
         put: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
+                    "X-Intent-Reason"?: string;
+                };
                 path: {
                     org: string;
                     project: string;
@@ -3368,6 +3550,18 @@ export interface paths {
                         "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
+                /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
+                422: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
                 /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
                 429: {
                     headers: {
@@ -3409,7 +3603,10 @@ export interface paths {
         post: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
+                    "X-Intent-Reason"?: string;
+                };
                 path: {
                     org: string;
                     project: string;
@@ -3485,6 +3682,18 @@ export interface paths {
                         "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
+                /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
+                422: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
                 /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
                 429: {
                     headers: {
@@ -3522,7 +3731,10 @@ export interface paths {
         put: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
+                    "X-Intent-Reason"?: string;
+                };
                 path: {
                     org: string;
                     project: string;
@@ -3597,6 +3809,18 @@ export interface paths {
                         "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
+                /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
+                422: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
                 /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
                 429: {
                     headers: {
@@ -3626,7 +3850,10 @@ export interface paths {
         delete: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
+                    "X-Intent-Reason"?: string;
+                };
                 path: {
                     org: string;
                     project: string;
@@ -3685,6 +3912,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
+                422: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -4254,12 +4493,16 @@ export interface paths {
         post?: never;
         /**
          * Deletes a project.
-         * @description Requires at least Member.
+         * @description Requires at least Member, and a change reason when any of its environments
+         *      requires one.
          */
         delete: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
+                    "X-Intent-Reason"?: string;
+                };
                 path: {
                     org: string;
                     project: string;
@@ -4316,6 +4559,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
+                422: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -4939,12 +5194,15 @@ export interface paths {
         put?: never;
         /**
          * Revokes an SDK key.
-         * @description Requires at least Member.
+         * @description Requires at least Member, and a change reason when its environment requires one.
          */
         post: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
+                    "X-Intent-Reason"?: string;
+                };
                 path: {
                     org: string;
                     project: string;
@@ -5003,6 +5261,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
+                422: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -5128,7 +5398,10 @@ export interface paths {
         post: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
+                    "X-Intent-Reason"?: string;
+                };
                 path: {
                     org: string;
                     project: string;
@@ -5193,6 +5466,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
+                422: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -5331,6 +5616,8 @@ export interface paths {
                 header?: {
                     /** @description Optional. The ETag from a GET of this resource. The write applies only if the resource still has that ETag, meaning nothing in its body has changed since; otherwise 412 `precondition_failed`. `*` or no header applies the write unconditionally. */
                     "If-Match"?: string;
+                    /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
+                    "X-Intent-Reason"?: string;
                 };
                 path: {
                     org: string;
@@ -5419,6 +5706,18 @@ export interface paths {
                         "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
+                /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
+                422: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
                 /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
                 429: {
                     headers: {
@@ -5443,7 +5742,10 @@ export interface paths {
         delete: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
+                    "X-Intent-Reason"?: string;
+                };
                 path: {
                     org: string;
                     project: string;
@@ -5501,6 +5803,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
+                422: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -5929,7 +6243,9 @@ export interface paths {
          * Replaces a webhook subscription's configuration.
          * @description Requires Admin. Omitted lists become empty,
          *     which means "all". Re-enabling a subscription that is over the plan's webhook allowance (after
-         *     a downgrade) is a 403 `plan_limit_reached`.
+         *     a downgrade) is a 403 `plan_limit_reached`. Omit `credential` to keep the stored
+         *     one, except when changing the `url` of a Datadog or Grafana subscription: that needs
+         *     the credential again.
          */
         put: {
             parameters: {
@@ -6926,11 +7242,21 @@ export interface components {
          *     }
          */
         PublicCreateEnvironmentRequest: {
+            /** @description The environment's key. */
             key: string;
+            /** @description The environment's display name. */
             name: string;
+            /** @description The environment's display color, or null. */
             color?: string | null;
-            /** Format: int32 */
+            /**
+             * Format: int32
+             * @description Position among the project's environments.
+             */
             sortOrder?: number;
+            /** @description Require a change reason (X-Intent-Reason) on every change to flags in this environment. Business plan and above. */
+            requireChangeReason?: boolean | null;
+            /** @description Ask dashboard users to type the environment key before a change lands. Dashboard only; not enforced by the API. */
+            requireConfirmation?: boolean | null;
         };
         /**
          * @description Request body for `POST /api/v1/orgs/{org}/projects/{project}/flags`. Named distinctly
@@ -6943,8 +7269,8 @@ export interface components {
          *     optional and advisory; a bare date (`2026-12-01`) means the end of that day in UTC, and a full
          *     timestamp is stored exactly. It must be in the future and requires the flag-expiration feature
          *     (400 `EXPIRY_IN_PAST` / `FEATURE_NOT_ENABLED`). OwnerEmail optionally names
-         *     the owner (an active member, matched case-insensitively; requires the flag-ownership feature —
-         *     400 `OWNER_NOT_MEMBER` / `FEATURE_NOT_ENABLED`). Omitted, the owner is the caller when
+         *     the owner (an active member, matched case-insensitively; requires a plan that includes flag owners,
+         *     Pro and above — 400 `OWNER_NOT_MEMBER` / `PLAN_FEATURE_UNAVAILABLE`). Omitted, the owner is the caller when
          *     the caller is a member, so a service token creates an unowned flag. IsPermanent marks
          *     the flag permanent (a kill switch, ops toggle or entitlement that is meant to stay; never reported for
          *     cleanup). It requires the flag-permanence feature and can't be combined with ExpiresAtUtc
@@ -7145,7 +7471,10 @@ export interface components {
             description?: string | null;
         };
         /**
-         * @description Creates a webhook subscription. `provider` is `GenericHttp`. Omit `eventTypes`,
+         * @description Creates a webhook subscription. `provider` is `GenericHttp`, `Slack` (an incoming
+         *     webhook url), `Datadog` (your site's Events API url) or `Grafana` (your Grafana's
+         *     `/api/annotations` url). Datadog and Grafana also need `credential`: a Datadog API key
+         *     or a Grafana service account token. It is stored encrypted and never returned. Omit `eventTypes`,
          *     `projectIds` or `environmentIds` (or send an empty list) to receive every event,
          *     project or environment. A token restricted to specific projects must list at least one project,
          *     all of them within its allowlist.
@@ -7169,13 +7498,14 @@ export interface components {
             name: string;
             url: string;
             /**
-             * @description Allowed values: GenericHttp, Slack.
+             * @description Allowed values: GenericHttp, Slack, Datadog, Grafana.
              * @enum {string}
              */
-            provider: "GenericHttp" | "Slack";
+            provider: "GenericHttp" | "Slack" | "Datadog" | "Grafana";
             eventTypes?: string[] | null;
             projectIds?: string[] | null;
             environmentIds?: string[] | null;
+            credential?: string | null;
         };
         /**
          * @description The created subscription's id and its signing secret. The secret is shown only here.
@@ -7216,17 +7546,32 @@ export interface components {
          *       "key": "production",
          *       "name": "Production",
          *       "color": "#16A34A",
-         *       "sortOrder": 2
+         *       "sortOrder": 2,
+         *       "requireChangeReason": false,
+         *       "requireConfirmation": false
          *     }
          */
         PublicEnvironmentResponse: {
-            /** Format: uuid */
+            /**
+             * Format: uuid
+             * @description The environment's id.
+             */
             id: string;
+            /** @description The environment's key. */
             key: string;
+            /** @description The environment's display name. */
             name: string;
+            /** @description The environment's display color, or null. */
             color?: string | null;
-            /** Format: int32 */
+            /**
+             * Format: int32
+             * @description Position among the project's environments.
+             */
             sortOrder: number;
+            /** @description Require a change reason (X-Intent-Reason) on every change to flags in this environment. Business plan and above. */
+            requireChangeReason: boolean;
+            /** @description Ask dashboard users to type the environment key before a change lands. Dashboard only; not enforced by the API. */
+            requireConfirmation: boolean;
             /** @description Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it. */
             _actions?: {
                 [key: string]: components["schemas"]["ActionCapability"];
@@ -7981,10 +8326,19 @@ export interface components {
          *     dashboard's `UpdateEnvironmentRequest`.
          */
         PublicUpdateEnvironmentRequest: {
+            /** @description The environment's display name. */
             name: string;
+            /** @description The environment's display color, or null. */
             color?: string | null;
-            /** Format: int32 */
+            /**
+             * Format: int32
+             * @description Position among the project's environments.
+             */
             sortOrder?: number;
+            /** @description Require a change reason (X-Intent-Reason) on every change to flags in this environment. Business plan and above. Omit on update to leave unchanged. Turning it off needs Admin or Owner and an X-Intent-Reason. */
+            requireChangeReason?: boolean | null;
+            /** @description Ask dashboard users to type the environment key before a change lands. Dashboard only; not enforced by the API. Omit on update to leave unchanged. Turning it off needs Admin or Owner and an X-Intent-Reason. */
+            requireConfirmation?: boolean | null;
         };
         /**
          * @description Request body for `PUT /api/v1/orgs/{org}/projects/{project}/flags/{flag}`. See
@@ -8090,7 +8444,9 @@ export interface components {
         };
         /**
          * @description Replaces a subscription's configuration (full replace — omitted lists become empty, meaning
-         *     "all"). `isEnabled` is required. The provider cannot be changed.
+         *     "all"). `isEnabled` is required. The provider cannot be changed. `credential`
+         *     replaces a Datadog or Grafana subscription's stored credential; omit it to keep the current
+         *     one, unless the `url` changes, which needs the credential sent again.
          */
         PublicUpdateWebhookSubscriptionRequest: {
             name: string;
@@ -8099,6 +8455,7 @@ export interface components {
             projectIds?: string[] | null;
             environmentIds?: string[] | null;
             isEnabled?: boolean | null;
+            credential?: string | null;
         };
         /**
          * @description A single variation on a flag, as returned in Variations.
@@ -8207,10 +8564,10 @@ export interface components {
             name: string;
             url: string;
             /**
-             * @description Allowed values: GenericHttp, Slack.
+             * @description Allowed values: GenericHttp, Slack, Datadog, Grafana.
              * @enum {string}
              */
-            provider: "GenericHttp" | "Slack";
+            provider: "GenericHttp" | "Slack" | "Datadog" | "Grafana";
             isEnabled: boolean;
             eventTypes: string[];
             projectIds: string[];

@@ -10,6 +10,14 @@ export const flagParam = z.string().describe('Flag key or id');
 
 export const environmentParam = z.string().describe('Environment key, e.g. production');
 
+export const reasonParam = z
+  .string()
+  .optional()
+  .describe(
+    'Why you are making this change. Recorded in the audit log, and required when the environment (or, for ' +
+      'project-wide changes, any environment in the project) is marked critical.',
+  );
+
 export const pagination = {
   limit: z.number().int().min(1).max(100).optional().describe('Page size (default 20)'),
   cursor: z.string().optional().describe('next_cursor from a previous response'),

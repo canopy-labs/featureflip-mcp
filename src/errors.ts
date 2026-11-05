@@ -38,6 +38,9 @@ export function errorResult(err: unknown): ToolResult {
           'read it itself and lost a race: call it again.',
       );
     }
+    if (e.error === 'change_reason_required') {
+      lines.push('Retry this tool call with the `reason` argument explaining why you are making the change.');
+    }
     if (e.docs_url) lines.push(`Docs: ${e.docs_url}`);
     return { content: [{ type: 'text', text: lines.join('\n') }], isError: true };
   }

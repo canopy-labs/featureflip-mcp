@@ -5,7 +5,7 @@ import { errorResult, okJson, run } from '../errors.js';
 import type { ToolContext } from './context.js';
 import { apiOutputWith, endpoint, objectOutput, oneOfOutputs, shape } from './outputs.js';
 import { etagOutput, ifMatchParam, withEtag, writtenEtagOutput } from './etag.js';
-import { environmentParam, flagParam, projectParam } from './params.js';
+import { environmentParam, flagParam, projectParam, reasonParam } from './params.js';
 
 const conditionSchema = z.object({
   attribute: z.string().describe('Context attribute name, e.g. plan, country, user_id'),
@@ -86,6 +86,7 @@ export function registerTargetingTools(server: McpServer, ctx: ToolContext): voi
         environment: environmentParam,
         rules: z.array(ruleSchema).describe('The complete ordered rule list; rules left out are deleted'),
         ifMatch: ifMatchParam('get_targeting'),
+        reason: reasonParam,
       }),
       outputSchema: objectOutput(
         {
@@ -99,13 +100,14 @@ export function registerTargetingTools(server: McpServer, ctx: ToolContext): voi
       ),
       annotations: { destructiveHint: true },
     },
-    async ({ project, flag, environment, rules, ifMatch }) =>
+    async ({ project, flag, environment, rules, ifMatch, reason }) =>
       run(async () => {
         // PUT .../environments/{env}/targeting returns 204 No Content — nothing to pass
         // through, so confirm the applied state instead of echoing an (undefined) response body.
         const { etag } = await ctx.api.requestWithEtag('PUT', targetingUrl(project, flag, environment), {
           body: { rules: rules.map(withGroups) },
           ifMatch,
+          reason,
         });
         return okJson(withEtag({ data: { project, flag, environment, rulesReplaced: rules.length }, etag }));
       }),
@@ -143,6 +145,7 @@ export function registerTargetingTools(server: McpServer, ctx: ToolContext): voi
         ruleId: z.string().optional().describe('Rule id from get_targeting; required for update and remove'),
         rule: ruleSchema.optional().describe('Rule fields; required for add and update'),
         ruleIds: z.array(z.string()).optional().describe('Every rule id exactly once, in evaluation order; required for reorder'),
+        reason: reasonParam,
       }),
       outputSchema: oneOfOutputs(
         endpoint('POST /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/rules'),
@@ -152,18 +155,18 @@ export function registerTargetingTools(server: McpServer, ctx: ToolContext): voi
       ),
       annotations: { destructiveHint: true },
     },
-    async ({ action, project, flag, environment, ruleId, rule, ruleIds }) =>
+    async ({ action, project, flag, environment, ruleId, rule, ruleIds, reason }) =>
       run(async () => {
         const base = `/api/v1/orgs/${enc(ctx.org)}/projects/${enc(project)}/flags/${enc(flag)}/environments/${enc(environment)}/rules`;
         if (action === 'add') {
           if (!rule) return errorResult(new Error('action=add requires rule'));
           // POST returns 201 with the created rule — pass it through.
-          return okJson(await ctx.api.request('POST', base, { body: withGroups(rule) }));
+          return okJson(await ctx.api.request('POST', base, { body: withGroups(rule), reason }));
         }
         if (action === 'reorder') {
           if (!ruleIds) return errorResult(new Error('action=reorder requires ruleIds (see get_targeting)'));
           // PUT .../rules/reorder returns 204 No Content.
-          await ctx.api.request('PUT', `${base}/reorder`, { body: { ruleIds } });
+          await ctx.api.request('PUT', `${base}/reorder`, { body: { ruleIds }, reason });
           return okJson({ reordered: ruleIds });
         }
         if (!ruleId) return errorResult(new Error(`action=${action} requires ruleId (see get_targeting)`));
@@ -195,11 +198,11 @@ export function registerTargetingTools(server: McpServer, ctx: ToolContext): voi
               })),
           };
           // PUT returns 204 No Content — confirm instead.
-          await ctx.api.request('PUT', path, { body, ifMatch: etag });
+          await ctx.api.request('PUT', path, { body, ifMatch: etag, reason });
           return okJson({ ruleId, updated: true });
         }
         // DELETE returns 204 No Content.
-        await ctx.api.request('DELETE', path);
+        await ctx.api.request('DELETE', path, { reason });
         return okJson({ removed: ruleId });
       }),
   );

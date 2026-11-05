@@ -322,6 +322,59 @@ describe('webhook tools', () => {
     expect(calls.some((c) => c.method === 'POST')).toBe(false);
   });
 
+  it('manage_webhook creates a Datadog destination with its credential', async () => {
+    const { api, calls } = mockApi([
+      { method: 'POST', path: HOOKS, status: 201, json: { id: HOOK_ID, secret: 'whsec_x', warning: 'w' } },
+    ]);
+    const client = await connectClient({ api, org: ORG });
+    const DD = 'https://event-management-intake.datadoghq.com/api/v2/events';
+
+    const result = await client.callTool({
+      name: 'manage_webhook',
+      arguments: { action: 'create', name: 'DD', url: DD, provider: 'Datadog', credential: 'dd-key' },
+    });
+
+    expect(result.isError).toBeFalsy();
+    expect(calls[0].body).toEqual({ name: 'DD', url: DD, provider: 'Datadog', credential: 'dd-key' });
+    expect(text(result)).not.toContain('dd-key');
+  });
+
+  it('manage_webhook sends a credential on update only when given, and never echoes it', async () => {
+    const grafana = { ...existing, provider: 'Grafana', url: 'https://g.example.com/api/annotations' };
+    const { api, calls } = mockApi([
+      { method: 'GET', path: `${HOOKS}/${HOOK_ID}`, json: grafana },
+      { method: 'PUT', path: `${HOOKS}/${HOOK_ID}`, status: 204 },
+      { method: 'GET', path: `${HOOKS}/${HOOK_ID}`, json: grafana },
+      { method: 'PUT', path: `${HOOKS}/${HOOK_ID}`, status: 204 },
+    ]);
+    const client = await connectClient({ api, org: ORG });
+
+    const keep = await client.callTool({ name: 'manage_webhook', arguments: { action: 'update', id: HOOK_ID, name: 'G2' } });
+    const replace = await client.callTool({
+      name: 'manage_webhook',
+      arguments: { action: 'update', id: HOOK_ID, credential: 'glsa_new' },
+    });
+
+    const puts = calls.filter((c) => c.method === 'PUT');
+    expect(puts[0].body).not.toHaveProperty('credential');
+    expect(puts[1].body).toMatchObject({ credential: 'glsa_new' });
+    expect(text(keep)).not.toContain('credential');
+    expect(text(replace)).not.toContain('glsa_new');
+  });
+
+  it('manage_webhook rotate_secret refuses a Datadog subscription, which uses a credential', async () => {
+    const { api, calls } = mockApi([
+      { method: 'GET', path: `${HOOKS}/${HOOK_ID}`, json: { ...existing, provider: 'Datadog' } },
+    ]);
+    const client = await connectClient({ api, org: ORG });
+
+    const result = await client.callTool({ name: 'manage_webhook', arguments: { action: 'rotate_secret', id: HOOK_ID } });
+
+    expect(result.isError).toBe(true);
+    expect(text(result)).toMatch(/Datadog/);
+    expect(calls.some((c) => c.method === 'POST')).toBe(false);
+  });
+
   it('manage_webhook delete / rotate_secret / retire_secret hit their endpoints', async () => {
     const SECRET_ID = '66666666-6666-4666-8666-666666666666';
     const { api, calls } = mockApi([

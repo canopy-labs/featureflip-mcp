@@ -23,6 +23,8 @@ export interface RequestOptions {
   body?: unknown;
   idempotencyKey?: string;
   ifMatch?: string;
+  /** Why the change is made: sent as X-Intent-Reason on every attempt. */
+  reason?: string;
 }
 
 // ETags are quoted strings, and the quotes are part of the value. An agent copying the etag
@@ -84,6 +86,9 @@ export class FeatureflipApi {
     }
     if (options.idempotencyKey) headers['Idempotency-Key'] = options.idempotencyKey;
     if (options.ifMatch) headers['If-Match'] = quoteEtag(options.ifMatch);
+    // Built once, outside the retry loop, so every replay carries the same reason. Percent-encoded UTF-8:
+    // fetch throws on header values with characters above U+00FF or newlines, and the server decodes it.
+    if (options.reason?.trim()) headers['X-Intent-Reason'] = encodeURIComponent(options.reason);
 
     // A request that is safe to replay retries every transient failure. An unkeyed
     // POST retries only a 503: after a 502/504 or a dropped connection it may already

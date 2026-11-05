@@ -152,13 +152,20 @@ export function registerWebhookTools(server: McpServer, ctx: ToolContext): void 
         'action=create requires name + url and returns the signing secret. action=update/delete/rotate_secret/' +
         'retire_secret require id. provider (create only, default GenericHttp) is the destination type: a Slack ' +
         'incoming webhook URL (https://hooks.slack.com/services/...) needs provider: "Slack", which posts ' +
-        "readable channel messages; a subscription's provider can never change. update changes only the " +
+        'readable channel messages; provider: "Datadog" sends Events API change events (url is your site\'s ' +
+        'https://event-management-intake.<site>/api/v2/events) and provider: "Grafana" creates annotations (url is ' +
+        'https://<your grafana>/api/annotations). Datadog and Grafana require credential (a Datadog API key, or a ' +
+        'Grafana service account token that can create annotations, e.g. Editor); GenericHttp and Slack refuse it. ' +
+        'credential is write-only: stored encrypted, never returned, and never echoed in this tool\'s output. ' +
+        "A subscription's provider can never change. update changes only the " +
         'fields you pass and keeps the rest; pass an empty list to widen that filter back to "all". projects ' +
         'take project keys or ids; environments take "<project>/<environment>" keys (e.g. "web/production") ' +
         'or ids. eventTypes come from list_webhooks → availableEventTypes. create and rotate_secret return a ' +
-        'secret that is NEVER shown again: relay it to the user verbatim so they can store it. Slack ' +
+        'secret that is NEVER shown again: relay it to the user verbatim so they can store it (for a ' +
+        'GenericHttp subscription only: Slack, Datadog and Grafana never check it, so skip it there). Slack ' +
         "doesn't verify signatures, so a Slack subscription's secret is unused and rotate_secret is refused " +
-        'for one. rotate_secret adds a new active secret while the old one keeps signing; retire_secret ' +
+        'for one, and so are Datadog and Grafana ones, which authenticate with credential instead. On update, omit credential to ' +
+        'keep the stored one; changing the url of a Datadog or Grafana subscription requires sending credential again. rotate_secret adds a new active secret while the old one keeps signing; retire_secret ' +
         '(secretId from list_webhooks) removes one and is refused for the last active secret. A project-restricted service token must list at least one project, all in its scope. ' +
         ACCESS_NOTE,
       inputSchema: z.object({
@@ -169,9 +176,20 @@ export function registerWebhookTools(server: McpServer, ctx: ToolContext): void 
         name: z.string().optional().describe('Required for create'),
         url: z.string().optional().describe('Receiver URL; required for create'),
         provider: z
-          .enum(['GenericHttp', 'Slack'])
+          .enum(['GenericHttp', 'Slack', 'Datadog', 'Grafana'])
           .optional()
-          .describe('create only. Slack for a hooks.slack.com/services/ URL; GenericHttp (default) for your own endpoint'),
+          .describe(
+            'create only. Slack for a hooks.slack.com/services/ URL; Datadog or Grafana for those destinations ' +
+              '(credential required); GenericHttp (default) for your own endpoint',
+          ),
+        credential: z
+          .string()
+          .optional()
+          .describe(
+            'Write-only. Datadog API key or Grafana service account token (permission to create annotations). ' +
+              'Required on create for Datadog and Grafana, refused for GenericHttp and Slack. On update, omit to keep ' +
+              'the stored one; required again when changing url on a Datadog or Grafana subscription. Never returned.',
+          ),
         eventTypes: z.array(z.string()).optional().describe('Event types to send; empty or omitted = all'),
         projects: z
           .array(z.string())
@@ -206,7 +224,7 @@ export function registerWebhookTools(server: McpServer, ctx: ToolContext): void 
       ),
       annotations: { destructiveHint: true },
     },
-    async ({ action, id, name, url, provider, eventTypes, projects, environments, enabled, secretId, idempotency_key }) =>
+    async ({ action, id, name, url, provider, credential, eventTypes, projects, environments, enabled, secretId, idempotency_key }) =>
       run(async () => {
         if (provider && action !== 'create') {
           return errorResult(
@@ -229,7 +247,7 @@ export function registerWebhookTools(server: McpServer, ctx: ToolContext): void 
           // POST returns 201 with { id, secret, warning } — pass it through so the secret reaches the user.
           return okJson(
             await ctx.api.request('POST', base, {
-              body: { name, url, provider: destination, eventTypes, projectIds, environmentIds },
+              body: { name, url, provider: destination, credential, eventTypes, projectIds, environmentIds },
               idempotencyKey: idempotency_key,
             }),
           );
@@ -256,8 +274,9 @@ export function registerWebhookTools(server: McpServer, ctx: ToolContext): void 
             environmentIds: environmentIds ?? current.environmentIds,
             isEnabled: enabled ?? current.isEnabled,
           };
-          // PUT returns 204 No Content — confirm what was applied instead.
-          await ctx.api.request('PUT', hook(id), { body, ifMatch: etag });
+          // PUT returns 204 No Content — confirm what was applied instead. The credential goes on the wire
+          // only when supplied (omitting it keeps the stored one) and is never echoed back.
+          await ctx.api.request('PUT', hook(id), { body: credential ? { ...body, credential } : body, ifMatch: etag });
           return okJson({ id, updated: true, ...body });
         }
 
@@ -269,6 +288,14 @@ export function registerWebhookTools(server: McpServer, ctx: ToolContext): void 
         if (action === 'rotate_secret') {
           // The API allows it, but the new secret would be one more thing the user is told to store for nothing.
           const current = await ctx.api.request<Subscription>('GET', hook(id));
+          if (current.provider === 'Datadog' || current.provider === 'Grafana') {
+            return errorResult(
+              new Error(
+                `This is a ${current.provider} subscription. It authenticates with its credential, not a signing secret, ` +
+                  'so rotating a secret changes nothing. To replace the credential, update the subscription and pass credential.',
+              ),
+            );
+          }
           if (current.provider === 'Slack') {
             return errorResult(
               new Error(

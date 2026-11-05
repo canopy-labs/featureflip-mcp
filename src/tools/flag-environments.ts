@@ -4,7 +4,7 @@ import { enc } from '../client.js';
 import { okJson, run } from '../errors.js';
 import type { ToolContext } from './context.js';
 import { apiOutput, nullable, objectOutput, shape } from './outputs.js';
-import { environmentParam, flagParam, projectParam } from './params.js';
+import { environmentParam, flagParam, projectParam, reasonParam } from './params.js';
 import type { components } from '../generated/api-types.js';
 
 const strategies = z.enum(['SingleVariation', 'PercentageRollout', 'TargetedRollout']);
@@ -28,6 +28,7 @@ export function registerFlagEnvironmentTools(server: McpServer, ctx: ToolContext
         flag: flagParam,
         environment: environmentParam,
         enabled: z.boolean().describe('true to turn the flag on in this environment, false to turn it off'),
+        reason: reasonParam,
       }),
       outputSchema: objectOutput(
         { project: { type: 'string' }, flag: { type: 'string' }, environment: { type: 'string' }, enabled: { type: 'boolean' } },
@@ -35,12 +36,13 @@ export function registerFlagEnvironmentTools(server: McpServer, ctx: ToolContext
       ),
       annotations: { destructiveHint: true },
     },
-    async ({ project, flag, environment, enabled }) =>
+    async ({ project, flag, environment, enabled, reason }) =>
       run(async () => {
         // POST .../toggle returns 204 No Content — nothing to pass through, so confirm the
         // applied state instead of echoing an (undefined) response body.
         await ctx.api.request('POST', `${flagBase(project, flag)}/environments/${enc(environment)}/toggle`, {
           body: { enabled },
+          reason,
         });
         return okJson({ project, flag, environment, enabled });
       }),
@@ -68,6 +70,7 @@ export function registerFlagEnvironmentTools(server: McpServer, ctx: ToolContext
             'Flags that must evaluate to the expected variation before this flag serves. ' +
               'Omit to leave existing prerequisites untouched; pass a list (possibly empty) to replace them wholesale.',
           ),
+        reason: reasonParam,
       }),
       outputSchema: objectOutput(
         { project: { type: 'string' }, flag: { type: 'string' }, environment: { type: 'string' }, defaultVariationId: { type: 'string' }, strategy: { type: 'string' }, prerequisites: {
@@ -78,10 +81,10 @@ export function registerFlagEnvironmentTools(server: McpServer, ctx: ToolContext
       ),
       annotations: { destructiveHint: true },
     },
-    async ({ project, flag, environment, ...body }) =>
+    async ({ project, flag, environment, reason, ...body }) =>
       run(async () => {
         // PUT .../environments/{env} returns 204 No Content — nothing to pass through.
-        await ctx.api.request('PUT', `${flagBase(project, flag)}/environments/${enc(environment)}`, { body });
+        await ctx.api.request('PUT', `${flagBase(project, flag)}/environments/${enc(environment)}`, { body, reason });
         return okJson({ project, flag, environment, ...body });
       }),
   );

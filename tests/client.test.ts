@@ -87,6 +87,40 @@ describe('FeatureflipApi.request', () => {
     expect(fetchImpl.mock.calls.map((c) => c[1].headers['If-Match'])).toEqual(['"abc"', '"abc"', 'W/"abc"']);
   });
 
+  it('sends reason as X-Intent-Reason, and omits a blank one', async () => {
+    const fetchImpl = vi.fn().mockImplementation(async () => new Response(null, { status: 204 }));
+    const api = new FeatureflipApi({ token: 't', baseUrl: 'https://api.test', fetchImpl });
+    await api.request('POST', '/x', { body: {}, reason: 'Incident 42' });
+    await api.request('POST', '/x', { body: {}, reason: '  ' });
+    await api.request('POST', '/x', { body: {} });
+    expect(fetchImpl.mock.calls[0][1].headers['X-Intent-Reason']).toBe('Incident%2042');
+    expect(fetchImpl.mock.calls[1][1].headers['X-Intent-Reason']).toBeUndefined();
+    expect(fetchImpl.mock.calls[2][1].headers['X-Intent-Reason']).toBeUndefined();
+  });
+
+  it('percent-encodes a non-ASCII or multi-line reason so fetch accepts it', async () => {
+    const fetchImpl = vi.fn().mockImplementation(async () => new Response(null, { status: 204 }));
+    const api = new FeatureflipApi({ token: 't', baseUrl: 'https://api.test', fetchImpl });
+    for (const reason of ['Incident 42 — rollback ✅ “quoted”', 'line one\nline two']) {
+      await api.request('POST', '/x', { body: {}, reason });
+      const sent = fetchImpl.mock.calls.at(-1)![1].headers['X-Intent-Reason'];
+      expect(sent).toMatch(/^[\x20-\x7e]+$/);
+      expect(decodeURIComponent(sent)).toBe(reason);
+    }
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps X-Intent-Reason on a retried attempt', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(new Response(null, { status: 503 }))
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
+    const api = new FeatureflipApi({ token: 't', baseUrl: 'https://api.test', fetchImpl, sleep: noSleep });
+    await api.request('POST', '/x', { body: {}, reason: 'Incident 42' });
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    expect(fetchImpl.mock.calls[1][1].headers['X-Intent-Reason']).toBe('Incident%2042');
+  });
+
   it('requestWithEtag returns the body and the ETag header', async () => {
     const fetchImpl = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ key: 'f' }), { status: 200, headers: { 'content-type': 'application/json', ETag: '"abc"' } }),

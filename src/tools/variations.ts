@@ -4,7 +4,7 @@ import { enc } from '../client.js';
 import { errorResult, okJson, run } from '../errors.js';
 import type { ToolContext } from './context.js';
 import { endpoint, oneOfOutputs, shape } from './outputs.js';
-import { flagParam, projectParam } from './params.js';
+import { flagParam, projectParam, reasonParam } from './params.js';
 
 export function registerVariationTools(server: McpServer, ctx: ToolContext): void {
   server.registerTool(
@@ -23,6 +23,7 @@ export function registerVariationTools(server: McpServer, ctx: ToolContext): voi
         name: z.string().optional().describe('Display name'),
         value: z.string().optional().describe('Variation value serialized as a string; required for add'),
         description: z.string().optional().describe('What this variation means'),
+        reason: reasonParam,
       }),
       outputSchema: oneOfOutputs(
         endpoint('POST /api/v1/orgs/{org}/projects/{project}/flags/{flag}/variations'),
@@ -31,7 +32,7 @@ export function registerVariationTools(server: McpServer, ctx: ToolContext): voi
       ),
       annotations: { destructiveHint: true },
     },
-    async ({ project, flag, action, variationId, key, name, value, description }) =>
+    async ({ project, flag, action, variationId, key, name, value, description, reason }) =>
       run(async () => {
         const base = `/api/v1/orgs/${enc(ctx.org)}/projects/${enc(project)}/flags/${enc(flag)}/variations`;
         if (action === 'add') {
@@ -39,7 +40,7 @@ export function registerVariationTools(server: McpServer, ctx: ToolContext): voi
             return errorResult(new Error('action=add requires key and value'));
           }
           // POST /variations returns 201 with the created variation body — pass it through.
-          return okJson(await ctx.api.request('POST', base, { body: { key, name, value, description } }));
+          return okJson(await ctx.api.request('POST', base, { body: { key, name, value, description }, reason }));
         }
         if (!variationId) {
           return errorResult(new Error(`action=${action} requires variationId (see get_flag for ids)`));
@@ -47,11 +48,11 @@ export function registerVariationTools(server: McpServer, ctx: ToolContext): voi
         if (action === 'update') {
           // PUT /variations/{id} returns 204 No Content — nothing to pass through, so confirm
           // the applied change instead of echoing an (undefined) response body.
-          await ctx.api.request('PUT', `${base}/${enc(variationId)}`, { body: { name, value, description } });
+          await ctx.api.request('PUT', `${base}/${enc(variationId)}`, { body: { name, value, description }, reason });
           return okJson({ updated: variationId });
         }
         // DELETE /variations/{id} returns 204 No Content.
-        await ctx.api.request('DELETE', `${base}/${enc(variationId)}`);
+        await ctx.api.request('DELETE', `${base}/${enc(variationId)}`, { reason });
         return okJson({ removed: variationId });
       }),
   );

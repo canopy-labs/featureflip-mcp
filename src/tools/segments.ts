@@ -5,7 +5,7 @@ import { errorResult, okJson, run } from '../errors.js';
 import type { ToolContext } from './context.js';
 import { apiOutput, apiOutputWith, endpoint, nullable, oneOfOutputs, shape } from './outputs.js';
 import { etagOutput, ifMatchParam, withEtag, writtenEtagOutput } from './etag.js';
-import { pagination, projectParam } from './params.js';
+import { pagination, projectParam, reasonParam } from './params.js';
 
 export function registerSegmentTools(server: McpServer, ctx: ToolContext): void {
   server.registerTool(
@@ -96,6 +96,7 @@ export function registerSegmentTools(server: McpServer, ctx: ToolContext): void 
           .optional()
           .describe('Conditions a user must match to be in the segment; on update, replaces the whole list'),
         ifMatch: ifMatchParam('get_segment'),
+        reason: reasonParam,
       }),
       outputSchema: oneOfOutputs(
         endpoint('POST /api/v1/orgs/{org}/projects/{project}/segments'),
@@ -114,7 +115,7 @@ export function registerSegmentTools(server: McpServer, ctx: ToolContext): void 
       ),
       annotations: { destructiveHint: true },
     },
-    async ({ action, project, segment, key, name, description, conditions, ifMatch }) =>
+    async ({ action, project, segment, key, name, description, conditions, ifMatch, reason }) =>
       run(async () => {
         const base = `/api/v1/orgs/${enc(ctx.org)}/projects/${enc(project)}/segments`;
         // The API refuses If-Match on POST and DELETE. Writing without it would quietly drop the
@@ -128,7 +129,7 @@ export function registerSegmentTools(server: McpServer, ctx: ToolContext): void 
           if (!key || !name) return errorResult(new Error('action=create requires key and name'));
           // POST returns 201 with the created segment — pass it through. The API requires conditions.
           return okJson(
-            await ctx.api.request('POST', base, { body: { key, name, description, conditions: conditions ?? [] } }),
+            await ctx.api.request('POST', base, { body: { key, name, description, conditions: conditions ?? [] }, reason }),
           );
         }
         if (!segment) return errorResult(new Error(`action=${action} requires segment (see list_segments)`));
@@ -145,11 +146,11 @@ export function registerSegmentTools(server: McpServer, ctx: ToolContext): void 
             conditions: conditions ?? (current.conditions ?? []).map(plain),
           };
           // PUT returns 204 No Content — confirm what was applied instead.
-          const { etag } = await ctx.api.requestWithEtag('PUT', path, { body, ifMatch: ifMatch ?? readEtag });
+          const { etag } = await ctx.api.requestWithEtag('PUT', path, { body, ifMatch: ifMatch ?? readEtag, reason });
           return okJson(withEtag({ data: { segment, updated: true, ...body }, etag }));
         }
         // DELETE returns 204 No Content.
-        await ctx.api.request('DELETE', path);
+        await ctx.api.request('DELETE', path, { reason });
         return okJson({ deleted: segment });
       }),
   );

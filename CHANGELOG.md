@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.7.0 — 2026-11-04
+
+### Added
+
+- Critical environments. `manage_environment` takes `require_change_reason` and `require_confirmation` on create and update (omit either on update to leave it unchanged), and `list_environments` returns both. An environment with `require_change_reason` needs a reason on every write to it. The write tools take an optional `reason`, sent as `X-Intent-Reason` and recorded in the audit log: `manage_environment`, `toggle_flag`, `update_flag_environment_config`, `update_targeting`, `manage_targeting_rule`, `manage_segment`, `manage_variation`, `delete_flag`, `archive_flag` and `restore_flag`. A write the API refuses with `change_reason_required` now tells the agent to retry with `reason`. Needs the API's critical environments (#4639). (#4994)
+- `update_flag` and `manage_sdk_key` take `reason` too. The API requires one when a `clientSideVisible` change touches a project with a critical environment, and when revoking a critical environment's SDK key (#4999, #5000). (#5028)
+- `manage_webhook` takes `provider: "Datadog"` (Events API change events) or `provider: "Grafana"` (annotations) on create. Both need a write-only `credential`, a Datadog API key or a Grafana service account token, which is stored encrypted and never returned. On update, omit `credential` to keep the stored one; changing the `url` of a Datadog or Grafana subscription needs it again. `rotate_secret` is refused on these subscriptions, which authenticate with the credential instead. Needs the API's Datadog and Grafana destinations (#4650). (#4979)
+
+### Changed
+
+- Turning a critical setting off through `manage_environment` needs an Admin or Owner token as well as a `reason` (#4998). (#5028)
+
 ## 0.6.0 — 2026-11-03
 
 ### Added

@@ -5,7 +5,7 @@ import { okJson, run } from '../errors.js';
 import type { ToolContext } from './context.js';
 import { apiOutput, apiOutputWith, nullable, objectOutput } from './outputs.js';
 import { etagOutput, ifMatchParam, withEtag, writtenEtagOutput } from './etag.js';
-import { flagParam, pagination, projectParam } from './params.js';
+import { flagParam, pagination, projectParam, reasonParam } from './params.js';
 import { ownerFilter, resolveOwner } from './owner.js';
 
 const flagTypes = z.enum(['Boolean', 'String', 'Number', 'Json']);
@@ -117,6 +117,7 @@ export function registerFlagTools(server: McpServer, ctx: ToolContext): void {
       title: 'Update feature flag metadata',
       description:
         'Update flag name/description/tags/clientSideVisible. Changes only the fields you pass and keeps the rest; ' +
+        'changing clientSideVisible needs a reason when any environment of the project is critical. ' +
         'pass description: "" to clear it. Key and type are immutable. ' +
         'Use toggle_flag / update_targeting for behavior changes. ' +
         'Pass ifMatch (the etag from get_flag) to refuse the write if the flag changed since you read it.',
@@ -131,6 +132,7 @@ export function registerFlagTools(server: McpServer, ctx: ToolContext): void {
           .optional()
           .describe('Expose to client-side SDKs (browser/mobile); false hides the flag from them entirely'),
         ifMatch: ifMatchParam('get_flag'),
+        reason: reasonParam,
       }),
       outputSchema: objectOutput(
         { project: { type: 'string' }, flag: { type: 'string' }, updated: { type: 'boolean' }, etag: writtenEtagOutput },
@@ -138,7 +140,7 @@ export function registerFlagTools(server: McpServer, ctx: ToolContext): void {
       ),
       annotations: { destructiveHint: true },
     },
-    async ({ project, flag, name, description, tags, clientSideVisible, ifMatch }) =>
+    async ({ project, flag, name, description, tags, clientSideVisible, ifMatch, reason }) =>
       run(async () => {
         const path = `${base(project)}/${enc(flag)}`;
         // PUT is a full replace: a missing name is a 400 and a missing description clears it (#3220).
@@ -156,7 +158,7 @@ export function registerFlagTools(server: McpServer, ctx: ToolContext): void {
         };
         // PUT .../flags/{flag} returns 204 No Content — nothing to pass through.
         // The agent's ifMatch covers its whole read-to-write gap; our own read's ETag covers just this call.
-        const { etag } = await ctx.api.requestWithEtag('PUT', path, { body, ifMatch: ifMatch ?? read?.etag });
+        const { etag } = await ctx.api.requestWithEtag('PUT', path, { body, ifMatch: ifMatch ?? read?.etag, reason });
         return okJson(withEtag({ data: { project, flag, updated: true }, etag }));
       }),
   );
@@ -270,16 +272,16 @@ export function registerFlagTools(server: McpServer, ctx: ToolContext): void {
       description:
         'PERMANENTLY delete a flag across all environments. Fails with FLAG_HAS_DEPENDENTS if other flags use it as a prerequisite. ' +
         'Prefer archive_flag unless the flag must be fully removed.',
-      inputSchema: z.object({ project: projectParam, flag: flagParam }),
+      inputSchema: z.object({ project: projectParam, flag: flagParam, reason: reasonParam }),
       outputSchema: objectOutput(
         { deleted: { type: 'string' } },
         ['deleted'],
       ),
       annotations: { destructiveHint: true },
     },
-    async ({ project, flag }) =>
+    async ({ project, flag, reason }) =>
       run(async () => {
-        await ctx.api.request('DELETE', `${base(project)}/${enc(flag)}`);
+        await ctx.api.request('DELETE', `${base(project)}/${enc(flag)}`, { reason });
         return okJson({ deleted: flag });
       }),
   );
@@ -305,6 +307,7 @@ export function registerFlagTools(server: McpServer, ctx: ToolContext): void {
             'Archive even though traffic is still evaluating the flag. Only for clients that can never ' +
               'be updated (old mobile app versions), where traffic will never drain on its own.',
           ),
+        reason: reasonParam,
       }),
       outputSchema: objectOutput(
         { flag: { type: 'string' }, archived: { type: 'boolean' } },
@@ -312,11 +315,12 @@ export function registerFlagTools(server: McpServer, ctx: ToolContext): void {
       ),
       annotations: { destructiveHint: true },
     },
-    async ({ project, flag, force }) =>
+    async ({ project, flag, force, reason }) =>
       run(async () => {
         // POST .../archive returns 204 No Content — nothing to pass through.
         await ctx.api.request('POST', `${base(project)}/${enc(flag)}/archive`, {
           query: force ? { force: true } : {},
+          reason,
         });
         return okJson({ flag, archived: true });
       }),
@@ -327,17 +331,17 @@ export function registerFlagTools(server: McpServer, ctx: ToolContext): void {
     {
       title: 'Restore archived flag',
       description: 'Restore a previously archived flag.',
-      inputSchema: z.object({ project: projectParam, flag: flagParam }),
+      inputSchema: z.object({ project: projectParam, flag: flagParam, reason: reasonParam }),
       outputSchema: objectOutput(
         { flag: { type: 'string' }, archived: { type: 'boolean' } },
         ['flag', 'archived'],
       ),
       annotations: { destructiveHint: false },
     },
-    async ({ project, flag }) =>
+    async ({ project, flag, reason }) =>
       run(async () => {
         // POST .../restore returns 204 No Content — nothing to pass through.
-        await ctx.api.request('POST', `${base(project)}/${enc(flag)}/restore`);
+        await ctx.api.request('POST', `${base(project)}/${enc(flag)}/restore`, { reason });
         return okJson({ flag, archived: false });
       }),
   );
