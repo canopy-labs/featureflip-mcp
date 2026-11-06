@@ -1,6 +1,6 @@
 {
   "name": "@featureflip/mcp",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "mcpName": "io.github.canopy-labs/featureflip",
   "description": "MCP server for managing Featureflip feature flags from AI agents and editors",
   "keywords": [
@@ -50,7 +50,7 @@
   "devDependencies": {
     "@modelcontextprotocol/client": "2.4.0",
     "@typescript/typescript6": "^6.0.2",
-    "@types/node": "^26.6.5",
+    "@types/node": "^26.6.6",
     "typescript": "^7.0.2",
     "vite": "^8.3.5",
     "vite-plugin-dts": "^5.1.2",

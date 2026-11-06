@@ -32,14 +32,14 @@ describe('full tool surface', () => {
     expect(readOnly).toEqual(
       [
         'list_projects', 'list_environments', 'list_sdk_keys', 'list_segments', 'get_segment',
-        'list_flags', 'get_flag', 'flag_status', 'flag_evaluations', 'get_targeting', 'find_stale_flags', 'list_removal_candidates',
+        'list_flags', 'get_flag', 'flag_status', 'flag_evaluations', 'compare_environments', 'get_targeting', 'find_stale_flags', 'list_removal_candidates',
         'list_webhooks', 'list_webhook_deliveries',
       ].sort(),
     );
     const destructive = tools.filter((t) => t.annotations?.destructiveHint).map((t) => t.name).sort();
     expect(destructive).toEqual(
       [
-        'delete_flag', 'archive_flag', 'toggle_flag', 'update_flag_environment_config',
+        'delete_flag', 'archive_flag', 'toggle_flag', 'update_flag_environment_config', 'copy_flag_config',
         // update_flag is not metadata-only: clientSideVisible decides whether the
         // browser/React/Swift SDKs can see the flag at all, so a bad write breaks
         // client-side evaluation the same way a targeting change would.

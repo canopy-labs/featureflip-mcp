@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.8.0 — 2026-11-06
+
+### Added
+
+- `compare_environments` lists the flags whose configuration differs between two environments and which sections differ (state, default variation, strategy, rules, prerequisites). `copy_flag_config` copies one flag's targeting from one environment into another. It previews by default (`dry_run: true`) and changes nothing; on/off is copied only with `include_state: true`. To apply, call again with `dry_run: false` and both of the preview's ETags as `source_etag` and `target_etag` (an apply without both is refused); a 412 means something changed, so preview again. Copying needs the Team plan or above, and a `reason` when the target is a critical environment. Needs the API's environment compare and copy (#4643). (#5094)
+
+### Changed
+
+- The `Dockerfile`'s build and runtime stages move from `node:24-alpine` to `node:26-alpine`, the Active LTS line since 2026-10-28 (#5074).
+
 ## 0.7.0 — 2026-11-04
 
 ### Added

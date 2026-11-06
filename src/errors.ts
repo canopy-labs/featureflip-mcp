@@ -15,7 +15,12 @@ export function okJson(data: unknown): ToolResult {
   return isObject ? { content, structuredContent: data as Record<string, unknown> } : { content };
 }
 
-export function errorResult(err: unknown): ToolResult {
+export interface ErrorOptions {
+  /** Replaces the generic 412 advice (ifMatch / re-read) for tools whose precondition is not an ifMatch. */
+  preconditionFailedHint?: string;
+}
+
+export function errorResult(err: unknown, options: ErrorOptions = {}): ToolResult {
   if (err instanceof ApiError) {
     const e = err.envelope;
     const lines = [`Featureflip API error ${err.status} (${e.error}): ${e.message}`];
@@ -33,6 +38,7 @@ export function errorResult(err: unknown): ToolResult {
     }
     if (err.status === 412) {
       lines.push(
+        options.preconditionFailedHint ??
         'The resource changed since it was read. If you passed ifMatch, re-read it (get_flag / get_targeting / ' +
           'get_segment), re-apply your change to what you read, and retry with the new etag. Otherwise the tool ' +
           'read it itself and lost a race: call it again.',

@@ -5,20 +5,28 @@
     "GET /api/v1/orgs/{org}/projects/{project}/environments/{env}": "PublicEnvironmentResponse",
     "POST /api/v1/orgs/{org}/projects/{project}/flags": "PublicFlagResponse",
     "GET /api/v1/orgs/{org}/projects/{project}/flags": "PublicFlagListItemPagedResult",
+    "GET /api/v1/orgs/{org}/projects/{project}/flags/{flag}/compare": "PublicFlagComparison",
     "GET /api/v1/orgs/{org}/projects/{project}/flags/removal-candidates": "PublicFlagRemovalCandidatePagedResult",
     "GET /api/v1/orgs/{org}/projects/{project}/flags/{flag}": "PublicFlagResponse",
     "GET /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}": "PublicFlagEnvConfigResponse",
+    "POST /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/copy": "PublicCopyResult",
     "GET /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/evaluations": "PublicFlagEvaluationsResponse",
     "GET /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/targeting": "PublicTargetingConfigResponse",
     "POST /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/rules": "PublicTargetingRuleResponse",
     "GET /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/rules/{ruleId}": "PublicTargetingRuleResponse",
     "POST /api/v1/orgs/{org}/projects/{project}/flags/{flag}/variations": "PublicVariationResponse",
+    "POST /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/triggers": "PublicFlagTriggerWithUrlResponse",
+    "GET /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/triggers": "PublicFlagTriggerResponsePagedResult",
+    "GET /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/triggers/{trigger}": "PublicFlagTriggerResponse",
+    "PUT /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/triggers/{trigger}": "PublicFlagTriggerResponse",
+    "POST /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/triggers/{trigger}/rotate": "PublicFlagTriggerWithUrlResponse",
     "GET /api/v1/me": "MeResponse",
     "GET /api/v1/orgs": "OrganizationResponsePagedResult",
     "GET /api/v1/orgs/{org}": "OrganizationResponse",
     "POST /api/v1/orgs/{org}/projects": "ProjectResponse",
     "GET /api/v1/orgs/{org}/projects": "ProjectResponsePagedResult",
     "GET /api/v1/orgs/{org}/projects/{project}": "ProjectResponse",
+    "GET /api/v1/orgs/{org}/projects/{project}/compare": "PublicFlagComparisonRowPagedResult",
     "GET /api/v1/orgs/{org}/projects/{project}/default-flag-lifetime/impact": "PublicDefaultFlagLifetimeImpact",
     "POST /api/v1/orgs/{org}/projects/{project}/environments/{env}/sdk-keys": "PublicCreateSdkKeyResponse",
     "GET /api/v1/orgs/{org}/projects/{project}/environments/{env}/sdk-keys": "PublicSdkKeyResponsePagedResult",
@@ -650,6 +658,141 @@
       },
       "description": "A variation's configured share of a rollout rule."
     },
+    "PublicCopyFlagConfigRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "includeState": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "dryRun": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "expectedSourceETag": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "expectedTargetETag": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "Request body for `POST .../flags/{flag}/environments/{env}/copy`. `source` is the environment to copy\nfrom (key or id) and is required; the rest are optional. `dryRun: true` previews without writing and ignores\nthe ETags."
+    },
+    "PublicCopyResult": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "changed": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "changedSections": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "before": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PublicEnvironmentSnapshot"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "after": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PublicEnvironmentSnapshot"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sourceETag": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "targetETag": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "warnings": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicCopyWarning"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "description": "Response of `POST .../flags/{flag}/environments/{env}/copy`, for a dry run and an apply alike.\n`targetETag` is the target's tag after an apply and before it on a dry run, so a dry run's tags are\nwhat the apply sends back as `expectedSourceETag` / `expectedTargetETag`."
+    },
+    "PublicCopyWarning": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "code": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "message": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "A non-blocking note about a copy."
+    },
     "PublicCreateEnvironmentRequest": {
       "type": [
         "object",
@@ -786,6 +929,33 @@
         }
       },
       "description": "Request body for `POST /api/v1/orgs/{org}/projects/{project}/flags`. Named distinctly\nfrom the dashboard's own `CreateFeatureFlagRequest`\n— see PublicCreateEnvironmentRequest for the\nschemaId-collision rationale (both controllers share one Swagger document). Type\nis passed through verbatim to Type, which itself takes a\nbare string (Boolean/String/Number/Json) rather than the domain enum — invalid values surface\nas the handler's own validation failure, not a controller-level 400. ExpiresAtUtc is\noptional and advisory; a bare date (`2026-12-01`) means the end of that day in UTC, and a full\ntimestamp is stored exactly. It must be in the future and requires the flag-expiration feature\n(400 `EXPIRY_IN_PAST` / `FEATURE_NOT_ENABLED`). OwnerEmail optionally names\nthe owner (an active member, matched case-insensitively; requires a plan that includes flag owners,\nPro and above — 400 `OWNER_NOT_MEMBER` / `PLAN_FEATURE_UNAVAILABLE`). Omitted, the owner is the caller when\nthe caller is a member, so a service token creates an unowned flag. IsPermanent marks\nthe flag permanent (a kill switch, ops toggle or entitlement that is meant to stay; never reported for\ncleanup). It requires the flag-permanence feature and can't be combined with ExpiresAtUtc\n(400 `FEATURE_NOT_ENABLED` / `PERMANENT_FLAG_HAS_EXPIRY`)."
+    },
+    "PublicCreateFlagTriggerRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "action": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "Request body for `POST .../triggers`. Action is `\"Enable\"` or\n`\"Disable\"`, parsed against the names only. Named apart from the dashboard's\n`CreateFlagTriggerRequest`: both controllers share one Swagger document."
     },
     "PublicCreateProjectRequest": {
       "type": [
@@ -1267,6 +1437,96 @@
       },
       "description": "A page of results plus an opaque cursor for the next page, or null when this is the last\npage. Wire keys are frozen: `items` (already lowercase under the camelCase policy) and\n`next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`)."
     },
+    "PublicEnvironmentSideSummary": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "isEnabled": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "ruleCount": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "prerequisiteCount": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "description": "One side's headline numbers in a project-level comparison row."
+    },
+    "PublicEnvironmentSnapshot": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "isEnabled": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "defaultVariation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PublicKeyedRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "strategy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "rules": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicSnapshotRule"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "prerequisites": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicPrerequisiteDto"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "description": "A flag's configuration in one environment, as a comparison or copy result reports it."
+    },
     "PublicEvaluationSource": {
       "type": [
         "object",
@@ -1388,6 +1648,213 @@
         }
       },
       "description": "One variation's evaluations."
+    },
+    "PublicFlagComparison": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "flagKey": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "differences": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "base": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PublicFlagComparisonSide"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "other": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PublicFlagComparisonSide"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "description": "Response of `GET .../flags/{flag}/compare`."
+    },
+    "PublicFlagComparisonRow": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "flagKey": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "flagName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "tags": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "ownerUserId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "differences": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "base": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PublicEnvironmentSideSummary"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "other": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PublicEnvironmentSideSummary"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "description": "One flag in `GET .../projects/{project}/compare`. `differences` lists the sections that differ\n(`state`, `defaultVariation`, `strategy`, `rules`, `prerequisites`). A side is null when\nthe flag has no configuration in that environment."
+    },
+    "PublicFlagComparisonRowPagedResult": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "items": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicFlagComparisonRow"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "A page of results plus an opaque cursor for the next page, or null when this is the last\npage. Wire keys are frozen: `items` (already lowercase under the camelCase policy) and\n`next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`)."
+    },
+    "PublicFlagComparisonSide": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "config": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PublicFlagEnvConfigResponse"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "targeting": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PublicTargetingConfigResponse"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "snapshot": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PublicEnvironmentSnapshot"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ruleHasMatchInOther": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "description": "Per rule in evaluation order: whether the other environment has an equal rule."
+        }
+      },
+      "description": "One environment's side of a per-flag comparison."
     },
     "PublicFlagEnvConfigResponse": {
       "type": [
@@ -1956,6 +2423,170 @@
         }
       },
       "description": "Public detail representation of a feature flag, returned by\n`GET .../flags/{flag}` and the body of a successful create. Drops internal/dashboard-only\nfields present on FeatureFlagDto — notably `ProjectId` (implicit in the\nroute) and `Staleness` (an internal analytics signal, not part of the public contract).\nEffectiveExpiresAtUtc is when the flag counts as past expiry, from its own ExpiresAtUtc\nor its project's default lifetime; ExpirySource says which (`explicit` / `project-default`),\nboth null when neither applies."
+    },
+    "PublicFlagTriggerResponse": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "action": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "enabled": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "secretLastFour": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "createdAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "updatedAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "lastFiredAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "A flag trigger (#4651) as `/api/v1` returns it. Carries only the secret's last four characters:\nthe URL is returned once, by PublicFlagTriggerWithUrlResponse. Flag and environment are\nimplicit in the route."
+    },
+    "PublicFlagTriggerResponsePagedResult": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "items": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicFlagTriggerResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "A page of results plus an opaque cursor for the next page, or null when this is the last\npage. Wire keys are frozen: `items` (already lowercase under the camelCase policy) and\n`next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`)."
+    },
+    "PublicFlagTriggerWithUrlResponse": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "trigger": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PublicFlagTriggerResponse"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "endpoint": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "secret": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "warning": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "The only response that carries a trigger's secret: create and rotate. Fire it by POSTing to\nUrl, or to Endpoint with `Authorization: Bearer {Secret}`, which keeps\nthe secret out of the URL. Anyone holding either can fire the trigger, so store it as a secret in the\nmonitoring tool."
+    },
+    "PublicKeyedRef": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "An id with its key and name beside it, as the other v1 responses pair them. Key and name are null only for a deleted target."
     },
     "PublicPlanLimit": {
       "type": [
@@ -2534,6 +3165,69 @@
       },
       "description": "Request body for `PUT /api/v1/orgs/{org}/projects/{project}/flags/{flag}/removal-pr`: the\npull request that removes this flag from code, as opened by the Featureflip Flag Cleanup Action.\nA dedicated sub-resource for the same reason as expiry and owner. `url` must be an https\npull request URL (`https://{host}/{owner}/{repo}/pull/{number}`)."
     },
+    "PublicSnapshotRule": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "variation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PublicKeyedRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "segment": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PublicKeyedRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rolloutPercentage": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "bucketBy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "conditionGroups": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicConditionGroupResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "description": "A targeting rule as a comparison or copy shows it: the variation and segment with key and name, and the\ncondition groups in the shape the targeting endpoints return."
+    },
     "PublicTargetingConfigResponse": {
       "type": [
         "object",
@@ -2823,6 +3517,33 @@
         }
       },
       "description": "Request body for `PUT .../flags/{flag}/environments/{env}`. Named distinctly from the\ndashboard's own `UpdateFlagEnvironmentConfigurationRequest`\n— see PublicCreateEnvironmentRequest for the schemaId-collision rationale (both\ncontrollers share one Swagger document). Strategy is passed through verbatim to\nStrategy\n— the existing command validator name-allowlists it (SingleVariation/PercentageRollout/\nTargetedRollout or null), so an invalid value surfaces as the handler's own 400, not a\ncontroller-level guard. A null Prerequisites leaves prerequisites untouched; a\nnon-null list replaces them wholesale (mirrors UpdateFlagPrerequisitesCommand's\nreplace-all semantics)."
+    },
+    "PublicUpdateFlagTriggerRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "enabled": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "description": "Request body for `PUT .../triggers/{trigger}`. The action is fixed at creation. Enabled is\nnullable so leaving it out is a 400 rather than a bound `false` that silently turns the trigger off."
     },
     "PublicUpdateProjectRequest": {
       "type": [

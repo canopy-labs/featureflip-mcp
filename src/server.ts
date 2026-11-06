@@ -7,6 +7,7 @@ import { registerSdkKeyTools } from './tools/sdk-keys.js';
 import { registerSegmentTools } from './tools/segments.js';
 import { registerFlagTools } from './tools/flags.js';
 import { registerFlagEnvironmentTools } from './tools/flag-environments.js';
+import { registerEnvironmentComparisonTools } from './tools/environment-comparison.js';
 import { registerTargetingTools } from './tools/targeting.js';
 import { registerVariationTools } from './tools/variations.js';
 import { registerWebhookTools } from './tools/webhooks.js';
@@ -21,6 +22,7 @@ export function createServer(ctx: ToolContext): McpServer {
   registerSegmentTools(server, ctx);
   registerFlagTools(server, ctx);
   registerFlagEnvironmentTools(server, ctx);
+  registerEnvironmentComparisonTools(server, ctx);
   registerTargetingTools(server, ctx);
   registerVariationTools(server, ctx);
   registerWebhookTools(server, ctx);

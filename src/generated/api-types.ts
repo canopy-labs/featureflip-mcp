@@ -710,6 +710,107 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/orgs/{org}/projects/{project}/flags/{flag}/compare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Compares the resolved flag's configuration between two environments (`base` and `other`, key or id), side by side: each side carries the flag's environment config and targeting rules, and `ruleHasMatchInOther` marks per rule whether the other environment has an equal one.
+         * @description A side is null where
+         *     the flag has no configuration. Open to any role. Routed as `{flag}/compare` so a flag keyed
+         *     `compare` stays addressable.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    base?: string;
+                    other?: string;
+                };
+                header?: never;
+                path: {
+                    org: string;
+                    project: string;
+                    flag: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicFlagComparison"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Authentication is required, or the supplied API token is invalid or expired. */
+                401: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
+                429: {
+                    headers: {
+                        /** @description Number of seconds to wait before retrying the request. */
+                        "Retry-After"?: number;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/orgs/{org}/projects/{project}/flags/removal-candidates": {
         parameters: {
             query?: never;
@@ -2516,6 +2617,152 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/copy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Copies the resolved flag's targeting (default variation, strategy, rules, prerequisites, and with `includeState` the on/off state) from `source` (key or id) into this environment, all or nothing.
+         * @description With `dryRun` it only previews, ignoring the ETags and needing neither a change reason nor a writable
+         *     organization. Both return what changed plus `sourceETag`/`targetETag`; an apply that sends
+         *     `expectedSourceETag`/`expectedTargetETag` from the preview is refused with 412
+         *     `precondition_failed` if either environment changed since. Requires at least Member and the plan's
+         *     copy feature (400 `PLAN_FEATURE_UNAVAILABLE`).
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
+                    "X-Intent-Reason"?: string;
+                };
+                path: {
+                    org: string;
+                    project: string;
+                    flag: string;
+                    env: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["PublicCopyFlagConfigRequest"];
+                    "text/json": components["schemas"]["PublicCopyFlagConfigRequest"];
+                    "application/*+json": components["schemas"]["PublicCopyFlagConfigRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicCopyResult"];
+                    };
+                };
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Authentication is required, or the supplied API token is invalid or expired. */
+                401: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Precondition Failed */
+                412: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
+                422: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
+                429: {
+                    headers: {
+                        /** @description Number of seconds to wait before retrying the request. */
+                        "Retry-After"?: number;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/toggle": {
         parameters: {
             query?: never;
@@ -3955,6 +4202,635 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/triggers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lists the flag's triggers in the environment, cursor-paginated. */
+        get: {
+            parameters: {
+                query?: {
+                    limit?: number;
+                    cursor?: string;
+                };
+                header?: never;
+                path: {
+                    org: string;
+                    project: string;
+                    flag: string;
+                    env: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicFlagTriggerResponsePagedResult"];
+                    };
+                };
+                /** @description Authentication is required, or the supplied API token is invalid or expired. */
+                401: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
+                429: {
+                    headers: {
+                        /** @description Number of seconds to wait before retrying the request. */
+                        "Retry-After"?: number;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /**
+         * Creates a trigger.
+         * @description Returns its URL exactly once.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
+                    "X-Intent-Reason"?: string;
+                };
+                path: {
+                    org: string;
+                    project: string;
+                    flag: string;
+                    env: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["PublicCreateFlagTriggerRequest"];
+                    "text/json": components["schemas"]["PublicCreateFlagTriggerRequest"];
+                    "application/*+json": components["schemas"]["PublicCreateFlagTriggerRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicFlagTriggerWithUrlResponse"];
+                    };
+                };
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Authentication is required, or the supplied API token is invalid or expired. */
+                401: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
+                422: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
+                429: {
+                    headers: {
+                        /** @description Number of seconds to wait before retrying the request. */
+                        "Retry-After"?: number;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/triggers/{trigger}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Gets a trigger by id. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    org: string;
+                    project: string;
+                    flag: string;
+                    env: string;
+                    trigger: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicFlagTriggerResponse"];
+                    };
+                };
+                /** @description Authentication is required, or the supplied API token is invalid or expired. */
+                401: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
+                429: {
+                    headers: {
+                        /** @description Number of seconds to wait before retrying the request. */
+                        "Retry-After"?: number;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        /**
+         * Renames a trigger, replaces its description, or turns it off and on.
+         * @description Requires at least Member.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: {
+                    /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
+                    "X-Intent-Reason"?: string;
+                };
+                path: {
+                    org: string;
+                    project: string;
+                    flag: string;
+                    env: string;
+                    trigger: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["PublicUpdateFlagTriggerRequest"];
+                    "text/json": components["schemas"]["PublicUpdateFlagTriggerRequest"];
+                    "application/*+json": components["schemas"]["PublicUpdateFlagTriggerRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicFlagTriggerResponse"];
+                    };
+                };
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Authentication is required, or the supplied API token is invalid or expired. */
+                401: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
+                422: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
+                429: {
+                    headers: {
+                        /** @description Number of seconds to wait before retrying the request. */
+                        "Retry-After"?: number;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /**
+         * Deletes a trigger.
+         * @description Its URL stops working at once. Requires at least Member.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: {
+                    /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
+                    "X-Intent-Reason"?: string;
+                };
+                path: {
+                    org: string;
+                    project: string;
+                    flag: string;
+                    env: string;
+                    trigger: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Authentication is required, or the supplied API token is invalid or expired. */
+                401: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
+                422: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
+                429: {
+                    headers: {
+                        /** @description Number of seconds to wait before retrying the request. */
+                        "Retry-After"?: number;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/triggers/{trigger}/rotate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Replaces a trigger's URL.
+         * @description The old URL stops working at once; the new one is returned exactly once.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
+                    "X-Intent-Reason"?: string;
+                };
+                path: {
+                    org: string;
+                    project: string;
+                    flag: string;
+                    env: string;
+                    trigger: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicFlagTriggerWithUrlResponse"];
+                    };
+                };
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Authentication is required, or the supplied API token is invalid or expired. */
+                401: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
+                422: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
+                429: {
+                    headers: {
+                        /** @description Number of seconds to wait before retrying the request. */
+                        "Retry-After"?: number;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me": {
         parameters: {
             query?: never;
@@ -4597,6 +5473,113 @@ export interface paths {
                 };
             };
         };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orgs/{org}/projects/{project}/compare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Compares every active flag's configuration between two environments of the project (`base` and `other`, key or id), cursor-paginated.
+         * @description `differentOnly` hides flags that match. Each row lists the
+         *     sections that differ (`state`, `defaultVariation`, `strategy`, `rules`,
+         *     `prerequisites`); a side is null where the flag has no configuration. Open to any role. A route
+         *     `.../compare` sits beside `.../{project}` rather than under `environments` so an environment keyed
+         *     `compare` stays addressable.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    base?: string;
+                    other?: string;
+                    differentOnly?: boolean;
+                    tag?: string;
+                    owner?: string;
+                    limit?: number;
+                    cursor?: string;
+                };
+                header?: never;
+                path: {
+                    org: string;
+                    project: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicFlagComparisonRowPagedResult"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Authentication is required, or the supplied API token is invalid or expired. */
+                401: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
+                429: {
+                    headers: {
+                        /** @description Number of seconds to wait before retrying the request. */
+                        "Retry-After"?: number;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -7229,6 +8212,37 @@ export interface components {
             weight: number;
         };
         /**
+         * @description Request body for `POST .../flags/{flag}/environments/{env}/copy`. `source` is the environment to copy
+         *     from (key or id) and is required; the rest are optional. `dryRun: true` previews without writing and ignores
+         *     the ETags.
+         */
+        PublicCopyFlagConfigRequest: {
+            source: string;
+            includeState?: boolean | null;
+            dryRun?: boolean | null;
+            expectedSourceETag?: string | null;
+            expectedTargetETag?: string | null;
+        };
+        /**
+         * @description Response of `POST .../flags/{flag}/environments/{env}/copy`, for a dry run and an apply alike.
+         *     `targetETag` is the target's tag after an apply and before it on a dry run, so a dry run's tags are
+         *     what the apply sends back as `expectedSourceETag` / `expectedTargetETag`.
+         */
+        PublicCopyResult: {
+            changed: boolean;
+            changedSections: string[];
+            before?: components["schemas"]["PublicEnvironmentSnapshot"];
+            after: components["schemas"]["PublicEnvironmentSnapshot"];
+            sourceETag: string;
+            targetETag: string;
+            warnings: components["schemas"]["PublicCopyWarning"][];
+        };
+        /** @description A non-blocking note about a copy. */
+        PublicCopyWarning: {
+            code: string;
+            message: string;
+        };
+        /**
          * @description Request body for `POST /api/v1/orgs/{org}/projects/{project}/environments`. Named
          *     distinctly from the dashboard's own `CreateEnvironmentRequest`
          *     — both controllers share one Swagger document (see `Program.cs`'s `AddSwaggerGen``DocInclusionPredicate` override), and Swashbuckle's default schemaId is the bare type
@@ -7317,6 +8331,16 @@ export interface components {
             expiresAtUtc?: string | null;
             ownerEmail?: string | null;
             isPermanent?: boolean;
+        };
+        /**
+         * @description Request body for `POST .../triggers`. Action is `"Enable"` or
+         *     `"Disable"`, parsed against the names only. Named apart from the dashboard's
+         *     `CreateFlagTriggerRequest`: both controllers share one Swagger document.
+         */
+        PublicCreateFlagTriggerRequest: {
+            name: string;
+            action: string;
+            description?: string | null;
         };
         /**
          * @description Request body for `POST /api/v1/orgs/{org}/projects`. Named distinctly from the
@@ -7590,6 +8614,22 @@ export interface components {
                 [key: string]: components["schemas"]["ActionCapability"];
             };
         };
+        /** @description One side's headline numbers in a project-level comparison row. */
+        PublicEnvironmentSideSummary: {
+            isEnabled: boolean;
+            /** Format: int32 */
+            ruleCount: number;
+            /** Format: int32 */
+            prerequisiteCount: number;
+        };
+        /** @description A flag's configuration in one environment, as a comparison or copy result reports it. */
+        PublicEnvironmentSnapshot: {
+            isEnabled: boolean;
+            defaultVariation: components["schemas"]["PublicKeyedRef"];
+            strategy: string;
+            rules: components["schemas"]["PublicSnapshotRule"][];
+            prerequisites: components["schemas"]["PublicPrerequisiteDto"][];
+        };
         /** @description The evaluations one part of the targeting served. */
         PublicEvaluationSource: {
             /**
@@ -7638,6 +8678,46 @@ export interface components {
              * @description Count as a fraction (0 to 1) of the parent total: the window's total, or for a source's variations that source's count. 0 when the parent total is 0.
              */
             share: number;
+        };
+        /** @description Response of `GET .../flags/{flag}/compare`. */
+        PublicFlagComparison: {
+            flagKey: string;
+            differences: string[];
+            base?: components["schemas"]["PublicFlagComparisonSide"];
+            other?: components["schemas"]["PublicFlagComparisonSide"];
+        };
+        /**
+         * @description One flag in `GET .../projects/{project}/compare`. `differences` lists the sections that differ
+         *     (`state`, `defaultVariation`, `strategy`, `rules`, `prerequisites`). A side is null when
+         *     the flag has no configuration in that environment.
+         */
+        PublicFlagComparisonRow: {
+            flagKey: string;
+            flagName: string;
+            tags: string[];
+            /** Format: uuid */
+            ownerUserId?: string | null;
+            status: string;
+            differences: string[];
+            base?: components["schemas"]["PublicEnvironmentSideSummary"];
+            other?: components["schemas"]["PublicEnvironmentSideSummary"];
+        };
+        /**
+         * @description A page of results plus an opaque cursor for the next page, or null when this is the last
+         *     page. Wire keys are frozen: `items` (already lowercase under the camelCase policy) and
+         *     `next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`).
+         */
+        PublicFlagComparisonRowPagedResult: {
+            items: components["schemas"]["PublicFlagComparisonRow"][];
+            next_cursor?: string | null;
+        };
+        /** @description One environment's side of a per-flag comparison. */
+        PublicFlagComparisonSide: {
+            config: components["schemas"]["PublicFlagEnvConfigResponse"];
+            targeting: components["schemas"]["PublicTargetingConfigResponse"];
+            snapshot: components["schemas"]["PublicEnvironmentSnapshot"];
+            /** @description Per rule in evaluation order: whether the other environment has an equal rule. */
+            ruleHasMatchInOther: boolean[];
         };
         /**
          * @description Public representation of a flag's config within a single environment, returned by
@@ -7981,6 +9061,55 @@ export interface components {
             };
         };
         /**
+         * @description A flag trigger (#4651) as `/api/v1` returns it. Carries only the secret's last four characters:
+         *     the URL is returned once, by PublicFlagTriggerWithUrlResponse. Flag and environment are
+         *     implicit in the route.
+         */
+        PublicFlagTriggerResponse: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            description?: string | null;
+            action: string;
+            enabled: boolean;
+            secretLastFour: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            /** Format: date-time */
+            lastFiredAt?: string | null;
+        };
+        /**
+         * @description A page of results plus an opaque cursor for the next page, or null when this is the last
+         *     page. Wire keys are frozen: `items` (already lowercase under the camelCase policy) and
+         *     `next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`).
+         */
+        PublicFlagTriggerResponsePagedResult: {
+            items: components["schemas"]["PublicFlagTriggerResponse"][];
+            next_cursor?: string | null;
+        };
+        /**
+         * @description The only response that carries a trigger's secret: create and rotate. Fire it by POSTing to
+         *     Url, or to Endpoint with `Authorization: Bearer {Secret}`, which keeps
+         *     the secret out of the URL. Anyone holding either can fire the trigger, so store it as a secret in the
+         *     monitoring tool.
+         */
+        PublicFlagTriggerWithUrlResponse: {
+            trigger: components["schemas"]["PublicFlagTriggerResponse"];
+            url: string;
+            endpoint: string;
+            secret: string;
+            warning: string;
+        };
+        /** @description An id with its key and name beside it, as the other v1 responses pair them. Key and name are null only for a deleted target. */
+        PublicKeyedRef: {
+            /** Format: uuid */
+            id: string;
+            key?: string | null;
+            name?: string | null;
+        };
+        /**
          * @description The cap behind a `plan_limit_reached` error. `resource` is the capped collection
          *     (`projects`, `environments`, `flags`, `webhooks`, `members`);
          *     `plan` is the plan's wire name, as `GET /api/v1/orgs/{org}` returns it; `max` is
@@ -8235,6 +9364,19 @@ export interface components {
             url?: string | null;
         };
         /**
+         * @description A targeting rule as a comparison or copy shows it: the variation and segment with key and name, and the
+         *     condition groups in the shape the targeting endpoints return.
+         */
+        PublicSnapshotRule: {
+            description?: string | null;
+            variation: components["schemas"]["PublicKeyedRef"];
+            segment?: components["schemas"]["PublicKeyedRef"];
+            /** Format: int32 */
+            rolloutPercentage?: number | null;
+            bucketBy?: string | null;
+            conditionGroups: components["schemas"]["PublicConditionGroupResponse"][];
+        };
+        /**
          * @description The full targeting configuration for a flag in a single environment, returned by
          *     `GET .../targeting`. Maps 1:1 onto TargetingConfigurationDto — including
          *     its IsEnabled field, which reflects the parent
@@ -8383,6 +9525,15 @@ export interface components {
              */
             strategy?: "SingleVariation" | "PercentageRollout" | "TargetedRollout" | null;
             prerequisites?: components["schemas"]["PublicPrerequisiteDto"][] | null;
+        };
+        /**
+         * @description Request body for `PUT .../triggers/{trigger}`. The action is fixed at creation. Enabled is
+         *     nullable so leaving it out is a 400 rather than a bound `false` that silently turns the trigger off.
+         */
+        PublicUpdateFlagTriggerRequest: {
+            name: string;
+            description?: string | null;
+            enabled?: boolean | null;
         };
         /**
          * @description Request body for `PUT /api/v1/orgs/{org}/projects/{project}`. See

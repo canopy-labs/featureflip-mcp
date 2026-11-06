@@ -45,13 +45,14 @@ checks npm again, so tools added in later releases would never show up in your c
 
 CRUD: `list_projects`, `list_environments`, `list_flags`, `get_flag`, `create_flag`, `update_flag`,
 `delete_flag`, `archive_flag`, `restore_flag`, `set_flag_expiry`, `set_flag_owner`, `set_flag_permanent`,
-`toggle_flag`, `update_flag_environment_config`, `get_targeting`, `update_targeting`,
+`toggle_flag`, `update_flag_environment_config`, `copy_flag_config`, `get_targeting`, `update_targeting`,
 `manage_targeting_rule`, `manage_variation`, `list_segments`, `get_segment`, `manage_segment`,
 `manage_project`, `set_default_flag_lifetime`, `manage_environment`, `list_sdk_keys`, `manage_sdk_key`
 
 Webhooks (Admin token required): `list_webhooks`, `list_webhook_deliveries`, `manage_webhook`, `deliver_webhook`
 
-Workflows: `flag_status` (cross-environment view), `flag_evaluations` (what a flag served in one environment: evaluation counts by variation and rule), `find_stale_flags` (cleanup candidates),
+Workflows: `flag_status` (cross-environment view), `flag_evaluations` (what a flag served in one environment: evaluation counts by variation and rule), `compare_environments` (which flags differ between two environments),
+`find_stale_flags` (cleanup candidates),
 `list_removal_candidates` (flags safe to remove, with the prerequisite dependents to remove first),
 `wrap_feature` (create flag + get the SDK snippet for your language)
 
