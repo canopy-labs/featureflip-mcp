@@ -47,7 +47,8 @@ CRUD: `list_projects`, `list_environments`, `list_flags`, `get_flag`, `create_fl
 `delete_flag`, `archive_flag`, `restore_flag`, `set_flag_expiry`, `set_flag_owner`, `set_flag_permanent`,
 `toggle_flag`, `update_flag_environment_config`, `copy_flag_config`, `get_targeting`, `update_targeting`,
 `manage_targeting_rule`, `manage_variation`, `list_segments`, `get_segment`, `manage_segment`,
-`manage_project`, `set_default_flag_lifetime`, `manage_environment`, `list_sdk_keys`, `manage_sdk_key`
+`manage_project`, `set_default_flag_lifetime`, `manage_environment`, `list_sdk_keys`, `manage_sdk_key`,
+`list_flag_triggers`, `manage_flag_trigger`
 
 Webhooks (Admin token required): `list_webhooks`, `list_webhook_deliveries`, `manage_webhook`, `deliver_webhook`
 

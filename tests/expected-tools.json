@@ -23,6 +23,8 @@
   "update_flag_environment_config",
   "flag_status",
   "flag_evaluations",
+  "list_flag_triggers",
+  "manage_flag_trigger",
   "compare_environments",
   "copy_flag_config",
   "get_targeting",

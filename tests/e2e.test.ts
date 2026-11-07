@@ -33,7 +33,7 @@ describe('full tool surface', () => {
       [
         'list_projects', 'list_environments', 'list_sdk_keys', 'list_segments', 'get_segment',
         'list_flags', 'get_flag', 'flag_status', 'flag_evaluations', 'compare_environments', 'get_targeting', 'find_stale_flags', 'list_removal_candidates',
-        'list_webhooks', 'list_webhook_deliveries',
+        'list_webhooks', 'list_webhook_deliveries', 'list_flag_triggers',
       ].sort(),
     );
     const destructive = tools.filter((t) => t.annotations?.destructiveHint).map((t) => t.name).sort();
@@ -52,6 +52,8 @@ describe('full tool surface', () => {
         'manage_environment',
         // Revoking a key cuts off every app still using it.
         'manage_sdk_key',
+        // Deleting, disabling or rotating a trigger breaks the alert that calls it; creating one hands out a URL that changes production.
+        'manage_flag_trigger',
         // Changing or deleting a segment changes who every rule referencing it serves.
         'manage_segment',
       ].sort(),

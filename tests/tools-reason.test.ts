@@ -150,7 +150,7 @@ describe('reason on write tools', () => {
     const gated = [
       'toggle_flag', 'update_flag_environment_config', 'update_targeting', 'manage_targeting_rule',
       'manage_segment', 'manage_variation', 'archive_flag', 'restore_flag', 'delete_flag',
-      'update_flag', 'manage_sdk_key', 'manage_environment',
+      'update_flag', 'manage_sdk_key', 'manage_environment', 'manage_flag_trigger',
     ];
     for (const name of gated) {
       const tool = tools.find((t) => t.name === name);

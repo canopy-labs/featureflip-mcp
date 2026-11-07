@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.9.0 — 2026-11-06
+
+### Added
+
+- `list_flag_triggers` lists a flag's triggers in one environment, and `manage_flag_trigger` creates, updates (rename, re-describe, turn off and on), rotates and deletes them. A trigger is a secret URL that a monitoring tool such as a Grafana alert or Datadog monitor calls to turn the flag on or off. Create and rotate return the URL, the header-form `endpoint` and the `secret` once, with a warning to keep them out of source control. Needs the Team plan or above and a Member token (#4651).
+- `list_flag_triggers` takes an optional `trigger` id to get one trigger. A refusal for a plan below Team (`PLAN_FEATURE_UNAVAILABLE`) or for triggers not yet enabled (`FEATURE_NOT_ENABLED`) now says what it means, including what a lower plan can still do. A `trigger` that isn't an id is refused before the call, instead of coming back as a 404 that suggests the public API is off. An update with nothing to change is refused, and `description: ""` clears the description (#5090).
+
 ## 0.8.0 — 2026-11-06
 
 ### Added
