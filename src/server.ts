@@ -8,6 +8,7 @@ import { registerSegmentTools } from './tools/segments.js';
 import { registerFlagTools } from './tools/flags.js';
 import { registerFlagEnvironmentTools } from './tools/flag-environments.js';
 import { registerFlagTriggerTools } from './tools/flag-triggers.js';
+import { registerRolloutRampTools } from './tools/rollout-ramps.js';
 import { registerEnvironmentComparisonTools } from './tools/environment-comparison.js';
 import { registerTargetingTools } from './tools/targeting.js';
 import { registerVariationTools } from './tools/variations.js';
@@ -24,6 +25,7 @@ export function createServer(ctx: ToolContext): McpServer {
   registerFlagTools(server, ctx);
   registerFlagEnvironmentTools(server, ctx);
   registerFlagTriggerTools(server, ctx);
+  registerRolloutRampTools(server, ctx);
   registerEnvironmentComparisonTools(server, ctx);
   registerTargetingTools(server, ctx);
   registerVariationTools(server, ctx);

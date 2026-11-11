@@ -28,6 +28,14 @@
     "GET /api/v1/orgs/{org}/projects/{project}": "ProjectResponse",
     "GET /api/v1/orgs/{org}/projects/{project}/compare": "PublicFlagComparisonRowPagedResult",
     "GET /api/v1/orgs/{org}/projects/{project}/default-flag-lifetime/impact": "PublicDefaultFlagLifetimeImpact",
+    "GET /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/ramps": "PublicRolloutRampResponsePagedResult",
+    "GET /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/ramps/{rampId}": "PublicRolloutRampResponse",
+    "POST /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/rules/{ruleId}/ramp": "PublicRolloutRampResponse",
+    "POST /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/default-rule/ramp": "PublicRolloutRampResponse",
+    "POST /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/ramps/{rampId}/pause": "PublicRolloutRampResponse",
+    "POST /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/ramps/{rampId}/resume": "PublicRolloutRampResponse",
+    "POST /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/ramps/{rampId}/advance": "PublicRolloutRampResponse",
+    "POST /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/ramps/{rampId}/abort": "PublicRolloutRampResponse",
     "POST /api/v1/orgs/{org}/projects/{project}/environments/{env}/sdk-keys": "PublicCreateSdkKeyResponse",
     "GET /api/v1/orgs/{org}/projects/{project}/environments/{env}/sdk-keys": "PublicSdkKeyResponsePagedResult",
     "GET /api/v1/orgs/{org}/projects/{project}/environments/{env}/sdk-keys/{sdkKey}": "PublicSdkKeyResponse",
@@ -356,6 +364,21 @@
       },
       "description": "A page of results plus an opaque cursor for the next page, or null when this is the last\npage. Wire keys are frozen: `items` (already lowercase under the camelCase policy) and\n`next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`)."
     },
+    "PublicAbortRolloutRampRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "percent": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "description": "Request body for `POST …/ramps/{rampId}/abort`: the percentage (0-100) to leave the rule at. Required, so\na missing value is a 400 rather than an abort to 0%."
+    },
     "PublicAddVariationRequest": {
       "type": [
         "object",
@@ -388,6 +411,21 @@
         }
       },
       "description": "Request body for\n`POST /api/v1/orgs/{org}/projects/{project}/flags/{flag}/variations`. Named distinctly\nfrom the dashboard's own `AddVariationRequest` —\nsee PublicCreateEnvironmentRequest for the schemaId-collision rationale (both\ncontrollers share one Swagger document)."
+    },
+    "PublicAdvanceRolloutRampRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "expectedStepIndex": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "description": "Request body for `POST …/ramps/{rampId}/advance`: the `currentStepIndex` the caller last saw. If the\nramp has moved on since, the advance is a 409, so two racing advances can't skip a step."
     },
     "PublicApiErrorEnvelope": {
       "type": [
@@ -2661,6 +2699,27 @@
       },
       "description": "Request body for `PUT .../targeting` — a declarative full replace of the environment's\nordered targeting rule set. Rules are applied in array order (index = priority, so the array\norder IS the evaluation order). Rules is nullable so that an OMITTED `rules`\nfield (a body of `{}`) binds successfully instead of failing ASP.NET Core's implicit\nrequired-property check on non-nullable reference types — both an omitted `rules` field\nand an explicit empty list (`{ \"rules\": [] }`) clear all targeting rules for the\nenvironment. Each element is a PublicCreateTargetingRuleRequest (identical to the\n`POST .../rules` body), so `UserSegmentId` is supported — segment-scoped rules can be\nsubmitted through this endpoint. The replace is atomic (all-or-nothing): the whole rule set is\nswapped in one transaction, or nothing changes."
     },
+    "PublicRampStep": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "percent": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "holdMinutes": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "description": "One rung of a rollout ramp: the percentage served, then how long it holds before the next rung."
+    },
     "PublicReorderRulesRequest": {
       "type": [
         "object",
@@ -2759,6 +2818,140 @@
         }
       },
       "description": "A percentage-rollout rule's configured split beside a sample-ratio check of what it served."
+    },
+    "PublicRolloutRampResponse": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ruleId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "isDefaultRule": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "targetVariationId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "steps": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicRampStep"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "currentStepIndex": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "nextStepAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "pausedReason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "pausedDetail": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "startedByName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "createdAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "completedAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "abortedAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "A rollout ramp (#4653, #5180) as `/api/v1` returns it. Flag and environment are implicit in the route.\nA ramp drives either a targeting rule (RuleId set) or the default rule\n(IsDefaultRule true, TargetVariationId the variation it rolls out).\nStatus is `Running`, `Paused`, `Completed` or `Aborted`.\nCurrentStepIndex is the step last applied, -1 before the first. NextStepAt is\nset only while running and not yet on the last step."
+    },
+    "PublicRolloutRampResponsePagedResult": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "items": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicRolloutRampResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "A page of results plus an opaque cursor for the next page, or null when this is the last\npage. Wire keys are frozen: `items` (already lowercase under the camelCase policy) and\n`next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`)."
     },
     "PublicRolloutUnreached": {
       "type": [
@@ -3163,7 +3356,7 @@
           ]
         }
       },
-      "description": "Request body for `PUT /api/v1/orgs/{org}/projects/{project}/flags/{flag}/removal-pr`: the\npull request that removes this flag from code, as opened by the Featureflip Flag Cleanup Action.\nA dedicated sub-resource for the same reason as expiry and owner. `url` must be an https\npull request URL (`https://{host}/{owner}/{repo}/pull/{number}`)."
+      "description": "Request body for `PUT /api/v1/orgs/{org}/projects/{project}/flags/{flag}/removal-pr`: the\npull request that removes this flag from code, as opened by the Featureflip Flag Cleanup Action.\nA dedicated sub-resource for the same reason as expiry and owner. `url` must be an https\npull or merge request URL (`https://{host}/{owner}/{repo}/pull/{number}`, a GitLab\n`https://{host}/{group}/{project}/-/merge_requests/{number}` or a Bitbucket Cloud\n`https://{host}/{workspace}/{repo}/pull-requests/{number}`)."
     },
     "PublicSnapshotRule": {
       "type": [
@@ -3227,6 +3420,68 @@
         }
       },
       "description": "A targeting rule as a comparison or copy shows it: the variation and segment with key and name, and the\ncondition groups in the shape the targeting endpoints return."
+    },
+    "PublicStartDefaultRuleRolloutRampRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "steps": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicRampStep"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "variationId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "bucketBy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "Request body for `POST …/default-rule/ramp`. VariationId (and optionally\nBucketBy) set the rollout up when the default rule has none; with one configured they may be\nomitted, or must match it. A ladder ending at 100% finalises: the variation becomes the default variation."
+    },
+    "PublicStartRolloutRampRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "steps": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicRampStep"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "description": "Request body for `POST …/rules/{ruleId}/ramp`. Between 1 and 20 steps, each percentage above the last and\nthe first not below the rule's current rollout; every hold but the last is 5 minutes to 30 days. Elements are\nnullable so a null step is a field error, not a 500."
     },
     "PublicTargetingConfigResponse": {
       "type": [

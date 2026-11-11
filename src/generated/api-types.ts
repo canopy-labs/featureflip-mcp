@@ -1858,7 +1858,7 @@ export interface paths {
         /**
          * Records the pull request that removes this flag from code, so the flag's owner is sent a link to it.
          * @description Called by the Featureflip Flag Cleanup Action. Requires at least Member. The URL
-         *     must be an https pull request URL (400 `validation_failed`).
+         *     must be an https pull or merge request URL (400 `validation_failed`).
          */
         put: {
             parameters: {
@@ -5798,6 +5798,1097 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/ramps": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lists the flag's ramps in the environment: the active ones, newest first, then the ten most recently finished.
+         * @description Cursor-paginated.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    limit?: number;
+                    cursor?: string;
+                };
+                header?: never;
+                path: {
+                    org: string;
+                    project: string;
+                    flag: string;
+                    env: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicRolloutRampResponsePagedResult"];
+                    };
+                };
+                /** @description Authentication is required, or the supplied API token is invalid or expired. */
+                401: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
+                429: {
+                    headers: {
+                        /** @description Number of seconds to wait before retrying the request. */
+                        "Retry-After"?: number;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/ramps/{rampId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Gets a ramp by id. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: {
+                    /** @description Optional. An ETag of this resource. The response is 200 only if it is still the current one; otherwise 412 `precondition_failed`. `*` or no header always reads. */
+                    "If-Match"?: string;
+                };
+                path: {
+                    org: string;
+                    project: string;
+                    flag: string;
+                    env: string;
+                    rampId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        /** @description Strong ETag of the resource's whole body as sent to this caller: it changes whenever anything in the body does. Send it back as If-Match on a PUT. */
+                        ETag?: string;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicRolloutRampResponse"];
+                    };
+                };
+                /** @description Authentication is required, or the supplied API token is invalid or expired. */
+                401: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The resource's current ETag is not the If-Match one. */
+                412: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
+                429: {
+                    headers: {
+                        /** @description Number of seconds to wait before retrying the request. */
+                        "Retry-After"?: number;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/rules/{ruleId}/ramp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Starts a ramp on a targeting rule that serves a percentage rollout.
+         * @description The ramp applies its first step at
+         *     once, then each next step after the previous step's hold. Requires at least Member. The 201 carries the
+         *     ramp's `ETag`, but a replay of it (`Idempotency-Replayed`) does not, and the ramp may have moved
+         *     on since: `GET` the ramp for its current one.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
+                    "X-Intent-Reason"?: string;
+                };
+                path: {
+                    org: string;
+                    project: string;
+                    flag: string;
+                    env: string;
+                    ruleId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["PublicStartRolloutRampRequest"];
+                    "text/json": components["schemas"]["PublicStartRolloutRampRequest"];
+                    "application/*+json": components["schemas"]["PublicStartRolloutRampRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicRolloutRampResponse"];
+                    };
+                };
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Authentication is required, or the supplied API token is invalid or expired. */
+                401: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
+                422: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
+                429: {
+                    headers: {
+                        /** @description Number of seconds to wait before retrying the request. */
+                        "Retry-After"?: number;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/default-rule/ramp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Starts a ramp on the default (fallthrough) rule.
+         * @description A ladder ending at 100% finalises: the variation becomes
+         *     the default variation and the rollout is cleared. Requires at least Member. As with a rule ramp, a replayed
+         *     201 carries no `ETag`: `GET` the ramp for its current one.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
+                    "X-Intent-Reason"?: string;
+                };
+                path: {
+                    org: string;
+                    project: string;
+                    flag: string;
+                    env: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["PublicStartDefaultRuleRolloutRampRequest"];
+                    "text/json": components["schemas"]["PublicStartDefaultRuleRolloutRampRequest"];
+                    "application/*+json": components["schemas"]["PublicStartDefaultRuleRolloutRampRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicRolloutRampResponse"];
+                    };
+                };
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Authentication is required, or the supplied API token is invalid or expired. */
+                401: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
+                422: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
+                429: {
+                    headers: {
+                        /** @description Number of seconds to wait before retrying the request. */
+                        "Retry-After"?: number;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/ramps/{rampId}/pause": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Pauses a running ramp, keeping the rest of the current hold.
+         * @description Requires at least Member.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    /** @description Optional. The ETag from a GET of this resource. The write applies only if the resource still has that ETag, meaning nothing in its body has changed since; otherwise 412 `precondition_failed`. `*` or no header applies the write unconditionally. */
+                    "If-Match"?: string;
+                    /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
+                    "X-Intent-Reason"?: string;
+                };
+                path: {
+                    org: string;
+                    project: string;
+                    flag: string;
+                    env: string;
+                    rampId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        /** @description Strong ETag of the resource's whole body as sent to this caller: it changes whenever anything in the body does. Send it back as If-Match on a PUT. */
+                        ETag?: string;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicRolloutRampResponse"];
+                    };
+                };
+                /** @description Authentication is required, or the supplied API token is invalid or expired. */
+                401: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The resource changed since the If-Match ETag. */
+                412: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
+                422: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
+                429: {
+                    headers: {
+                        /** @description Number of seconds to wait before retrying the request. */
+                        "Retry-After"?: number;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/ramps/{rampId}/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resumes a paused ramp, accepting the rule as it stands now, and honours the rest of the hold it had when paused.
+         * @description Requires at least Member.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    /** @description Optional. The ETag from a GET of this resource. The write applies only if the resource still has that ETag, meaning nothing in its body has changed since; otherwise 412 `precondition_failed`. `*` or no header applies the write unconditionally. */
+                    "If-Match"?: string;
+                    /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
+                    "X-Intent-Reason"?: string;
+                };
+                path: {
+                    org: string;
+                    project: string;
+                    flag: string;
+                    env: string;
+                    rampId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        /** @description Strong ETag of the resource's whole body as sent to this caller: it changes whenever anything in the body does. Send it back as If-Match on a PUT. */
+                        ETag?: string;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicRolloutRampResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Authentication is required, or the supplied API token is invalid or expired. */
+                401: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The resource changed since the If-Match ETag. */
+                412: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
+                422: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
+                429: {
+                    headers: {
+                        /** @description Number of seconds to wait before retrying the request. */
+                        "Retry-After"?: number;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/ramps/{rampId}/advance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Applies the next step now instead of waiting out the hold.
+         * @description `expectedStepIndex` is the
+         *     `currentStepIndex` the caller last saw; a ramp that has moved on is a 409. Requires at least Member.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    /** @description Optional. The ETag from a GET of this resource. The write applies only if the resource still has that ETag, meaning nothing in its body has changed since; otherwise 412 `precondition_failed`. `*` or no header applies the write unconditionally. */
+                    "If-Match"?: string;
+                    /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
+                    "X-Intent-Reason"?: string;
+                };
+                path: {
+                    org: string;
+                    project: string;
+                    flag: string;
+                    env: string;
+                    rampId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["PublicAdvanceRolloutRampRequest"];
+                    "text/json": components["schemas"]["PublicAdvanceRolloutRampRequest"];
+                    "application/*+json": components["schemas"]["PublicAdvanceRolloutRampRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        /** @description Strong ETag of the resource's whole body as sent to this caller: it changes whenever anything in the body does. Send it back as If-Match on a PUT. */
+                        ETag?: string;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicRolloutRampResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Authentication is required, or the supplied API token is invalid or expired. */
+                401: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The resource changed since the If-Match ETag. */
+                412: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
+                422: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
+                429: {
+                    headers: {
+                        /** @description Number of seconds to wait before retrying the request. */
+                        "Retry-After"?: number;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/ramps/{rampId}/abort": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Aborts an active ramp and leaves the rule at `percent` (0-100).
+         * @description Requires at least Member.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    /** @description Optional. The ETag from a GET of this resource. The write applies only if the resource still has that ETag, meaning nothing in its body has changed since; otherwise 412 `precondition_failed`. `*` or no header applies the write unconditionally. */
+                    "If-Match"?: string;
+                    /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
+                    "X-Intent-Reason"?: string;
+                };
+                path: {
+                    org: string;
+                    project: string;
+                    flag: string;
+                    env: string;
+                    rampId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["PublicAbortRolloutRampRequest"];
+                    "text/json": components["schemas"]["PublicAbortRolloutRampRequest"];
+                    "application/*+json": components["schemas"]["PublicAbortRolloutRampRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        /** @description Strong ETag of the resource's whole body as sent to this caller: it changes whenever anything in the body does. Send it back as If-Match on a PUT. */
+                        ETag?: string;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicRolloutRampResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Authentication is required, or the supplied API token is invalid or expired. */
+                401: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The resource changed since the If-Match ETag. */
+                412: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
+                422: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
+                429: {
+                    headers: {
+                        /** @description Number of seconds to wait before retrying the request. */
+                        "Retry-After"?: number;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/orgs/{org}/projects/{project}/environments/{env}/sdk-keys": {
         parameters: {
             query?: never;
@@ -8085,6 +9176,14 @@ export interface components {
             };
         };
         /**
+         * @description Request body for `POST …/ramps/{rampId}/abort`: the percentage (0-100) to leave the rule at. Required, so
+         *     a missing value is a 400 rather than an abort to 0%.
+         */
+        PublicAbortRolloutRampRequest: {
+            /** Format: int32 */
+            percent?: number | null;
+        };
+        /**
          * @description Request body for
          *     `POST /api/v1/orgs/{org}/projects/{project}/flags/{flag}/variations`. Named distinctly
          *     from the dashboard's own `AddVariationRequest` —
@@ -8102,6 +9201,14 @@ export interface components {
             name: string;
             value: string;
             description?: string | null;
+        };
+        /**
+         * @description Request body for `POST …/ramps/{rampId}/advance`: the `currentStepIndex` the caller last saw. If the
+         *     ramp has moved on since, the advance is a 409, so two racing advances can't skip a step.
+         */
+        PublicAdvanceRolloutRampRequest: {
+            /** Format: int32 */
+            expectedStepIndex?: number | null;
         };
         /**
          * @description The frozen public-API error contract. `error` codes are stable snake_case strings. Wire keys
@@ -9144,6 +10251,13 @@ export interface components {
         PublicPutTargetingRequest: {
             rules?: components["schemas"]["PublicCreateTargetingRuleRequest"][] | null;
         };
+        /** @description One rung of a rollout ramp: the percentage served, then how long it holds before the next rung. */
+        PublicRampStep: {
+            /** Format: int32 */
+            percent?: number;
+            /** Format: int32 */
+            holdMinutes?: number;
+        };
         /**
          * @description Request body for `PUT .../rules/reorder`. Must include every existing rule id exactly
          *     once — `ReorderTargetingRulesCommandHandler` rejects duplicate, omitted, or unknown rule
@@ -9179,6 +10293,47 @@ export interface components {
             /** @description The context attribute the rollout hashes on. A context without it skips the rule, even at 100%. */
             bucketBy: string;
             unreached?: components["schemas"]["PublicRolloutUnreached"];
+        };
+        /**
+         * @description A rollout ramp (#4653, #5180) as `/api/v1` returns it. Flag and environment are implicit in the route.
+         *     A ramp drives either a targeting rule (RuleId set) or the default rule
+         *     (IsDefaultRule true, TargetVariationId the variation it rolls out).
+         *     Status is `Running`, `Paused`, `Completed` or `Aborted`.
+         *     CurrentStepIndex is the step last applied, -1 before the first. NextStepAt is
+         *     set only while running and not yet on the last step.
+         */
+        PublicRolloutRampResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            ruleId?: string | null;
+            isDefaultRule: boolean;
+            /** Format: uuid */
+            targetVariationId?: string | null;
+            status: string;
+            steps: components["schemas"]["PublicRampStep"][];
+            /** Format: int32 */
+            currentStepIndex: number;
+            /** Format: date-time */
+            nextStepAt?: string | null;
+            pausedReason?: string | null;
+            pausedDetail?: string | null;
+            startedByName?: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            completedAt?: string | null;
+            /** Format: date-time */
+            abortedAt?: string | null;
+        };
+        /**
+         * @description A page of results plus an opaque cursor for the next page, or null when this is the last
+         *     page. Wire keys are frozen: `items` (already lowercase under the camelCase policy) and
+         *     `next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`).
+         */
+        PublicRolloutRampResponsePagedResult: {
+            items: components["schemas"]["PublicRolloutRampResponse"][];
+            next_cursor?: string | null;
         };
         /** @description A live rollout rule that no evaluations reached. */
         PublicRolloutUnreached: {
@@ -9358,7 +10513,9 @@ export interface components {
          * @description Request body for `PUT /api/v1/orgs/{org}/projects/{project}/flags/{flag}/removal-pr`: the
          *     pull request that removes this flag from code, as opened by the Featureflip Flag Cleanup Action.
          *     A dedicated sub-resource for the same reason as expiry and owner. `url` must be an https
-         *     pull request URL (`https://{host}/{owner}/{repo}/pull/{number}`).
+         *     pull or merge request URL (`https://{host}/{owner}/{repo}/pull/{number}`, a GitLab
+         *     `https://{host}/{group}/{project}/-/merge_requests/{number}` or a Bitbucket Cloud
+         *     `https://{host}/{workspace}/{repo}/pull-requests/{number}`).
          */
         PublicSetFlagRemovalPrRequest: {
             url?: string | null;
@@ -9375,6 +10532,25 @@ export interface components {
             rolloutPercentage?: number | null;
             bucketBy?: string | null;
             conditionGroups: components["schemas"]["PublicConditionGroupResponse"][];
+        };
+        /**
+         * @description Request body for `POST …/default-rule/ramp`. VariationId (and optionally
+         *     BucketBy) set the rollout up when the default rule has none; with one configured they may be
+         *     omitted, or must match it. A ladder ending at 100% finalises: the variation becomes the default variation.
+         */
+        PublicStartDefaultRuleRolloutRampRequest: {
+            steps: components["schemas"]["PublicRampStep"][];
+            /** Format: uuid */
+            variationId?: string | null;
+            bucketBy?: string | null;
+        };
+        /**
+         * @description Request body for `POST …/rules/{ruleId}/ramp`. Between 1 and 20 steps, each percentage above the last and
+         *     the first not below the rule's current rollout; every hold but the last is 5 minutes to 30 days. Elements are
+         *     nullable so a null step is a field error, not a 500.
+         */
+        PublicStartRolloutRampRequest: {
+            steps: components["schemas"]["PublicRampStep"][];
         };
         /**
          * @description The full targeting configuration for a flag in a single environment, returned by

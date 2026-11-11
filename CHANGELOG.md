@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.10.0 — 2026-11-10
+
+### Added
+
+- `list_rollout_ramps` lists a flag's rollout ramps in one environment, or gets one by id with its `etag`. `manage_rollout_ramp` starts a ramp on a targeting rule (`rule`: the rule id) or the default rule (`rule: "default"`, optionally with `variation` and `bucketBy`), and pauses, resumes, advances (`expectedStepIndex`) or aborts (`percent`) one, with `ifMatch` on the last four. A refusal for a plan below Team (`PLAN_FEATURE_UNAVAILABLE`) or for ramps not yet enabled (`FEATURE_NOT_ENABLED`) says what it means. A `ramp` or `rule` that isn't an id is refused before the call (#5180).
+
 ## 0.9.0 — 2026-11-06
 
 ### Added

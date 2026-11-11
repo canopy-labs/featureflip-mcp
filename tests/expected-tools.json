@@ -25,6 +25,8 @@
   "flag_evaluations",
   "list_flag_triggers",
   "manage_flag_trigger",
+  "list_rollout_ramps",
+  "manage_rollout_ramp",
   "compare_environments",
   "copy_flag_config",
   "get_targeting",
