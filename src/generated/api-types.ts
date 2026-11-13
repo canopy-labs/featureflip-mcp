@@ -9181,7 +9181,7 @@ export interface components {
          */
         PublicAbortRolloutRampRequest: {
             /** Format: int32 */
-            percent?: number | null;
+            percent: number | null;
         };
         /**
          * @description Request body for
@@ -9208,7 +9208,7 @@ export interface components {
          */
         PublicAdvanceRolloutRampRequest: {
             /** Format: int32 */
-            expectedStepIndex?: number | null;
+            expectedStepIndex: number | null;
         };
         /**
          * @description The frozen public-API error contract. `error` codes are stable snake_case strings. Wire keys
@@ -10251,12 +10251,15 @@ export interface components {
         PublicPutTargetingRequest: {
             rules?: components["schemas"]["PublicCreateTargetingRuleRequest"][] | null;
         };
-        /** @description One rung of a rollout ramp: the percentage served, then how long it holds before the next rung. */
+        /**
+         * @description One rung of a rollout ramp: the percentage served, then how long it holds before the next rung. Both fields
+         *     are required.
+         */
         PublicRampStep: {
             /** Format: int32 */
-            percent?: number;
+            percent: number;
             /** Format: int32 */
-            holdMinutes?: number;
+            holdMinutes: number;
         };
         /**
          * @description Request body for `PUT .../rules/reorder`. Must include every existing rule id exactly
@@ -10546,7 +10549,8 @@ export interface components {
         };
         /**
          * @description Request body for `POST …/rules/{ruleId}/ramp`. Between 1 and 20 steps, each percentage above the last and
-         *     the first not below the rule's current rollout; every hold but the last is 5 minutes to 30 days. Elements are
+         *     the first not below the rule's current rollout; every hold but the last is 5 minutes to 30 days, and the last
+         *     one 0 minutes to 30 days. Elements are
          *     nullable so a null step is a field error, not a 500.
          */
         PublicStartRolloutRampRequest: {

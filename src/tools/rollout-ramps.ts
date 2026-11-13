@@ -54,13 +54,19 @@ async function runRamp(fn: () => Promise<ToolResult>): Promise<ToolResult> {
 const notAnId = (what: string, value: string, see: string) =>
   errorResult(new Error(`${what} must be an id, not "${value}". See ${see}.`));
 
+// The API's hold bounds (RolloutRamp.ValidateSteps): every step but the last holds 5 minutes to 30 days, the last
+// 0 to 30 days. The per-step schema can't see a step's position, so the 5-minute floor is checked on start.
+const MIN_HOLD_MINUTES = 5;
+const MAX_HOLD_MINUTES = 30 * 24 * 60;
+
 const stepSchema = z.object({
   percent: z.number().int().min(1).max(100).describe('Rollout percentage for this step, 1-100'),
   holdMinutes: z
     .number()
     .int()
     .min(0)
-    .describe('Minutes to hold at this step before the next one: 5 to 43200 (30 days); ignored on the last step'),
+    .max(MAX_HOLD_MINUTES)
+    .describe('Minutes to hold at this step before the next one: 5 to 43200 (30 days); 0 to 43200 on the last step'),
 });
 
 export function registerRolloutRampTools(server: McpServer, ctx: ToolContext): void {
@@ -164,6 +170,14 @@ export function registerRolloutRampTools(server: McpServer, ctx: ToolContext): v
 
         if (action === 'start') {
           if (!rule || !steps) return errorResult(new Error('action=start requires rule and steps'));
+          const short = steps.findIndex((s, i) => i < steps.length - 1 && s.holdMinutes < MIN_HOLD_MINUTES);
+          if (short >= 0) {
+            return errorResult(
+              new Error(
+                `steps[${short}].holdMinutes must be at least ${MIN_HOLD_MINUTES}: every step but the last holds 5 minutes to 30 days`,
+              ),
+            );
+          }
           const ladder: RampStep[] = steps.map(({ percent: p, holdMinutes }) => ({ percent: p, holdMinutes }));
           if (rule === 'default') {
             return okJson(

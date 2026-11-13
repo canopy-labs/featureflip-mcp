@@ -144,6 +144,38 @@ describe('rollout ramp tools', () => {
     expect(calls).toHaveLength(0);
   });
 
+  // #5180 QA: the schema allowed 0-4 minutes (and any maximum) on a non-last step, which the API then refused.
+  it.each([
+    ['a non-last hold under 5 minutes', [{ percent: 5, holdMinutes: 4 }, { percent: 100, holdMinutes: 0 }]],
+    ['a hold over 30 days', [{ percent: 5, holdMinutes: 43201 }, { percent: 100, holdMinutes: 0 }]],
+    ['a last hold over 30 days', [{ percent: 5, holdMinutes: 60 }, { percent: 100, holdMinutes: 43201 }]],
+    ['a negative last hold', [{ percent: 100, holdMinutes: -1 }]],
+  ])('refuses %s before calling the API', async (_label, bad) => {
+    const { api, calls } = mockApi([]);
+    const client = await connectClient({ api, org: ORG });
+    expect(
+      await refused(
+        client.callTool({ name: 'manage_rollout_ramp', arguments: { action: 'start', ...where, rule: RULE_ID, steps: bad } }),
+      ),
+    ).toBe(true);
+    expect(calls).toHaveLength(0);
+  });
+
+  it('accepts a 0-minute last hold and the 5-minute and 30-day bounds', async () => {
+    const ok = [
+      { percent: 5, holdMinutes: 5 },
+      { percent: 50, holdMinutes: 43200 },
+      { percent: 100, holdMinutes: 0 },
+    ];
+    const { api, calls } = mockApi([
+      { method: 'POST', path: `${ENV}/rules/${RULE_ID}/ramp`, status: 201, json: ramp({ steps: ok }), headers: { etag: ETAG } },
+    ]);
+    const client = await connectClient({ api, org: ORG });
+    const r = await client.callTool({ name: 'manage_rollout_ramp', arguments: { action: 'start', ...where, rule: RULE_ID, steps: ok } });
+    expect(r.isError).toBeFalsy();
+    expect(calls).toHaveLength(1);
+  });
+
   it('pause posts with no body and passes ifMatch through, returning the written etag', async () => {
     const { api, calls } = mockApi([
       { method: 'POST', path: `${RAMPS}/${RAMP_ID}/pause`, json: ramp({ status: 'Paused' }), headers: { etag: '"r-new"' } },

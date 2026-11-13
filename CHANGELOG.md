@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.10.1 — 2026-11-12
+
+### Fixed
+
+- `manage_rollout_ramp` start checks step holds the way the API does: every step but the last holds 5 to 43200 minutes (30 days), and the last 0 to 43200. A hold of 0-4 minutes on an earlier step, or over 30 days on any step, used to pass and then fail at the API.
+
 ## 0.10.0 — 2026-11-10
 
 ### Added

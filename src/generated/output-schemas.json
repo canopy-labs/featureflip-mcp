@@ -2718,7 +2718,7 @@
           ]
         }
       },
-      "description": "One rung of a rollout ramp: the percentage served, then how long it holds before the next rung."
+      "description": "One rung of a rollout ramp: the percentage served, then how long it holds before the next rung. Both fields\nare required."
     },
     "PublicReorderRulesRequest": {
       "type": [
@@ -3481,7 +3481,7 @@
           }
         }
       },
-      "description": "Request body for `POST …/rules/{ruleId}/ramp`. Between 1 and 20 steps, each percentage above the last and\nthe first not below the rule's current rollout; every hold but the last is 5 minutes to 30 days. Elements are\nnullable so a null step is a field error, not a 500."
+      "description": "Request body for `POST …/rules/{ruleId}/ramp`. Between 1 and 20 steps, each percentage above the last and\nthe first not below the rule's current rollout; every hold but the last is 5 minutes to 30 days, and the last\none 0 minutes to 30 days. Elements are\nnullable so a null step is a field error, not a 500."
     },
     "PublicTargetingConfigResponse": {
       "type": [
