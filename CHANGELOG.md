@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.11.1 — 2026-11-16
+
+### Fixed
+
+- The `list_change_freezes` and `manage_change_freeze` descriptions now give the plan rules correctly. Listing and getting freezes work on any plan. Creating a freeze or approving a scheduled change still needs the Business plan or above; below it, `update` can only rename, change the reason or shorten a freeze, and ending, deleting and revoking an approval work on any plan (#4645).
+
 ## 0.11.0 — 2026-11-16
 
 ### Added

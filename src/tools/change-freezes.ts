@@ -25,7 +25,7 @@ export function registerChangeFreezeTools(server: McpServer, ctx: ToolContext): 
         'environments it covers (toggles, targeting, ramps, copies) until it ends; scheduled changes due inside it ' +
         'are held or failed per its policy. Filter by status (Upcoming, Active, Ended) and project. Each window ' +
         'shows its environments, end time, scheduledChangePolicy and the approvals that let scheduled changes ' +
-        'through. A single get also returns an etag for manage_change_freeze action=update. Business plan and above.',
+        'through. A single get also returns an etag for manage_change_freeze action=update. Listing and getting work on any plan.',
       inputSchema: z.object({
         freeze_id: z.string().optional().describe('Freeze id: get just that window instead of listing'),
         status: z.enum(['Upcoming', 'Active', 'Ended']).optional().describe('Only windows in this state'),
@@ -62,7 +62,7 @@ export function registerChangeFreezeTools(server: McpServer, ctx: ToolContext): 
         'freeze_id and changes only the fields you pass (accepts ifMatch). action=end stops an active window now. ' +
         'action=delete removes an UPCOMING window. action=approve_scheduled_change (freeze_id + scheduled_change_id ' +
         '+ reason) lets one pending scheduled change apply inside the freeze; revoke_approval withdraws it. ' +
-        'Needs the Business plan or above to create or approve, and an Admin token.',
+        'Creating a window or approving a change needs the Business plan or above (below it, update can only rename, change the reason or shorten); ending, deleting and revoking work on any plan. All need an Admin token.',
       inputSchema: z.object({
         action: z
           .enum(['create', 'freeze_now', 'update', 'end', 'delete', 'approve_scheduled_change', 'revoke_approval'])
