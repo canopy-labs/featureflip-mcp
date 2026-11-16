@@ -47,6 +47,16 @@ export function errorResult(err: unknown, options: ErrorOptions = {}): ToolResul
     if (e.error === 'change_reason_required') {
       lines.push('Retry this tool call with the `reason` argument explaining why you are making the change.');
     }
+    if (e.error === 'change_frozen' && e.change_freeze) {
+      const f = e.change_freeze;
+      const until = f.ends_at ? `until ${f.ends_at}` : 'until it is ended';
+      lines.push(
+        `Change freeze "${f.name}" covers environment ${f.environment_key} ${until}.` +
+          (f.can_override
+            ? ' You can break it for this one change: retry with `reason` and `freeze_override: true`.'
+            : ' Your token cannot override it: ask an Owner or Admin to make the change or end the freeze.'),
+      );
+    }
     if (e.docs_url) lines.push(`Docs: ${e.docs_url}`);
     return { content: [{ type: 'text', text: lines.join('\n') }], isError: true };
   }

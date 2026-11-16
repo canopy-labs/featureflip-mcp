@@ -1,5 +1,11 @@
 {
   "endpoints": {
+    "GET /api/v1/orgs/{org}/change-freezes": "PublicChangeFreezeResponsePagedResult",
+    "POST /api/v1/orgs/{org}/change-freezes": "PublicChangeFreezeResponse",
+    "GET /api/v1/orgs/{org}/change-freezes/{id}": "PublicChangeFreezeResponse",
+    "PATCH /api/v1/orgs/{org}/change-freezes/{id}": "PublicChangeFreezeResponse",
+    "POST /api/v1/orgs/{org}/change-freezes/{id}/end": "PublicChangeFreezeResponse",
+    "POST /api/v1/orgs/{org}/change-freezes/{id}/approvals": "PublicFreezeApprovalResponse",
     "POST /api/v1/orgs/{org}/projects/{project}/environments": "PublicEnvironmentResponse",
     "GET /api/v1/orgs/{org}/projects/{project}/environments": "PublicEnvironmentResponsePagedResult",
     "GET /api/v1/orgs/{org}/projects/{project}/environments/{env}": "PublicEnvironmentResponse",
@@ -518,9 +524,253 @@
               "type": "null"
             }
           ]
+        },
+        "change_freeze": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PublicChangeFreeze"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
-      "description": "The frozen public-API error contract. `error` codes are stable snake_case strings. Wire keys\nare frozen snake_case too (`error`, `message`, `docs_url`, `fields`,\n`retry_after`) — the global camelCase naming policy would otherwise emit\n`docsUrl`/`retryAfter`, breaking the published spec. !:JsonPropertyName\nalways wins over the policy, so these are pinned explicitly rather than relying on the\nproperty names already being lowercase for the single-word ones.\n`did_you_mean`, `next_actions` and `connection_id` are ADDITIVE optional keys\n(null → omitted via the global `DefaultIgnoreCondition = WhenWritingNull`), so\npre-existing error bodies are byte-for-byte unchanged when they're absent.\n\n`connection_id` is present only on the `sso_required` error: the organization\nrequires single sign-on, and this credential didn't come through its identity provider.\n`connection_id` identifies which SSO connection to sign in with.\n`plan_limit` is present only on the `plan_limit_reached` error: which plan cap the\nrequest would have exceeded, so a client can branch on it without parsing `message`."
+      "description": "The frozen public-API error contract. `error` codes are stable snake_case strings. Wire keys\nare frozen snake_case too (`error`, `message`, `docs_url`, `fields`,\n`retry_after`) — the global camelCase naming policy would otherwise emit\n`docsUrl`/`retryAfter`, breaking the published spec. !:JsonPropertyName\nalways wins over the policy, so these are pinned explicitly rather than relying on the\nproperty names already being lowercase for the single-word ones.\n`did_you_mean`, `next_actions` and `connection_id` are ADDITIVE optional keys\n(null → omitted via the global `DefaultIgnoreCondition = WhenWritingNull`), so\npre-existing error bodies are byte-for-byte unchanged when they're absent.\n\n`connection_id` is present only on the `sso_required` error: the organization\nrequires single sign-on, and this credential didn't come through its identity provider.\n`connection_id` identifies which SSO connection to sign in with.\n`plan_limit` is present only on the `plan_limit_reached` error: which plan cap the\nrequest would have exceeded, so a client can branch on it without parsing `message`.\n`change_freeze` is present only on the `change_frozen` error (#4645): the change freeze that refused the\nwrite, so a client can show when it ends and whether the caller may break it, without parsing `message`."
+    },
+    "PublicChangeFreeze": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "environment_key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ends_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "can_override": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "description": "The freeze behind a `change_frozen` error: `id` and `name` of the window, the environment's\n`environment_key`, `ends_at` (UTC; always present, null for an open-ended window) and whether the caller's role may\nbreak it (`can_override`, with `X-Freeze-Override: true` and an `X-Intent-Reason`)."
+    },
+    "PublicChangeFreezeResponse": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "project": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "allEnvironments": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "environmentKeys": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "environmentIds": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "startsAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "endsAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "endedAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "scheduledChangePolicy": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Allowed values: Hold, Fail."
+        },
+        "status": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Allowed values: Upcoming, Active, Ended."
+        },
+        "enforcing": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "wontStartReason": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Allowed values: Plan."
+        },
+        "approvals": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicFreezeApprovalResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "createdByEmail": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "_actions": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ActionCapability"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it."
+        }
+      },
+      "description": "A change freeze window. `project` is the project's key, or null for an organization-wide window.\nAn organization-wide window names its environments by key (`environmentKeys`, matched in every project);\na project window names them by id, and returns both `environmentIds` and the current\n`environmentKeys` of those environments. `status` is time-based only: `Upcoming`, `Active`\nor `Ended`. `enforcing` is true when the window is `Active` and is actually in force: it has\nstarted enforcing, or the organization's plan includes change freezes. `wontStartReason` is `Plan`\nwhen the window has not started enforcing and the organization's plan no longer includes change freezes, so it\nwill not enforce. `approvals` lists the scheduled changes approved to land inside the window."
+    },
+    "PublicChangeFreezeResponsePagedResult": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "items": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicChangeFreezeResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "_actions": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ActionCapability"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it."
+        }
+      },
+      "description": "A page of results plus an opaque cursor for the next page, or null when this is the last\npage. Wire keys are frozen: `items` (already lowercase under the camelCase policy) and\n`next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`)."
     },
     "PublicConditionGroupRequest": {
       "type": [
@@ -830,6 +1080,82 @@
         }
       },
       "description": "A non-blocking note about a copy."
+    },
+    "PublicCreateChangeFreezeRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "project": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "allEnvironments": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "environmentKeys": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "environmentIds": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "startsAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "endsAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "scheduledChangePolicy": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Allowed values: Hold, Fail."
+        }
+      },
+      "description": "Creates a change freeze. `project` (key or id) makes it a project window; omit it for an\norganization-wide one. Omit `startsAt` to freeze now (then `endsAt` may be omitted for an\nopen-ended freeze); a scheduled freeze needs both. Times are UTC and must carry an offset (`Z`).\nName the environments with `environmentKeys` (a project window accepts keys too, resolved within\nthe project) and/or `environmentIds`, or set `allEnvironments`.\n`scheduledChangePolicy` is `Hold` (the default) or `Fail`."
     },
     "PublicCreateEnvironmentRequest": {
       "type": [
@@ -2599,6 +2925,90 @@
       },
       "description": "The only response that carries a trigger's secret: create and rotate. Fire it by POSTing to\nUrl, or to Endpoint with `Authorization: Bearer {Secret}`, which keeps\nthe secret out of the URL. Anyone holding either can fire the trigger, so store it as a secret in the\nmonitoring tool."
     },
+    "PublicFreezeApprovalResponse": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "scheduledChangeId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "flagId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "flagKey": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "environmentId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "scheduledAtUtc": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "approvedByEmail": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "approvedAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "stands": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "description": "A scheduled change that a person approved to land inside a change freeze. `stands` is whether the approval\ncounts right now: false once the approver is no longer an active Owner or Admin, and the window then holds or fails\nthe change as if it were not approved."
+    },
+    "PublicGrantFreezeApprovalRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "scheduledChangeId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "Approves one Pending scheduled change to apply inside the change freeze when it comes due, with a required\n`reason`. The change must be in an environment the window covers. `scheduledChangeId` is required: a\nmissing or empty one is a 400 naming the field."
+    },
     "PublicKeyedRef": {
       "type": [
         "object",
@@ -3651,6 +4061,76 @@
         }
       },
       "description": "Request body for `POST .../flags/{flag}/environments/{env}/toggle`. Named distinctly from\nthe dashboard's own `ToggleFlagInEnvironmentRequest`\n(which uses `IsEnabled`) — the public field is named Enabled per the phase-3c\ncontract. Enabled is a NULLABLE `bool?` deliberately: a non-nullable value\ntype would bind an omitted/empty body to `false` with no validation error (ASP.NET's\nimplicit-required only covers non-nullable reference types, not value types), silently disabling\nthe flag. The controller rejects a null Enabled with a `validation_failed` 400\nso the intent is never ambiguous (#1806)."
+    },
+    "PublicUpdateChangeFreezeRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "allEnvironments": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "environmentKeys": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "environmentIds": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "startsAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "endsAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "scheduledChangePolicy": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Allowed values: Hold, Fail."
+        }
+      },
+      "description": "Edits a change freeze; a field left out is left as it was. An ended window cannot be edited, and the\nstart of an active window cannot move. Send `If-Match` with the ETag from the last read to\nguard against a concurrent edit."
     },
     "PublicUpdateEnvironmentRequest": {
       "type": [

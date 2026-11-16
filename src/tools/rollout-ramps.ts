@@ -5,7 +5,7 @@ import { errorResult, okJson, type ToolResult } from '../errors.js';
 import type { ToolContext } from './context.js';
 import { ifMatchParam, withEtag, writtenEtagOutput } from './etag.js';
 import { apiOutputWith, endpoint, oneOfOutputs } from './outputs.js';
-import { environmentParam, flagParam, pagination, projectParam, reasonParam } from './params.js';
+import { environmentParam, flagParam, pagination, projectParam, reasonParam, freezeOverrideParam, freezeOverrideError } from './params.js';
 import type { components } from '../generated/api-types.js';
 
 type Ramp = components['schemas']['PublicRolloutRampResponse'];
@@ -156,6 +156,7 @@ export function registerRolloutRampTools(server: McpServer, ctx: ToolContext): v
           .describe('abort only (required): the rollout percentage to leave the rule at'),
         ifMatch: ifMatchParam('list_rollout_ramps with ramp'),
         reason: reasonParam,
+        freeze_override: freezeOverrideParam,
         idempotency_key: z.string().optional().describe('Idempotency-Key header for start'),
       }),
       outputSchema: apiOutputWith(GET_ROUTE, { etag: writtenEtagOutput }),
@@ -163,9 +164,13 @@ export function registerRolloutRampTools(server: McpServer, ctx: ToolContext): v
     },
     async ({
       action, project, flag, environment, rule, steps, variation, bucketBy, ramp, expectedStepIndex, percent,
-      ifMatch, reason, idempotency_key,
-    }) =>
-      runRamp(async () => {
+      ifMatch, reason, freeze_override, idempotency_key,
+    }) => {
+      const bad = freezeOverrideError(freeze_override, reason);
+      if (bad) return bad;
+      // Start, resume and advance are frozen flag-state changes (break-glass applies); pause and abort are exempt.
+      const freezeOverride = ['start', 'resume', 'advance'].includes(action) ? freeze_override : undefined;
+      return runRamp(async () => {
         const root = base(project, flag, environment);
 
         if (action === 'start') {
@@ -186,6 +191,7 @@ export function registerRolloutRampTools(server: McpServer, ctx: ToolContext): v
                   body: { steps: ladder, variationId: variation ?? null, bucketBy: bucketBy ?? null },
                   idempotencyKey: idempotency_key,
                   reason,
+                  freezeOverride,
                 }),
               ),
             );
@@ -202,6 +208,7 @@ export function registerRolloutRampTools(server: McpServer, ctx: ToolContext): v
                 body: { steps: ladder },
                 idempotencyKey: idempotency_key,
                 reason,
+                freezeOverride,
               }),
             ),
           );
@@ -229,10 +236,12 @@ export function registerRolloutRampTools(server: McpServer, ctx: ToolContext): v
               body,
               ifMatch,
               reason,
+              freezeOverride,
             }),
           ),
         );
-      }),
+      });
+    },
   );
 }
 

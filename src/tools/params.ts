@@ -22,3 +22,20 @@ export const pagination = {
   limit: z.number().int().min(1).max(100).optional().describe('Page size (default 20)'),
   cursor: z.string().optional().describe('next_cursor from a previous response'),
 };
+
+export const freezeOverrideParam = z
+  .boolean()
+  .optional()
+  .describe(
+    'Owner/Admin only: break an active change freeze for this one change. Requires `reason`. Use it only after a ' +
+      'change_frozen error says can_override is true.',
+  );
+
+/** freeze_override is audited, so it never goes out without the reason that explains it. */
+export function freezeOverrideError(freezeOverride: boolean | undefined, reason: string | undefined) {
+  if (!freezeOverride || reason?.trim()) return undefined;
+  return {
+    content: [{ type: 'text' as const, text: 'Error: freeze_override requires reason: say why this change must break the freeze.' }],
+    isError: true,
+  };
+}

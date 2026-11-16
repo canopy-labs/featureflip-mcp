@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.11.0 — 2026-11-16
+
+### Added
+
+- `list_change_freezes` lists an organization's change freezes, filtered by `status` (`Upcoming`, `Active` or `Ended`) and `project`, with cursor paging. Pass `freeze_id` to get one freeze and its `etag`. `manage_change_freeze` creates a scheduled freeze, freezes now (`freeze_now`, which refuses a `starts_at` so a freeze meant for later can't start by accident), updates one (`ifMatch`), ends it, deletes an upcoming one, and approves or revokes approval for a scheduled flag change that would otherwise be held by a freeze. Create, `end` and approval take an `idempotency_key`. Needs the Business plan or above to create or approve, and an Admin token (#4645).
+- `freeze_override` on `toggle_flag`, `update_targeting`, `manage_targeting_rule`, `update_flag_environment_config`, `copy_flag_config` and `manage_rollout_ramp` (start, resume and advance) breaks an active change freeze for that one change. It needs an Owner or Admin token and a non-blank `reason`, and is refused before the call without one. The override is recorded in the audit log (#4645).
+- A change refused by a freeze (`change_frozen`) now names the freeze, the environment and when the freeze ends, and says whether to retry with `reason` and `freeze_override: true` or to ask an Owner or Admin.
+
 ## 0.10.1 — 2026-11-12
 
 ### Fixed

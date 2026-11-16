@@ -4,6 +4,864 @@
  */
 
 export interface paths {
+    "/api/v1/orgs/{org}/change-freezes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lists the organization's change freezes, latest start first, cursor-paginated.
+         * @description `project` (key or id)
+         *     adds that project's windows to the organization-wide ones; `status` is `Upcoming`, `Active`
+         *     or `Ended`.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    project?: string;
+                    status?: string;
+                    limit?: number;
+                    cursor?: string;
+                };
+                header?: never;
+                path: {
+                    org: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicChangeFreezeResponsePagedResult"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Authentication is required, or the supplied API token is invalid or expired. */
+                401: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
+                429: {
+                    headers: {
+                        /** @description Number of seconds to wait before retrying the request. */
+                        "Retry-After"?: number;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /**
+         * Creates a change freeze.
+         * @description Requires Admin and the Business plan or above (a lower plan is a 400
+         *     `PLAN_FEATURE_UNAVAILABLE`). Omit `startsAt` to freeze now. Supports the `Idempotency-Key` header.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    org: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["PublicCreateChangeFreezeRequest"];
+                    "text/json": components["schemas"]["PublicCreateChangeFreezeRequest"];
+                    "application/*+json": components["schemas"]["PublicCreateChangeFreezeRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicChangeFreezeResponse"];
+                    };
+                };
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Authentication is required, or the supplied API token is invalid or expired. */
+                401: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
+                429: {
+                    headers: {
+                        /** @description Number of seconds to wait before retrying the request. */
+                        "Retry-After"?: number;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orgs/{org}/change-freezes/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Gets a change freeze by id. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: {
+                    /** @description Optional. An ETag of this resource. The response is 200 only if it is still the current one; otherwise 412 `precondition_failed`. `*` or no header always reads. */
+                    "If-Match"?: string;
+                };
+                path: {
+                    org: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        /** @description Strong ETag of the resource's whole body as sent to this caller: it changes whenever anything in the body does. Send it back as If-Match on a PUT. */
+                        ETag?: string;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicChangeFreezeResponse"];
+                    };
+                };
+                /** @description Authentication is required, or the supplied API token is invalid or expired. */
+                401: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The resource's current ETag is not the If-Match one. */
+                412: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
+                429: {
+                    headers: {
+                        /** @description Number of seconds to wait before retrying the request. */
+                        "Retry-After"?: number;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /**
+         * Deletes a change freeze that has not started.
+         * @description Requires Admin. Works on every plan and when change freezes are switched off for the organization. A running or ended window is refused (400).
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    org: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Authentication is required, or the supplied API token is invalid or expired. */
+                401: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
+                429: {
+                    headers: {
+                        /** @description Number of seconds to wait before retrying the request. */
+                        "Retry-After"?: number;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /**
+         * Edits a change freeze.
+         * @description Requires Admin. A field left out is unchanged. An ended window cannot be edited
+         *     and the start of an active window cannot move (400). Below the Business plan a window can only be renamed,
+         *     have its reason edited, or end sooner; anything else is a 400 `PLAN_FEATURE_UNAVAILABLE`.
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: {
+                    /** @description Optional. The ETag from a GET of this resource. The write applies only if the resource still has that ETag, meaning nothing in its body has changed since; otherwise 412 `precondition_failed`. `*` or no header applies the write unconditionally. */
+                    "If-Match"?: string;
+                };
+                path: {
+                    org: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["PublicUpdateChangeFreezeRequest"];
+                    "text/json": components["schemas"]["PublicUpdateChangeFreezeRequest"];
+                    "application/*+json": components["schemas"]["PublicUpdateChangeFreezeRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        /** @description Strong ETag of the resource's whole body as sent to this caller: it changes whenever anything in the body does. Send it back as If-Match on a PUT. */
+                        ETag?: string;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicChangeFreezeResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Authentication is required, or the supplied API token is invalid or expired. */
+                401: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The resource changed since the If-Match ETag. */
+                412: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
+                429: {
+                    headers: {
+                        /** @description Number of seconds to wait before retrying the request. */
+                        "Retry-After"?: number;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/orgs/{org}/change-freezes/{id}/end": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ends a running change freeze now.
+         * @description Requires Admin. Works on every plan and when change freezes are
+         *     switched off for the organization. A window that has not started is deleted instead (400). Supports
+         *     the `Idempotency-Key` header.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    org: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicChangeFreezeResponse"];
+                    };
+                };
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Authentication is required, or the supplied API token is invalid or expired. */
+                401: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
+                429: {
+                    headers: {
+                        /** @description Number of seconds to wait before retrying the request. */
+                        "Retry-After"?: number;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orgs/{org}/change-freezes/{id}/approvals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Approves one Pending scheduled change to apply inside this change freeze when it comes due, with a reason.
+         * @description The
+         *     change must be in an environment the window covers; when it applies, its audit rows and webhooks are marked
+         *     pre-approved. The approval counts only while the approver is still an Owner or Admin. Requires Admin and the
+         *     Business plan or above (a lower plan is a 400 `PLAN_FEATURE_UNAVAILABLE`); approving the same change twice
+         *     is a 409. Supports the `Idempotency-Key` header.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    org: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["PublicGrantFreezeApprovalRequest"];
+                    "text/json": components["schemas"]["PublicGrantFreezeApprovalRequest"];
+                    "application/*+json": components["schemas"]["PublicGrantFreezeApprovalRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicFreezeApprovalResponse"];
+                    };
+                };
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Authentication is required, or the supplied API token is invalid or expired. */
+                401: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
+                429: {
+                    headers: {
+                        /** @description Number of seconds to wait before retrying the request. */
+                        "Retry-After"?: number;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orgs/{org}/change-freezes/{id}/approvals/{scheduledChangeId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Withdraws a scheduled change's approval to apply inside this change freeze.
+         * @description Requires Admin. Works on every plan
+         *     and when change freezes are switched off for the organization. Withdrawing the approval of a change that is no
+         *     longer pending (being applied, applied, failed or cancelled) is a 409: it would have no effect.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    org: string;
+                    id: string;
+                    scheduledChangeId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Authentication is required, or the supplied API token is invalid or expired. */
+                401: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
+                429: {
+                    headers: {
+                        /** @description Number of seconds to wait before retrying the request. */
+                        "Retry-After"?: number;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/orgs/{org}/projects/{project}/environments": {
         parameters: {
             query?: never;
@@ -407,6 +1265,8 @@ export interface paths {
                 header?: {
                     /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
                     "X-Intent-Reason"?: string;
+                    /** @description Owner/Admin only: `true` breaks an active change freeze for this one request; requires X-Intent-Reason. */
+                    "X-Freeze-Override"?: boolean;
                 };
                 path: {
                     org: string;
@@ -477,6 +1337,18 @@ export interface paths {
                 };
                 /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
                 422: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description A change freeze covers this environment (error code change_frozen; the change_freeze object names the window, when it ends and whether the caller may break it). An Owner or Admin can retry with X-Freeze-Override: true and an X-Intent-Reason. */
+                423: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -2493,6 +3365,8 @@ export interface paths {
                     "If-Match"?: string;
                     /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
                     "X-Intent-Reason"?: string;
+                    /** @description Owner/Admin only: `true` breaks an active change freeze for this one request; requires X-Intent-Reason. */
+                    "X-Freeze-Override"?: boolean;
                 };
                 path: {
                     org: string;
@@ -2594,6 +3468,18 @@ export interface paths {
                         "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
+                /** @description A change freeze covers this environment (error code change_frozen; the change_freeze object names the window, when it ends and whether the caller may break it). An Owner or Admin can retry with X-Freeze-Override: true and an X-Intent-Reason. */
+                423: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
                 /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
                 429: {
                     headers: {
@@ -2640,6 +3526,8 @@ export interface paths {
                 header?: {
                     /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
                     "X-Intent-Reason"?: string;
+                    /** @description Owner/Admin only: `true` breaks an active change freeze for this one request; requires X-Intent-Reason. */
+                    "X-Freeze-Override"?: boolean;
                 };
                 path: {
                     org: string;
@@ -2741,6 +3629,18 @@ export interface paths {
                         "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
+                /** @description A change freeze covers this environment (error code change_frozen; the change_freeze object names the window, when it ends and whether the caller may break it). An Owner or Admin can retry with X-Freeze-Override: true and an X-Intent-Reason. */
+                423: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
                 /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
                 429: {
                     headers: {
@@ -2782,6 +3682,8 @@ export interface paths {
                 header?: {
                     /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
                     "X-Intent-Reason"?: string;
+                    /** @description Owner/Admin only: `true` breaks an active change freeze for this one request; requires X-Intent-Reason. */
+                    "X-Freeze-Override"?: boolean;
                 };
                 path: {
                     org: string;
@@ -2859,6 +3761,18 @@ export interface paths {
                 };
                 /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
                 422: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description A change freeze covers this environment (error code change_frozen; the change_freeze object names the window, when it ends and whether the caller may break it). An Owner or Admin can retry with X-Freeze-Override: true and an X-Intent-Reason. */
+                423: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -3110,6 +4024,8 @@ export interface paths {
                     "If-Match"?: string;
                     /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
                     "X-Intent-Reason"?: string;
+                    /** @description Owner/Admin only: `true` breaks an active change freeze for this one request; requires X-Intent-Reason. */
+                    "X-Freeze-Override"?: boolean;
                 };
                 path: {
                     org: string;
@@ -3211,6 +4127,18 @@ export interface paths {
                         "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
+                /** @description A change freeze covers this environment (error code change_frozen; the change_freeze object names the window, when it ends and whether the caller may break it). An Owner or Admin can retry with X-Freeze-Override: true and an X-Intent-Reason. */
+                423: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
                 /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
                 429: {
                     headers: {
@@ -3256,6 +4184,8 @@ export interface paths {
                 header?: {
                     /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
                     "X-Intent-Reason"?: string;
+                    /** @description Owner/Admin only: `true` breaks an active change freeze for this one request; requires X-Intent-Reason. */
+                    "X-Freeze-Override"?: boolean;
                 };
                 path: {
                     org: string;
@@ -3335,6 +4265,18 @@ export interface paths {
                 };
                 /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
                 422: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description A change freeze covers this environment (error code change_frozen; the change_freeze object names the window, when it ends and whether the caller may break it). An Owner or Admin can retry with X-Freeze-Override: true and an X-Intent-Reason. */
+                423: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -3471,6 +4413,8 @@ export interface paths {
                     "If-Match"?: string;
                     /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
                     "X-Intent-Reason"?: string;
+                    /** @description Owner/Admin only: `true` breaks an active change freeze for this one request; requires X-Intent-Reason. */
+                    "X-Freeze-Override"?: boolean;
                 };
                 path: {
                     org: string;
@@ -3573,6 +4517,18 @@ export interface paths {
                         "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
+                /** @description A change freeze covers this environment (error code change_frozen; the change_freeze object names the window, when it ends and whether the caller may break it). An Owner or Admin can retry with X-Freeze-Override: true and an X-Intent-Reason. */
+                423: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
                 /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
                 429: {
                     headers: {
@@ -3600,6 +4556,8 @@ export interface paths {
                 header?: {
                     /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
                     "X-Intent-Reason"?: string;
+                    /** @description Owner/Admin only: `true` breaks an active change freeze for this one request; requires X-Intent-Reason. */
+                    "X-Freeze-Override"?: boolean;
                 };
                 path: {
                     org: string;
@@ -3682,6 +4640,18 @@ export interface paths {
                         "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
+                /** @description A change freeze covers this environment (error code change_frozen; the change_freeze object names the window, when it ends and whether the caller may break it). An Owner or Admin can retry with X-Freeze-Override: true and an X-Intent-Reason. */
+                423: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
                 /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
                 429: {
                     headers: {
@@ -3722,6 +4692,8 @@ export interface paths {
                 header?: {
                     /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
                     "X-Intent-Reason"?: string;
+                    /** @description Owner/Admin only: `true` breaks an active change freeze for this one request; requires X-Intent-Reason. */
+                    "X-Freeze-Override"?: boolean;
                 };
                 path: {
                     org: string;
@@ -3799,6 +4771,18 @@ export interface paths {
                 };
                 /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
                 422: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description A change freeze covers this environment (error code change_frozen; the change_freeze object names the window, when it ends and whether the caller may break it). An Owner or Admin can retry with X-Freeze-Override: true and an X-Intent-Reason. */
+                423: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -5370,7 +6354,7 @@ export interface paths {
         /**
          * Deletes a project.
          * @description Requires at least Member, and a change reason when any of its environments
-         *      requires one.
+         *      requires one. A change freeze on any of its environments refuses it.
          */
         delete: {
             parameters: {
@@ -5378,6 +6362,8 @@ export interface paths {
                 header?: {
                     /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
                     "X-Intent-Reason"?: string;
+                    /** @description Owner/Admin only: `true` breaks an active change freeze for this one request; requires X-Intent-Reason. */
+                    "X-Freeze-Override"?: boolean;
                 };
                 path: {
                     org: string;
@@ -5447,6 +6433,18 @@ export interface paths {
                 };
                 /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
                 422: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description An environment in this project is frozen (error code change_frozen; the change_freeze object names the window, the frozen environment, when it ends and whether the caller may break it). An Owner or Admin can retry with X-Freeze-Override: true and an X-Intent-Reason. */
+                423: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -6008,6 +7006,8 @@ export interface paths {
                 header?: {
                     /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
                     "X-Intent-Reason"?: string;
+                    /** @description Owner/Admin only: `true` breaks an active change freeze for this one request; requires X-Intent-Reason. */
+                    "X-Freeze-Override"?: boolean;
                 };
                 path: {
                     org: string;
@@ -6110,6 +7110,18 @@ export interface paths {
                         "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
+                /** @description A change freeze covers this environment (error code change_frozen; the change_freeze object names the window, when it ends and whether the caller may break it). An Owner or Admin can retry with X-Freeze-Override: true and an X-Intent-Reason. */
+                423: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
                 /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
                 429: {
                     headers: {
@@ -6153,6 +7165,8 @@ export interface paths {
                 header?: {
                     /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
                     "X-Intent-Reason"?: string;
+                    /** @description Owner/Admin only: `true` breaks an active change freeze for this one request; requires X-Intent-Reason. */
+                    "X-Freeze-Override"?: boolean;
                 };
                 path: {
                     org: string;
@@ -6244,6 +7258,18 @@ export interface paths {
                 };
                 /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
                 422: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description A change freeze covers this environment (error code change_frozen; the change_freeze object names the window, when it ends and whether the caller may break it). An Owner or Admin can retry with X-Freeze-Override: true and an X-Intent-Reason. */
+                423: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -6438,6 +7464,8 @@ export interface paths {
                     "If-Match"?: string;
                     /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
                     "X-Intent-Reason"?: string;
+                    /** @description Owner/Admin only: `true` breaks an active change freeze for this one request; requires X-Intent-Reason. */
+                    "X-Freeze-Override"?: boolean;
                 };
                 path: {
                     org: string;
@@ -6548,6 +7576,18 @@ export interface paths {
                         "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
+                /** @description A change freeze covers this environment (error code change_frozen; the change_freeze object names the window, when it ends and whether the caller may break it). An Owner or Admin can retry with X-Freeze-Override: true and an X-Intent-Reason. */
+                423: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
                 /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
                 429: {
                     headers: {
@@ -6592,6 +7632,8 @@ export interface paths {
                     "If-Match"?: string;
                     /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
                     "X-Intent-Reason"?: string;
+                    /** @description Owner/Admin only: `true` breaks an active change freeze for this one request; requires X-Intent-Reason. */
+                    "X-Freeze-Override"?: boolean;
                 };
                 path: {
                     org: string;
@@ -6698,6 +7740,18 @@ export interface paths {
                 };
                 /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
                 422: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description A change freeze covers this environment (error code change_frozen; the change_freeze object names the window, when it ends and whether the caller may break it). An Owner or Admin can retry with X-Freeze-Override: true and an X-Intent-Reason. */
+                423: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -8125,6 +9179,8 @@ export interface paths {
         /**
          * Lists the event types a subscription can filter on.
          * @description Requires Admin.
+         *
+         *     Event types for features not enabled on the organization are omitted.
          */
         get: {
             parameters: {
@@ -9226,6 +10282,8 @@ export interface components {
          *     `connection_id` identifies which SSO connection to sign in with.
          *     `plan_limit` is present only on the `plan_limit_reached` error: which plan cap the
          *     request would have exceeded, so a client can branch on it without parsing `message`.
+         *     `change_freeze` is present only on the `change_frozen` error (#4645): the change freeze that refused the
+         *     write, so a client can show when it ends and whether the caller may break it, without parsing `message`.
          * @example {
          *       "error": "not_found",
          *       "message": "Flag 'new-checkout-flw' was not found in project 'checkout'.",
@@ -9255,6 +10313,82 @@ export interface components {
             /** Format: uuid */
             connection_id?: string | null;
             plan_limit?: components["schemas"]["PublicPlanLimit"];
+            change_freeze?: components["schemas"]["PublicChangeFreeze"];
+        };
+        /**
+         * @description The freeze behind a `change_frozen` error: `id` and `name` of the window, the environment's
+         *     `environment_key`, `ends_at` (UTC; always present, null for an open-ended window) and whether the caller's role may
+         *     break it (`can_override`, with `X-Freeze-Override: true` and an `X-Intent-Reason`).
+         */
+        PublicChangeFreeze: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            environment_key: string;
+            /** Format: date-time */
+            ends_at?: string | null;
+            can_override: boolean;
+        };
+        /**
+         * @description A change freeze window. `project` is the project's key, or null for an organization-wide window.
+         *     An organization-wide window names its environments by key (`environmentKeys`, matched in every project);
+         *     a project window names them by id, and returns both `environmentIds` and the current
+         *     `environmentKeys` of those environments. `status` is time-based only: `Upcoming`, `Active`
+         *     or `Ended`. `enforcing` is true when the window is `Active` and is actually in force: it has
+         *     started enforcing, or the organization's plan includes change freezes. `wontStartReason` is `Plan`
+         *     when the window has not started enforcing and the organization's plan no longer includes change freezes, so it
+         *     will not enforce. `approvals` lists the scheduled changes approved to land inside the window.
+         */
+        PublicChangeFreezeResponse: {
+            /** Format: uuid */
+            id: string;
+            project?: string | null;
+            name: string;
+            reason: string;
+            allEnvironments: boolean;
+            environmentKeys: string[];
+            environmentIds: string[];
+            /** Format: date-time */
+            startsAt: string;
+            /** Format: date-time */
+            endsAt?: string | null;
+            /** Format: date-time */
+            endedAt?: string | null;
+            /**
+             * @description Allowed values: Hold, Fail.
+             * @enum {string}
+             */
+            scheduledChangePolicy: "Hold" | "Fail";
+            /**
+             * @description Allowed values: Upcoming, Active, Ended.
+             * @enum {string}
+             */
+            status: "Upcoming" | "Active" | "Ended";
+            enforcing: boolean;
+            /**
+             * @description Allowed values: Plan.
+             * @enum {string|null}
+             */
+            wontStartReason?: "Plan" | null;
+            approvals: components["schemas"]["PublicFreezeApprovalResponse"][];
+            createdByEmail: string;
+            /** @description Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it. */
+            _actions?: {
+                [key: string]: components["schemas"]["ActionCapability"];
+            };
+        };
+        /**
+         * @description A page of results plus an opaque cursor for the next page, or null when this is the last
+         *     page. Wire keys are frozen: `items` (already lowercase under the camelCase policy) and
+         *     `next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`).
+         */
+        PublicChangeFreezeResponsePagedResult: {
+            items: components["schemas"]["PublicChangeFreezeResponse"][];
+            next_cursor?: string | null;
+            /** @description Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it. */
+            _actions?: {
+                [key: string]: components["schemas"]["ActionCapability"];
+            };
         };
         /** @description Request-side condition group, symmetric with PublicConditionGroupResponse. */
         PublicConditionGroupRequest: {
@@ -9348,6 +10482,31 @@ export interface components {
         PublicCopyWarning: {
             code: string;
             message: string;
+        };
+        /**
+         * @description Creates a change freeze. `project` (key or id) makes it a project window; omit it for an
+         *     organization-wide one. Omit `startsAt` to freeze now (then `endsAt` may be omitted for an
+         *     open-ended freeze); a scheduled freeze needs both. Times are UTC and must carry an offset (`Z`).
+         *     Name the environments with `environmentKeys` (a project window accepts keys too, resolved within
+         *     the project) and/or `environmentIds`, or set `allEnvironments`.
+         *     `scheduledChangePolicy` is `Hold` (the default) or `Fail`.
+         */
+        PublicCreateChangeFreezeRequest: {
+            name: string;
+            reason: string;
+            project?: string | null;
+            allEnvironments?: boolean | null;
+            environmentKeys?: string[] | null;
+            environmentIds?: string[] | null;
+            /** Format: date-time */
+            startsAt?: string | null;
+            /** Format: date-time */
+            endsAt?: string | null;
+            /**
+             * @description Allowed values: Hold, Fail.
+             * @enum {string|null}
+             */
+            scheduledChangePolicy?: "Hold" | "Fail" | null;
         };
         /**
          * @description Request body for `POST /api/v1/orgs/{org}/projects/{project}/environments`. Named
@@ -10209,6 +11368,37 @@ export interface components {
             secret: string;
             warning: string;
         };
+        /**
+         * @description A scheduled change that a person approved to land inside a change freeze. `stands` is whether the approval
+         *     counts right now: false once the approver is no longer an active Owner or Admin, and the window then holds or fails
+         *     the change as if it were not approved.
+         */
+        PublicFreezeApprovalResponse: {
+            /** Format: uuid */
+            scheduledChangeId: string;
+            /** Format: uuid */
+            flagId: string;
+            flagKey?: string | null;
+            /** Format: uuid */
+            environmentId: string;
+            /** Format: date-time */
+            scheduledAtUtc: string;
+            reason: string;
+            approvedByEmail: string;
+            /** Format: date-time */
+            approvedAt: string;
+            stands: boolean;
+        };
+        /**
+         * @description Approves one Pending scheduled change to apply inside the change freeze when it comes due, with a required
+         *     `reason`. The change must be in an environment the window covers. `scheduledChangeId` is required: a
+         *     missing or empty one is a 400 naming the field.
+         */
+        PublicGrantFreezeApprovalRequest: {
+            /** Format: uuid */
+            scheduledChangeId: string | null;
+            reason: string;
+        };
         /** @description An id with its key and name beside it, as the other v1 responses pair them. Key and name are null only for a deleted target. */
         PublicKeyedRef: {
             /** Format: uuid */
@@ -10641,6 +11831,27 @@ export interface components {
          */
         PublicToggleFlagRequest: {
             enabled?: boolean | null;
+        };
+        /**
+         * @description Edits a change freeze; a field left out is left as it was. An ended window cannot be edited, and the
+         *     start of an active window cannot move. Send `If-Match` with the ETag from the last read to
+         *     guard against a concurrent edit.
+         */
+        PublicUpdateChangeFreezeRequest: {
+            name?: string | null;
+            reason?: string | null;
+            allEnvironments?: boolean | null;
+            environmentKeys?: string[] | null;
+            environmentIds?: string[] | null;
+            /** Format: date-time */
+            startsAt?: string | null;
+            /** Format: date-time */
+            endsAt?: string | null;
+            /**
+             * @description Allowed values: Hold, Fail.
+             * @enum {string|null}
+             */
+            scheduledChangePolicy?: "Hold" | "Fail" | null;
         };
         /**
          * @description Request body for `PUT /api/v1/orgs/{org}/projects/{project}/environments/{env}`. See

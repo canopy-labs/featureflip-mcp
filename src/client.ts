@@ -6,6 +6,8 @@ export interface ErrorEnvelope {
   retry_after?: number;
   did_you_mean?: string[];
   next_actions?: { method: string; path: string }[];
+  /** On a 423 change_frozen: the window that blocked the write. */
+  change_freeze?: { id: string; name: string; environment_key: string; ends_at: string | null; can_override: boolean };
 }
 
 export class ApiError extends Error {
@@ -25,6 +27,8 @@ export interface RequestOptions {
   ifMatch?: string;
   /** Why the change is made: sent as X-Intent-Reason on every attempt. */
   reason?: string;
+  /** Break an active change freeze for this request: sent as X-Freeze-Override. The server needs a reason too. */
+  freezeOverride?: boolean;
 }
 
 // ETags are quoted strings, and the quotes are part of the value. An agent copying the etag
@@ -89,6 +93,7 @@ export class FeatureflipApi {
     // Built once, outside the retry loop, so every replay carries the same reason. Percent-encoded UTF-8:
     // fetch throws on header values with characters above U+00FF or newlines, and the server decodes it.
     if (options.reason?.trim()) headers['X-Intent-Reason'] = encodeURIComponent(options.reason);
+    if (options.freezeOverride) headers['X-Freeze-Override'] = 'true';
 
     // A request that is safe to replay retries every transient failure. An unkeyed
     // POST retries only a 503: after a 502/504 or a dropped connection it may already

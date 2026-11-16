@@ -39,5 +39,7 @@
   "deliver_webhook",
   "find_stale_flags",
   "list_removal_candidates",
-  "wrap_feature"
+  "wrap_feature",
+  "list_change_freezes",
+  "manage_change_freeze"
 ]

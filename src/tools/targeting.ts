@@ -5,7 +5,7 @@ import { errorResult, okJson, run } from '../errors.js';
 import type { ToolContext } from './context.js';
 import { apiOutputWith, endpoint, objectOutput, oneOfOutputs, shape } from './outputs.js';
 import { etagOutput, ifMatchParam, withEtag, writtenEtagOutput } from './etag.js';
-import { environmentParam, flagParam, projectParam, reasonParam } from './params.js';
+import { environmentParam, flagParam, projectParam, reasonParam, freezeOverrideParam, freezeOverrideError } from './params.js';
 
 const conditionSchema = z.object({
   attribute: z.string().describe('Context attribute name, e.g. plan, country, user_id'),
@@ -87,6 +87,7 @@ export function registerTargetingTools(server: McpServer, ctx: ToolContext): voi
         rules: z.array(ruleSchema).describe('The complete ordered rule list; rules left out are deleted'),
         ifMatch: ifMatchParam('get_targeting'),
         reason: reasonParam,
+        freeze_override: freezeOverrideParam,
       }),
       outputSchema: objectOutput(
         {
@@ -100,17 +101,21 @@ export function registerTargetingTools(server: McpServer, ctx: ToolContext): voi
       ),
       annotations: { destructiveHint: true },
     },
-    async ({ project, flag, environment, rules, ifMatch, reason }) =>
-      run(async () => {
+    async ({ project, flag, environment, rules, ifMatch, reason, freeze_override }) => {
+      const bad = freezeOverrideError(freeze_override, reason);
+      if (bad) return bad;
+      return run(async () => {
         // PUT .../environments/{env}/targeting returns 204 No Content — nothing to pass
         // through, so confirm the applied state instead of echoing an (undefined) response body.
         const { etag } = await ctx.api.requestWithEtag('PUT', targetingUrl(project, flag, environment), {
           body: { rules: rules.map(withGroups) },
           ifMatch,
           reason,
+          freezeOverride: freeze_override,
         });
         return okJson(withEtag({ data: { project, flag, environment, rulesReplaced: rules.length }, etag }));
-      }),
+      });
+    },
   );
 
   type RuleResponse = {
@@ -146,6 +151,7 @@ export function registerTargetingTools(server: McpServer, ctx: ToolContext): voi
         rule: ruleSchema.optional().describe('Rule fields; required for add and update'),
         ruleIds: z.array(z.string()).optional().describe('Every rule id exactly once, in evaluation order; required for reorder'),
         reason: reasonParam,
+        freeze_override: freezeOverrideParam,
       }),
       outputSchema: oneOfOutputs(
         endpoint('POST /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/rules'),
@@ -155,18 +161,21 @@ export function registerTargetingTools(server: McpServer, ctx: ToolContext): voi
       ),
       annotations: { destructiveHint: true },
     },
-    async ({ action, project, flag, environment, ruleId, rule, ruleIds, reason }) =>
-      run(async () => {
+    async ({ action, project, flag, environment, ruleId, rule, ruleIds, reason, freeze_override }) => {
+      const bad = freezeOverrideError(freeze_override, reason);
+      if (bad) return bad;
+      const freezeOverride = freeze_override;
+      return run(async () => {
         const base = `/api/v1/orgs/${enc(ctx.org)}/projects/${enc(project)}/flags/${enc(flag)}/environments/${enc(environment)}/rules`;
         if (action === 'add') {
           if (!rule) return errorResult(new Error('action=add requires rule'));
           // POST returns 201 with the created rule — pass it through.
-          return okJson(await ctx.api.request('POST', base, { body: withGroups(rule), reason }));
+          return okJson(await ctx.api.request('POST', base, { body: withGroups(rule), reason, freezeOverride }));
         }
         if (action === 'reorder') {
           if (!ruleIds) return errorResult(new Error('action=reorder requires ruleIds (see get_targeting)'));
           // PUT .../rules/reorder returns 204 No Content.
-          await ctx.api.request('PUT', `${base}/reorder`, { body: { ruleIds }, reason });
+          await ctx.api.request('PUT', `${base}/reorder`, { body: { ruleIds }, reason, freezeOverride });
           return okJson({ reordered: ruleIds });
         }
         if (!ruleId) return errorResult(new Error(`action=${action} requires ruleId (see get_targeting)`));
@@ -198,12 +207,13 @@ export function registerTargetingTools(server: McpServer, ctx: ToolContext): voi
               })),
           };
           // PUT returns 204 No Content — confirm instead.
-          await ctx.api.request('PUT', path, { body, ifMatch: etag, reason });
+          await ctx.api.request('PUT', path, { body, ifMatch: etag, reason, freezeOverride });
           return okJson({ ruleId, updated: true });
         }
         // DELETE returns 204 No Content.
-        await ctx.api.request('DELETE', path, { reason });
+        await ctx.api.request('DELETE', path, { reason, freezeOverride });
         return okJson({ removed: ruleId });
-      }),
+      });
+    },
   );
 }

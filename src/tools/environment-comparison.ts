@@ -4,7 +4,7 @@ import { enc } from '../client.js';
 import { errorResult, okJson, run } from '../errors.js';
 import type { ToolContext } from './context.js';
 import { apiOutput } from './outputs.js';
-import { flagParam, pagination, projectParam, reasonParam } from './params.js';
+import { flagParam, pagination, projectParam, reasonParam, freezeOverrideParam, freezeOverrideError } from './params.js';
 
 export function registerEnvironmentComparisonTools(server: McpServer, ctx: ToolContext): void {
   const projectBase = (project: string) => `/api/v1/orgs/${enc(ctx.org)}/projects/${enc(project)}`;
@@ -61,11 +61,14 @@ export function registerEnvironmentComparisonTools(server: McpServer, ctx: ToolC
         source_etag: z.string().optional().describe("sourceETag from the preview; the apply is refused (412) if the source changed since"),
         target_etag: z.string().optional().describe("targetETag from the preview; the apply is refused (412) if the target changed since"),
         reason: reasonParam,
+        freeze_override: freezeOverrideParam,
       }),
       outputSchema: apiOutput('POST /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/copy'),
       annotations: { destructiveHint: true },
     },
-    async ({ project, flag, source, target, include_state, dry_run, source_etag, target_etag, reason }) => {
+    async ({ project, flag, source, target, include_state, dry_run, source_etag, target_etag, reason, freeze_override }) => {
+      const bad = freezeOverrideError(freeze_override, reason);
+      if (bad) return bad;
       if (dry_run === false && (!source_etag || !target_etag)) {
         return {
           content: [
@@ -93,6 +96,7 @@ export function registerEnvironmentComparisonTools(server: McpServer, ctx: ToolC
                 expectedTargetETag: target_etag,
               },
               reason,
+              freezeOverride: freeze_override,
             },
           ),
         );

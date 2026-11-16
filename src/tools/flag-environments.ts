@@ -4,7 +4,7 @@ import { enc } from '../client.js';
 import { okJson, run } from '../errors.js';
 import type { ToolContext } from './context.js';
 import { apiOutput, nullable, objectOutput, shape } from './outputs.js';
-import { environmentParam, flagParam, projectParam, reasonParam } from './params.js';
+import { environmentParam, flagParam, projectParam, reasonParam, freezeOverrideParam, freezeOverrideError } from './params.js';
 import type { components } from '../generated/api-types.js';
 
 const strategies = z.enum(['SingleVariation', 'PercentageRollout', 'TargetedRollout']);
@@ -29,6 +29,7 @@ export function registerFlagEnvironmentTools(server: McpServer, ctx: ToolContext
         environment: environmentParam,
         enabled: z.boolean().describe('true to turn the flag on in this environment, false to turn it off'),
         reason: reasonParam,
+        freeze_override: freezeOverrideParam,
       }),
       outputSchema: objectOutput(
         { project: { type: 'string' }, flag: { type: 'string' }, environment: { type: 'string' }, enabled: { type: 'boolean' } },
@@ -36,16 +37,20 @@ export function registerFlagEnvironmentTools(server: McpServer, ctx: ToolContext
       ),
       annotations: { destructiveHint: true },
     },
-    async ({ project, flag, environment, enabled, reason }) =>
-      run(async () => {
+    async ({ project, flag, environment, enabled, reason, freeze_override }) => {
+      const bad = freezeOverrideError(freeze_override, reason);
+      if (bad) return bad;
+      return run(async () => {
         // POST .../toggle returns 204 No Content — nothing to pass through, so confirm the
         // applied state instead of echoing an (undefined) response body.
         await ctx.api.request('POST', `${flagBase(project, flag)}/environments/${enc(environment)}/toggle`, {
           body: { enabled },
           reason,
+          freezeOverride: freeze_override,
         });
         return okJson({ project, flag, environment, enabled });
-      }),
+      });
+    },
   );
 
   server.registerTool(
@@ -71,6 +76,7 @@ export function registerFlagEnvironmentTools(server: McpServer, ctx: ToolContext
               'Omit to leave existing prerequisites untouched; pass a list (possibly empty) to replace them wholesale.',
           ),
         reason: reasonParam,
+        freeze_override: freezeOverrideParam,
       }),
       outputSchema: objectOutput(
         { project: { type: 'string' }, flag: { type: 'string' }, environment: { type: 'string' }, defaultVariationId: { type: 'string' }, strategy: { type: 'string' }, prerequisites: {
@@ -81,12 +87,15 @@ export function registerFlagEnvironmentTools(server: McpServer, ctx: ToolContext
       ),
       annotations: { destructiveHint: true },
     },
-    async ({ project, flag, environment, reason, ...body }) =>
-      run(async () => {
+    async ({ project, flag, environment, reason, freeze_override, ...body }) => {
+      const bad = freezeOverrideError(freeze_override, reason);
+      if (bad) return bad;
+      return run(async () => {
         // PUT .../environments/{env} returns 204 No Content — nothing to pass through.
-        await ctx.api.request('PUT', `${flagBase(project, flag)}/environments/${enc(environment)}`, { body, reason });
+        await ctx.api.request('PUT', `${flagBase(project, flag)}/environments/${enc(environment)}`, { body, reason, freezeOverride: freeze_override });
         return okJson({ project, flag, environment, ...body });
-      }),
+      });
+    },
   );
 
   server.registerTool(

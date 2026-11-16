@@ -11,6 +11,31 @@ describe('okJson', () => {
 });
 
 describe('errorResult', () => {
+  const frozen = (cf: Record<string, unknown>) =>
+    errorResult(new ApiError(423, { error: 'change_frozen', message: 'Frozen', change_freeze: cf } as never)).content[0].text;
+
+  it('change_frozen names the window, environment and end, and the override path', () => {
+    const t = frozen({ id: 'i', name: 'Black Friday', environment_key: 'production', ends_at: '2026-11-30T00:00:00Z', can_override: true });
+    expect(t).toContain('Black Friday');
+    expect(t).toContain('production');
+    expect(t).toContain('2026-11-30T00:00:00Z');
+    expect(t).toContain('freeze_override: true');
+    expect(t).toContain('reason');
+  });
+
+  it('change_frozen from an older server (no change_freeze slot) keeps the message and adds no override hint', () => {
+    const t = errorResult(new ApiError(423, { error: 'change_frozen', message: 'Production is frozen' })).content[0].text;
+    expect(t).toContain('Production is frozen');
+    expect(t).not.toContain('freeze_override');
+  });
+
+  it('change_frozen without override tells the agent to ask an Owner or Admin, and an open end reads "until it is ended"', () => {
+    const t = frozen({ id: 'i', name: 'Incident', environment_key: 'staging', ends_at: null, can_override: false });
+    expect(t).toContain('until it is ended');
+    expect(t).toContain('Owner or Admin');
+    expect(t).not.toContain('freeze_override: true');
+  });
+
   it('renders envelope details including hints', () => {
     const err = new ApiError(404, {
       error: 'not_found',
