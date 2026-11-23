@@ -11,6 +11,7 @@ import { registerFlagTriggerTools } from './tools/flag-triggers.js';
 import { registerChangeFreezeTools } from './tools/change-freezes.js';
 import { registerRolloutRampTools } from './tools/rollout-ramps.js';
 import { registerEnvironmentComparisonTools } from './tools/environment-comparison.js';
+import { registerFlagVersionTools } from './tools/flag-versions.js';
 import { registerTargetingTools } from './tools/targeting.js';
 import { registerVariationTools } from './tools/variations.js';
 import { registerWebhookTools } from './tools/webhooks.js';
@@ -29,6 +30,7 @@ export function createServer(ctx: ToolContext): McpServer {
   registerRolloutRampTools(server, ctx);
   registerChangeFreezeTools(server, ctx);
   registerEnvironmentComparisonTools(server, ctx);
+  registerFlagVersionTools(server, ctx);
   registerTargetingTools(server, ctx);
   registerVariationTools(server, ctx);
   registerWebhookTools(server, ctx);

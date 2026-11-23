@@ -5,7 +5,7 @@ import { errorResult, okJson, run } from '../errors.js';
 import type { ToolContext } from './context.js';
 import { apiOutput, apiOutputWith, endpoint, nullable, oneOfOutputs, shape } from './outputs.js';
 import { etagOutput, ifMatchParam, withEtag, writtenEtagOutput } from './etag.js';
-import { pagination, projectParam, reasonParam } from './params.js';
+import { pagination, projectParam, reasonParam, freezeOverrideParam, freezeOverrideError } from './params.js';
 
 export function registerSegmentTools(server: McpServer, ctx: ToolContext): void {
   server.registerTool(
@@ -83,7 +83,9 @@ export function registerSegmentTools(server: McpServer, ctx: ToolContext): void 
         'name (+ conditions); action=update needs segment and changes only the fields you pass (conditions replaces ' +
         'the whole list; description: "" clears it); action=delete needs segment. On update, pass ifMatch (the ' +
         'etag from get_segment) so a change someone made since you read it is not overwritten. ifMatch is ' +
-        'rejected on create and delete: the API cannot make those conditional.',
+        'rejected on create and delete: the API cannot make those conditional. A conditions change is refused with ' +
+        'change_frozen while a change freeze covers an environment where a live, enabled flag uses the segment; an ' +
+        'Owner/Admin can pass freeze_override + reason (update only) to break it.',
       inputSchema: z.object({
         action: z.enum(['create', 'update', 'delete']).describe('create needs key + name; update and delete need segment'),
         project: projectParam,
@@ -97,6 +99,7 @@ export function registerSegmentTools(server: McpServer, ctx: ToolContext): void 
           .describe('Conditions a user must match to be in the segment; on update, replaces the whole list'),
         ifMatch: ifMatchParam('get_segment'),
         reason: reasonParam,
+        freeze_override: freezeOverrideParam,
       }),
       outputSchema: oneOfOutputs(
         endpoint('POST /api/v1/orgs/{org}/projects/{project}/segments'),
@@ -115,8 +118,10 @@ export function registerSegmentTools(server: McpServer, ctx: ToolContext): void 
       ),
       annotations: { destructiveHint: true },
     },
-    async ({ action, project, segment, key, name, description, conditions, ifMatch, reason }) =>
+    async ({ action, project, segment, key, name, description, conditions, ifMatch, reason, freeze_override }) =>
       run(async () => {
+        const bad = freezeOverrideError(freeze_override, reason);
+        if (bad) return bad;
         const base = `/api/v1/orgs/${enc(ctx.org)}/projects/${enc(project)}/segments`;
         // The API refuses If-Match on POST and DELETE. Writing without it would quietly drop the
         // precondition the agent asked for, so a delete could erase a change made since its read.
@@ -146,7 +151,13 @@ export function registerSegmentTools(server: McpServer, ctx: ToolContext): void 
             conditions: conditions ?? (current.conditions ?? []).map(plain),
           };
           // PUT returns 204 No Content — confirm what was applied instead.
-          const { etag } = await ctx.api.requestWithEtag('PUT', path, { body, ifMatch: ifMatch ?? readEtag, reason });
+          const { etag } = await ctx.api.requestWithEtag('PUT', path, {
+            body,
+            ifMatch: ifMatch ?? readEtag,
+            reason,
+            // Only an update can change what a frozen environment serves; create and delete never send it.
+            freezeOverride: freeze_override,
+          });
           return okJson(withEtag({ data: { segment, updated: true, ...body }, etag }));
         }
         // DELETE returns 204 No Content.

@@ -1,6 +1,6 @@
 import type { McpServer } from '@modelcontextprotocol/server';
 import * as z from 'zod/v4';
-import { enc } from '../client.js';
+import { enc, quoteEtag } from '../client.js';
 import { errorResult, okJson, run } from '../errors.js';
 import type { ToolContext } from './context.js';
 import { apiOutput } from './outputs.js';
@@ -92,8 +92,8 @@ export function registerEnvironmentComparisonTools(server: McpServer, ctx: ToolC
                 source,
                 includeState: include_state ?? false,
                 dryRun: dry_run ?? true,
-                expectedSourceETag: source_etag,
-                expectedTargetETag: target_etag,
+                expectedSourceETag: source_etag === undefined ? undefined : quoteEtag(source_etag),
+                expectedTargetETag: target_etag === undefined ? undefined : quoteEtag(target_etag),
               },
               reason,
               freezeOverride: freeze_override,

@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.12.0 — 2026-11-23
+
+### Added
+
+- `list_flag_versions` lists one flag's configuration history in one environment, newest first, with cursor paging: each version's number, time, author, source, reason, on/off state and the version a restore came from. `restore_flag_version` puts an earlier version's default variation, strategy, rules and prerequisites back as a new version; on/off is restored only with `include_state: true`. It previews by default (`dry_run: true`) and changes nothing. To apply, call again with `dry_run: false` and the preview's `targetETag` as `etag` (an apply without it is refused); an ETag pasted without its quotes is accepted. A 412 means the environment changed, so preview again. It takes `reason` and `freeze_override` like the other flag-state writes. Previewing works on every plan; applying needs the Pro plan or above. Needs the API's flag version history (#4642).
+- `freeze_override` on `manage_segment` (update) and `manage_variation` (add, update and remove). A change freeze now holds a segment's conditions while a frozen environment has a live, enabled flag using the segment, and a variation's value, or adding and removing one, while a frozen environment can serve it or splits a rule rollout over the flag's variations. The same Owner or Admin token and `reason` break it for one call (#5884).
+
+### Changed
+
+- Every request now also sends `X-Featureflip-Client: mcp/<version>`, so a flag version written through the MCP server is recorded with source `mcp` rather than `api`.
+- Every request to the Featureflip API now sends `User-Agent: featureflip-mcp/<version>`, the same way the SDKs and the CLI identify themselves. Requests used to go out with Node's default `node`, which any Node script sends, so the API couldn't tell traffic from the MCP server apart from anything else.
+
 ## 0.11.1 — 2026-11-16
 
 ### Fixed

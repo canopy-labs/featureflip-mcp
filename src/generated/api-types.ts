@@ -22,6 +22,7 @@ export interface paths {
                 query?: {
                     project?: string;
                     status?: string;
+                    /** @description Page size: 1 to 100 items, 20 when omitted. A value outside that range is clamped, not rejected: below 1 reads as 1, above 100 as 100. */
                     limit?: number;
                     cursor?: string;
                 };
@@ -115,8 +116,6 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": components["schemas"]["PublicCreateChangeFreezeRequest"];
-                    "text/json": components["schemas"]["PublicCreateChangeFreezeRequest"];
-                    "application/*+json": components["schemas"]["PublicCreateChangeFreezeRequest"];
                 };
             };
             responses: {
@@ -170,6 +169,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The request body has no Content-Type, or one that isn't JSON (error code unsupported_media_type). Send it as application/json. */
+                415: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -407,8 +418,6 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": components["schemas"]["PublicUpdateChangeFreezeRequest"];
-                    "text/json": components["schemas"]["PublicUpdateChangeFreezeRequest"];
-                    "application/*+json": components["schemas"]["PublicUpdateChangeFreezeRequest"];
                 };
             };
             responses: {
@@ -476,6 +485,18 @@ export interface paths {
                 };
                 /** @description The resource changed since the If-Match ETag. */
                 412: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The request body has no Content-Type, or one that isn't JSON (error code unsupported_media_type). Send it as application/json. */
+                415: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -643,8 +664,6 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": components["schemas"]["PublicGrantFreezeApprovalRequest"];
-                    "text/json": components["schemas"]["PublicGrantFreezeApprovalRequest"];
-                    "application/*+json": components["schemas"]["PublicGrantFreezeApprovalRequest"];
                 };
             };
             responses: {
@@ -710,6 +729,18 @@ export interface paths {
                 };
                 /** @description Conflict */
                 409: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The request body has no Content-Type, or one that isn't JSON (error code unsupported_media_type). Send it as application/json. */
+                415: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -873,6 +904,7 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
+                    /** @description Page size: 1 to 100 items, 20 when omitted. A value outside that range is clamped, not rejected: below 1 reads as 1, above 100 as 100. */
                     limit?: number;
                     cursor?: string;
                 };
@@ -895,6 +927,18 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["PublicEnvironmentResponsePagedResult"];
+                    };
+                };
+                /** @description A query parameter, header or body field is invalid (error code validation_failed; fields names each one), or the body isn't valid JSON. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
                 /** @description Authentication is required, or the supplied API token is invalid or expired. */
@@ -956,8 +1000,6 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": components["schemas"]["PublicCreateEnvironmentRequest"];
-                    "text/json": components["schemas"]["PublicCreateEnvironmentRequest"];
-                    "application/*+json": components["schemas"]["PublicCreateEnvironmentRequest"];
                 };
             };
             responses: {
@@ -1011,6 +1053,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The request body has no Content-Type, or one that isn't JSON (error code unsupported_media_type). Send it as application/json. */
+                415: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -1158,8 +1212,6 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": components["schemas"]["PublicUpdateEnvironmentRequest"];
-                    "text/json": components["schemas"]["PublicUpdateEnvironmentRequest"];
-                    "application/*+json": components["schemas"]["PublicUpdateEnvironmentRequest"];
                 };
             };
             responses: {
@@ -1174,6 +1226,18 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content?: never;
+                };
+                /** @description A query parameter, header or body field is invalid (error code validation_failed; fields names each one), or the body isn't valid JSON. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
                 };
                 /** @description Authentication is required, or the supplied API token is invalid or expired. */
                 401: {
@@ -1213,6 +1277,18 @@ export interface paths {
                 };
                 /** @description The resource changed since the If-Match ETag. */
                 412: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The request body has no Content-Type, or one that isn't JSON (error code unsupported_media_type). Send it as application/json. */
+                415: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -1406,6 +1482,7 @@ export interface paths {
                     tag?: string;
                     type?: string;
                     archived?: boolean;
+                    /** @description Page size: 1 to 100 items, 20 when omitted. A value outside that range is clamped, not rejected: below 1 reads as 1, above 100 as 100. */
                     limit?: number;
                     cursor?: string;
                     owner?: string;
@@ -1430,6 +1507,18 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["PublicFlagListItemPagedResult"];
+                    };
+                };
+                /** @description A query parameter, header or body field is invalid (error code validation_failed; fields names each one), or the body isn't valid JSON. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
                 /** @description Authentication is required, or the supplied API token is invalid or expired. */
@@ -1495,8 +1584,6 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": components["schemas"]["PublicCreateFeatureFlagRequest"];
-                    "text/json": components["schemas"]["PublicCreateFeatureFlagRequest"];
-                    "application/*+json": components["schemas"]["PublicCreateFeatureFlagRequest"];
                 };
             };
             responses: {
@@ -1550,6 +1637,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The request body has no Content-Type, or one that isn't JSON (error code unsupported_media_type). Send it as application/json. */
+                415: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -1704,6 +1803,7 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
+                    /** @description Page size: 1 to 100 items, 20 when omitted. A value outside that range is clamped, not rejected: below 1 reads as 1, above 100 as 100. */
                     limit?: number;
                     cursor?: string;
                     /**
@@ -1732,6 +1832,18 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["PublicFlagRemovalCandidatePagedResult"];
+                    };
+                };
+                /** @description A query parameter, header or body field is invalid (error code validation_failed; fields names each one), or the body isn't valid JSON. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
                 /** @description Authentication is required, or the supplied API token is invalid or expired. */
@@ -1898,8 +2010,6 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": components["schemas"]["PublicUpdateFeatureFlagRequest"];
-                    "text/json": components["schemas"]["PublicUpdateFeatureFlagRequest"];
-                    "application/*+json": components["schemas"]["PublicUpdateFeatureFlagRequest"];
                 };
             };
             responses: {
@@ -1914,6 +2024,18 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content?: never;
+                };
+                /** @description A query parameter, header or body field is invalid (error code validation_failed; fields names each one), or the body isn't valid JSON. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
                 };
                 /** @description Authentication is required, or the supplied API token is invalid or expired. */
                 401: {
@@ -1953,6 +2075,18 @@ export interface paths {
                 };
                 /** @description The resource changed since the If-Match ETag. */
                 412: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The request body has no Content-Type, or one that isn't JSON (error code unsupported_media_type). Send it as application/json. */
+                415: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -2138,8 +2272,6 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": components["schemas"]["PublicSetFlagExpiryRequest"];
-                    "text/json": components["schemas"]["PublicSetFlagExpiryRequest"];
-                    "application/*+json": components["schemas"]["PublicSetFlagExpiryRequest"];
                 };
             };
             responses: {
@@ -2191,6 +2323,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The request body has no Content-Type, or one that isn't JSON (error code unsupported_media_type). Send it as application/json. */
+                415: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -2343,8 +2487,6 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": components["schemas"]["PublicSetFlagOwnerRequest"];
-                    "text/json": components["schemas"]["PublicSetFlagOwnerRequest"];
-                    "application/*+json": components["schemas"]["PublicSetFlagOwnerRequest"];
                 };
             };
             responses: {
@@ -2396,6 +2538,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The request body has no Content-Type, or one that isn't JSON (error code unsupported_media_type). Send it as application/json. */
+                415: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -2746,8 +2900,6 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": components["schemas"]["PublicSetFlagRemovalPrRequest"];
-                    "text/json": components["schemas"]["PublicSetFlagRemovalPrRequest"];
-                    "application/*+json": components["schemas"]["PublicSetFlagRemovalPrRequest"];
                 };
             };
             responses: {
@@ -2799,6 +2951,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The request body has no Content-Type, or one that isn't JSON (error code unsupported_media_type). Send it as application/json. */
+                415: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -3379,8 +3543,6 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": components["schemas"]["PublicUpdateFlagEnvConfigRequest"];
-                    "text/json": components["schemas"]["PublicUpdateFlagEnvConfigRequest"];
-                    "application/*+json": components["schemas"]["PublicUpdateFlagEnvConfigRequest"];
                 };
             };
             responses: {
@@ -3446,6 +3608,18 @@ export interface paths {
                 };
                 /** @description The resource changed since the If-Match ETag. */
                 412: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The request body has no Content-Type, or one that isn't JSON (error code unsupported_media_type). Send it as application/json. */
+                415: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -3540,8 +3714,6 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": components["schemas"]["PublicCopyFlagConfigRequest"];
-                    "text/json": components["schemas"]["PublicCopyFlagConfigRequest"];
-                    "application/*+json": components["schemas"]["PublicCopyFlagConfigRequest"];
                 };
             };
             responses: {
@@ -3607,6 +3779,18 @@ export interface paths {
                 };
                 /** @description Precondition Failed */
                 412: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The request body has no Content-Type, or one that isn't JSON (error code unsupported_media_type). Send it as application/json. */
+                415: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -3696,8 +3880,6 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": components["schemas"]["PublicToggleFlagRequest"];
-                    "text/json": components["schemas"]["PublicToggleFlagRequest"];
-                    "application/*+json": components["schemas"]["PublicToggleFlagRequest"];
                 };
             };
             responses: {
@@ -3749,6 +3931,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The request body has no Content-Type, or one that isn't JSON (error code unsupported_media_type). Send it as application/json. */
+                415: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -4038,8 +4232,6 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": components["schemas"]["PublicPutTargetingRequest"];
-                    "text/json": components["schemas"]["PublicPutTargetingRequest"];
-                    "application/*+json": components["schemas"]["PublicPutTargetingRequest"];
                 };
             };
             responses: {
@@ -4105,6 +4297,18 @@ export interface paths {
                 };
                 /** @description The resource changed since the If-Match ETag. */
                 412: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The request body has no Content-Type, or one that isn't JSON (error code unsupported_media_type). Send it as application/json. */
+                415: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -4198,8 +4402,6 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": components["schemas"]["PublicCreateTargetingRuleRequest"];
-                    "text/json": components["schemas"]["PublicCreateTargetingRuleRequest"];
-                    "application/*+json": components["schemas"]["PublicCreateTargetingRuleRequest"];
                 };
             };
             responses: {
@@ -4253,6 +4455,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The request body has no Content-Type, or one that isn't JSON (error code unsupported_media_type). Send it as application/json. */
+                415: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -4428,8 +4642,6 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": components["schemas"]["PublicUpdateTargetingRuleRequest"];
-                    "text/json": components["schemas"]["PublicUpdateTargetingRuleRequest"];
-                    "application/*+json": components["schemas"]["PublicUpdateTargetingRuleRequest"];
                 };
             };
             responses: {
@@ -4495,6 +4707,18 @@ export interface paths {
                 };
                 /** @description The resource changed since the If-Match ETag. */
                 412: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The request body has no Content-Type, or one that isn't JSON (error code unsupported_media_type). Send it as application/json. */
+                415: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -4706,8 +4930,6 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": components["schemas"]["PublicReorderRulesRequest"];
-                    "text/json": components["schemas"]["PublicReorderRulesRequest"];
-                    "application/*+json": components["schemas"]["PublicReorderRulesRequest"];
                 };
             };
             responses: {
@@ -4759,6 +4981,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The request body has no Content-Type, or one that isn't JSON (error code unsupported_media_type). Send it as application/json. */
+                415: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -4848,8 +5082,6 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": components["schemas"]["PublicAddVariationRequest"];
-                    "text/json": components["schemas"]["PublicAddVariationRequest"];
-                    "application/*+json": components["schemas"]["PublicAddVariationRequest"];
                 };
             };
             responses: {
@@ -4903,6 +5135,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The request body has no Content-Type, or one that isn't JSON (error code unsupported_media_type). Send it as application/json. */
+                415: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -4977,8 +5221,6 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": components["schemas"]["PublicUpdateVariationRequest"];
-                    "text/json": components["schemas"]["PublicUpdateVariationRequest"];
-                    "application/*+json": components["schemas"]["PublicUpdateVariationRequest"];
                 };
             };
             responses: {
@@ -5030,6 +5272,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The request body has no Content-Type, or one that isn't JSON (error code unsupported_media_type). Send it as application/json. */
+                415: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -5186,6 +5440,462 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lists the environment's versions, newest first, as `{ items, next_cursor }` like every list under `/api/v1`.
+         * @description `limit` is 1 to 100 (default 25, clamped); pass `next_cursor` back as `cursor`
+         *     for the next, older page. A cursor that was not issued by this endpoint is a 400.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Page size: 1 to 100 items, 25 when omitted. A value outside that range is clamped, not rejected: below 1 reads as 1, above 100 as 100. */
+                    limit?: number;
+                    cursor?: string;
+                };
+                header?: never;
+                path: {
+                    org: string;
+                    project: string;
+                    flag: string;
+                    env: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicFlagVersionSummaryPagedResult"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Authentication is required, or the supplied API token is invalid or expired. */
+                401: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
+                429: {
+                    headers: {
+                        /** @description Number of seconds to wait before retrying the request. */
+                        "Retry-After"?: number;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/versions/{number}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Gets one version with the configuration it captured. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    org: string;
+                    project: string;
+                    flag: string;
+                    env: string;
+                    number: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicFlagVersion"];
+                    };
+                };
+                /** @description Authentication is required, or the supplied API token is invalid or expired. */
+                401: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
+                429: {
+                    headers: {
+                        /** @description Number of seconds to wait before retrying the request. */
+                        "Retry-After"?: number;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/versions/{number}/diff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Compares a version with `against`, which defaults to the latest version. */
+        get: {
+            parameters: {
+                query?: {
+                    against?: number;
+                };
+                header?: never;
+                path: {
+                    org: string;
+                    project: string;
+                    flag: string;
+                    env: string;
+                    number: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicFlagVersionDiff"];
+                    };
+                };
+                /** @description A query parameter, header or body field is invalid (error code validation_failed; fields names each one), or the body isn't valid JSON. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Authentication is required, or the supplied API token is invalid or expired. */
+                401: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
+                429: {
+                    headers: {
+                        /** @description Number of seconds to wait before retrying the request. */
+                        "Retry-After"?: number;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/versions/{number}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Restores a version onto the environment as a new version.
+         * @description Previews by default, changing nothing:
+         *     `dryRun: false` applies. Everything but on/off is restored; `includeState` restores on/off too. Both
+         *     return what changed and the configuration's `targetETag`; an apply that sends the preview's as
+         *     `expectedETag` is refused with 412 `precondition_failed` if the environment changed since. A version
+         *     naming a variation, segment or prerequisite that no longer exists is a 400 `validation_failed` whose
+         *     messages start with `FLAG_VERSION_MISSING_REFERENCES` and name each one; one today's rules no longer
+         *     accept starts with `FLAG_VERSION_NOT_RESTORABLE`. Requires at least Member; applying needs the Pro plan
+         *     or above (400 `PLAN_FEATURE_UNAVAILABLE`), and a change reason in a critical environment.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: {
+                    /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
+                    "X-Intent-Reason"?: string;
+                    /** @description Owner/Admin only: `true` breaks an active change freeze for this one request; requires X-Intent-Reason. */
+                    "X-Freeze-Override"?: boolean;
+                };
+                path: {
+                    org: string;
+                    project: string;
+                    flag: string;
+                    env: string;
+                    number: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["PublicRestoreFlagVersionRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicRestoreFlagVersionResult"];
+                    };
+                };
+                /** @description The request is malformed, or it carries an If-Match header, which this endpoint can't evaluate. Send no If-Match, or `*`. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Authentication is required, or the supplied API token is invalid or expired. */
+                401: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Precondition Failed */
+                412: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The request body has no Content-Type, or one that isn't JSON (error code unsupported_media_type). Send it as application/json. */
+                415: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
+                422: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description A change freeze covers this environment (error code change_frozen; the change_freeze object names the window, when it ends and whether the caller may break it). An Owner or Admin can retry with X-Freeze-Override: true and an X-Intent-Reason. */
+                423: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
+                429: {
+                    headers: {
+                        /** @description Number of seconds to wait before retrying the request. */
+                        "Retry-After"?: number;
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/triggers": {
         parameters: {
             query?: never;
@@ -5197,6 +5907,7 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
+                    /** @description Page size: 1 to 100 items, 20 when omitted. A value outside that range is clamped, not rejected: below 1 reads as 1, above 100 as 100. */
                     limit?: number;
                     cursor?: string;
                 };
@@ -5221,6 +5932,18 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["PublicFlagTriggerResponsePagedResult"];
+                    };
+                };
+                /** @description A query parameter, header or body field is invalid (error code validation_failed; fields names each one), or the body isn't valid JSON. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
                 /** @description Authentication is required, or the supplied API token is invalid or expired. */
@@ -5286,8 +6009,6 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": components["schemas"]["PublicCreateFlagTriggerRequest"];
-                    "text/json": components["schemas"]["PublicCreateFlagTriggerRequest"];
-                    "application/*+json": components["schemas"]["PublicCreateFlagTriggerRequest"];
                 };
             };
             responses: {
@@ -5341,6 +6062,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The request body has no Content-Type, or one that isn't JSON (error code unsupported_media_type). Send it as application/json. */
+                415: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -5483,8 +6216,6 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": components["schemas"]["PublicUpdateFlagTriggerRequest"];
-                    "text/json": components["schemas"]["PublicUpdateFlagTriggerRequest"];
-                    "application/*+json": components["schemas"]["PublicUpdateFlagTriggerRequest"];
                 };
             };
             responses: {
@@ -5538,6 +6269,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The request body has no Content-Type, or one that isn't JSON (error code unsupported_media_type). Send it as application/json. */
+                415: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -5891,6 +6634,7 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
+                    /** @description Page size: 1 to 100 items, 20 when omitted. A value outside that range is clamped, not rejected: below 1 reads as 1, above 100 as 100. */
                     limit?: number;
                     cursor?: string;
                 };
@@ -5910,6 +6654,18 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["OrganizationResponsePagedResult"];
+                    };
+                };
+                /** @description A query parameter, header or body field is invalid (error code validation_failed; fields names each one), or the body isn't valid JSON. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
                 /** @description Authentication is required, or the supplied API token is invalid or expired. */
@@ -6038,6 +6794,7 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
+                    /** @description Page size: 1 to 100 items, 20 when omitted. A value outside that range is clamped, not rejected: below 1 reads as 1, above 100 as 100. */
                     limit?: number;
                     cursor?: string;
                 };
@@ -6059,6 +6816,18 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["ProjectResponsePagedResult"];
+                    };
+                };
+                /** @description A query parameter, header or body field is invalid (error code validation_failed; fields names each one), or the body isn't valid JSON. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
                 /** @description Authentication is required, or the supplied API token is invalid or expired. */
@@ -6107,8 +6876,6 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": components["schemas"]["PublicCreateProjectRequest"];
-                    "text/json": components["schemas"]["PublicCreateProjectRequest"];
-                    "application/*+json": components["schemas"]["PublicCreateProjectRequest"];
                 };
             };
             responses: {
@@ -6150,6 +6917,18 @@ export interface paths {
                 };
                 /** @description Forbidden */
                 403: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The request body has no Content-Type, or one that isn't JSON (error code unsupported_media_type). Send it as application/json. */
+                415: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -6271,8 +7050,6 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": components["schemas"]["PublicUpdateProjectRequest"];
-                    "text/json": components["schemas"]["PublicUpdateProjectRequest"];
-                    "application/*+json": components["schemas"]["PublicUpdateProjectRequest"];
                 };
             };
             responses: {
@@ -6324,6 +7101,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The request body has no Content-Type, or one that isn't JSON (error code unsupported_media_type). Send it as application/json. */
+                415: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -6499,6 +7288,7 @@ export interface paths {
                     differentOnly?: boolean;
                     tag?: string;
                     owner?: string;
+                    /** @description Page size: 1 to 100 items, 20 when omitted. A value outside that range is clamped, not rejected: below 1 reads as 1, above 100 as 100. */
                     limit?: number;
                     cursor?: string;
                 };
@@ -6612,8 +7402,6 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": components["schemas"]["PublicSetDefaultFlagLifetimeRequest"];
-                    "text/json": components["schemas"]["PublicSetDefaultFlagLifetimeRequest"];
-                    "application/*+json": components["schemas"]["PublicSetDefaultFlagLifetimeRequest"];
                 };
             };
             responses: {
@@ -6665,6 +7453,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The request body has no Content-Type, or one that isn't JSON (error code unsupported_media_type). Send it as application/json. */
+                415: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -6810,6 +7610,7 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
+                    /** @description Page size: 1 to 100 items, 20 when omitted. A value outside that range is clamped, not rejected: below 1 reads as 1, above 100 as 100. */
                     limit?: number;
                     cursor?: string;
                 };
@@ -6834,6 +7635,18 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["PublicRolloutRampResponsePagedResult"];
+                    };
+                };
+                /** @description A query parameter, header or body field is invalid (error code validation_failed; fields names each one), or the body isn't valid JSON. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
                 /** @description Authentication is required, or the supplied API token is invalid or expired. */
@@ -7021,8 +7834,6 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": components["schemas"]["PublicStartRolloutRampRequest"];
-                    "text/json": components["schemas"]["PublicStartRolloutRampRequest"];
-                    "application/*+json": components["schemas"]["PublicStartRolloutRampRequest"];
                 };
             };
             responses: {
@@ -7088,6 +7899,18 @@ export interface paths {
                 };
                 /** @description Conflict */
                 409: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The request body has no Content-Type, or one that isn't JSON (error code unsupported_media_type). Send it as application/json. */
+                415: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -7179,8 +8002,6 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": components["schemas"]["PublicStartDefaultRuleRolloutRampRequest"];
-                    "text/json": components["schemas"]["PublicStartDefaultRuleRolloutRampRequest"];
-                    "application/*+json": components["schemas"]["PublicStartDefaultRuleRolloutRampRequest"];
                 };
             };
             responses: {
@@ -7246,6 +8067,18 @@ export interface paths {
                 };
                 /** @description Conflict */
                 409: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The request body has no Content-Type, or one that isn't JSON (error code unsupported_media_type). Send it as application/json. */
+                415: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -7347,6 +8180,18 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["PublicRolloutRampResponse"];
+                    };
+                };
+                /** @description A query parameter, header or body field is invalid (error code validation_failed; fields names each one), or the body isn't valid JSON. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
                 /** @description Authentication is required, or the supplied API token is invalid or expired. */
@@ -7647,8 +8492,6 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": components["schemas"]["PublicAdvanceRolloutRampRequest"];
-                    "text/json": components["schemas"]["PublicAdvanceRolloutRampRequest"];
-                    "application/*+json": components["schemas"]["PublicAdvanceRolloutRampRequest"];
                 };
             };
             responses: {
@@ -7728,6 +8571,18 @@ export interface paths {
                 };
                 /** @description The resource changed since the If-Match ETag. */
                 412: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The request body has no Content-Type, or one that isn't JSON (error code unsupported_media_type). Send it as application/json. */
+                415: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -7818,8 +8673,6 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": components["schemas"]["PublicAbortRolloutRampRequest"];
-                    "text/json": components["schemas"]["PublicAbortRolloutRampRequest"];
-                    "application/*+json": components["schemas"]["PublicAbortRolloutRampRequest"];
                 };
             };
             responses: {
@@ -7909,6 +8762,18 @@ export interface paths {
                         "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
+                /** @description The request body has no Content-Type, or one that isn't JSON (error code unsupported_media_type). Send it as application/json. */
+                415: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
                 /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
                 422: {
                     headers: {
@@ -7960,6 +8825,7 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
+                    /** @description Page size: 1 to 100 items, 20 when omitted. A value outside that range is clamped, not rejected: below 1 reads as 1, above 100 as 100. */
                     limit?: number;
                     cursor?: string;
                 };
@@ -7983,6 +8849,18 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["PublicSdkKeyResponsePagedResult"];
+                    };
+                };
+                /** @description A query parameter, header or body field is invalid (error code validation_failed; fields names each one), or the body isn't valid JSON. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
                 /** @description Authentication is required, or the supplied API token is invalid or expired. */
@@ -8045,8 +8923,6 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": components["schemas"]["PublicCreateSdkKeyRequest"];
-                    "text/json": components["schemas"]["PublicCreateSdkKeyRequest"];
-                    "application/*+json": components["schemas"]["PublicCreateSdkKeyRequest"];
                 };
             };
             responses: {
@@ -8100,6 +8976,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The request body has no Content-Type, or one that isn't JSON (error code unsupported_media_type). Send it as application/json. */
+                415: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -8225,8 +9113,6 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": components["schemas"]["PublicUpdateSdkKeyRequest"];
-                    "text/json": components["schemas"]["PublicUpdateSdkKeyRequest"];
-                    "application/*+json": components["schemas"]["PublicUpdateSdkKeyRequest"];
                 };
             };
             responses: {
@@ -8278,6 +9164,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The request body has no Content-Type, or one that isn't JSON (error code unsupported_media_type). Send it as application/json. */
+                415: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -8450,6 +9348,7 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
+                    /** @description Page size: 1 to 100 items, 20 when omitted. A value outside that range is clamped, not rejected: below 1 reads as 1, above 100 as 100. */
                     limit?: number;
                     cursor?: string;
                 };
@@ -8472,6 +9371,18 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["PublicSegmentResponsePagedResult"];
+                    };
+                };
+                /** @description A query parameter, header or body field is invalid (error code validation_failed; fields names each one), or the body isn't valid JSON. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
                 /** @description Authentication is required, or the supplied API token is invalid or expired. */
@@ -8539,8 +9450,6 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": components["schemas"]["PublicCreateSegmentRequest"];
-                    "text/json": components["schemas"]["PublicCreateSegmentRequest"];
-                    "application/*+json": components["schemas"]["PublicCreateSegmentRequest"];
                 };
             };
             responses: {
@@ -8594,6 +9503,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The request body has no Content-Type, or one that isn't JSON (error code unsupported_media_type). Send it as application/json. */
+                415: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -8757,8 +9678,6 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": components["schemas"]["PublicUpdateSegmentRequest"];
-                    "text/json": components["schemas"]["PublicUpdateSegmentRequest"];
-                    "application/*+json": components["schemas"]["PublicUpdateSegmentRequest"];
                 };
             };
             responses: {
@@ -8824,6 +9743,18 @@ export interface paths {
                 };
                 /** @description The resource changed since the If-Match ETag. */
                 412: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The request body has no Content-Type, or one that isn't JSON (error code unsupported_media_type). Send it as application/json. */
+                415: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -8988,6 +9919,7 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
+                    /** @description Page size: 1 to 100 items, 20 when omitted. A value outside that range is clamped, not rejected: below 1 reads as 1, above 100 as 100. */
                     limit?: number;
                     cursor?: string;
                 };
@@ -9009,6 +9941,18 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["PublicWebhookSubscriptionResponsePagedResult"];
+                    };
+                };
+                /** @description A query parameter, header or body field is invalid (error code validation_failed; fields names each one), or the body isn't valid JSON. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
                 /** @description Authentication is required, or the supplied API token is invalid or expired. */
@@ -9082,8 +10026,6 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": components["schemas"]["PublicCreateWebhookSubscriptionRequest"];
-                    "text/json": components["schemas"]["PublicCreateWebhookSubscriptionRequest"];
-                    "application/*+json": components["schemas"]["PublicCreateWebhookSubscriptionRequest"];
                 };
             };
             responses: {
@@ -9137,6 +10079,18 @@ export interface paths {
                 };
                 /** @description Not Found */
                 404: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The request body has no Content-Type, or one that isn't JSON (error code unsupported_media_type). Send it as application/json. */
+                415: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -9393,8 +10347,6 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": components["schemas"]["PublicUpdateWebhookSubscriptionRequest"];
-                    "text/json": components["schemas"]["PublicUpdateWebhookSubscriptionRequest"];
-                    "application/*+json": components["schemas"]["PublicUpdateWebhookSubscriptionRequest"];
                 };
             };
             responses: {
@@ -9460,6 +10412,18 @@ export interface paths {
                 };
                 /** @description The resource changed since the If-Match ETag. */
                 412: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description The request body has no Content-Type, or one that isn't JSON (error code unsupported_media_type). Send it as application/json. */
+                415: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -9923,6 +10887,7 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
+                    /** @description Page size: 1 to 100 items, 20 when omitted. A value outside that range is clamped, not rejected: below 1 reads as 1, above 100 as 100. */
                     limit?: number;
                     cursor?: string;
                 };
@@ -9945,6 +10910,18 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["PublicWebhookDeliveryResponsePagedResult"];
+                    };
+                };
+                /** @description A query parameter, header or body field is invalid (error code validation_failed; fields names each one), or the body isn't valid JSON. */
+                400: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
                 /** @description Authentication is required, or the supplied API token is invalid or expired. */
@@ -10170,6 +11147,7 @@ export interface components {
             isActive: boolean;
             /** Format: date-time */
             createdAt: string;
+            limits: components["schemas"]["PublicPlanLimits"];
         };
         /**
          * @description A page of results plus an opaque cursor for the next page, or null when this is the last
@@ -10888,11 +11866,19 @@ export interface components {
             /** Format: int32 */
             prerequisiteCount: number;
         };
-        /** @description A flag's configuration in one environment, as a comparison or copy result reports it. */
+        /**
+         * @description A flag's configuration in one environment, as a comparison, copy or version result reports it. The
+         *     `fallthroughRollout*` fields describe the default rule's rollout and are null unless it rolls out
+         *     (`fallthroughBucketBy` is then the attribute it hashes on, otherwise `user_id`).
+         */
         PublicEnvironmentSnapshot: {
             isEnabled: boolean;
             defaultVariation: components["schemas"]["PublicKeyedRef"];
             strategy: string;
+            fallthroughRolloutVariation?: components["schemas"]["PublicKeyedRef"];
+            /** Format: int32 */
+            fallthroughRolloutPercentage?: number | null;
+            fallthroughBucketBy: string;
             rules: components["schemas"]["PublicSnapshotRule"][];
             prerequisites: components["schemas"]["PublicPrerequisiteDto"][];
         };
@@ -11354,6 +12340,10 @@ export interface components {
         PublicFlagTriggerResponsePagedResult: {
             items: components["schemas"]["PublicFlagTriggerResponse"][];
             next_cursor?: string | null;
+            /** @description Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it. */
+            _actions?: {
+                [key: string]: components["schemas"]["ActionCapability"];
+            };
         };
         /**
          * @description The only response that carries a trigger's secret: create and rotate. Fire it by POSTing to
@@ -11367,6 +12357,75 @@ export interface components {
             endpoint: string;
             secret: string;
             warning: string;
+        };
+        /** @description One version in full: its summary fields and the configuration it captured. */
+        PublicFlagVersion: {
+            /** Format: int32 */
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            isEnabled: boolean;
+            userName?: string | null;
+            userEmail?: string | null;
+            systemActor?: string | null;
+            source: string;
+            intentReason?: string | null;
+            /** Format: uuid */
+            changeFreezeId?: string | null;
+            changeFreezeMode?: string | null;
+            /** Format: int32 */
+            restoredFromVersion?: number | null;
+            isBaseline: boolean;
+            config: components["schemas"]["PublicEnvironmentSnapshot"];
+        };
+        /**
+         * @description `version` compared with `against`: `to` is `version`'s configuration, `from` is
+         *      `against`'s. `changedSections` names what differs (`state`, `defaultVariation`,
+         *      `strategy`, `rules`, `prerequisites`). The two rule lists say, per rule in evaluation order,
+         *      whether the other side has an equal rule.
+         */
+        PublicFlagVersionDiff: {
+            /** Format: int32 */
+            version: number;
+            /** Format: int32 */
+            against: number;
+            changedSections: string[];
+            from: components["schemas"]["PublicEnvironmentSnapshot"];
+            to: components["schemas"]["PublicEnvironmentSnapshot"];
+            fromRuleMatched: boolean[];
+            toRuleMatched: boolean[];
+        };
+        /**
+         * @description One entry in a flag environment's version history. `source` is lowercase: `dashboard`, `api`,
+         *     `mcp`, `schedule` and so on. `userName`/`userEmail` are as captured with the version;
+         *     `systemActor` names a non-user author instead. `restoredFromVersion` is set on a restore.
+         */
+        PublicFlagVersionSummary: {
+            /** Format: int32 */
+            version: number;
+            /** Format: date-time */
+            createdAt: string;
+            isEnabled: boolean;
+            userName?: string | null;
+            userEmail?: string | null;
+            systemActor?: string | null;
+            source: string;
+            intentReason?: string | null;
+            /** Format: uuid */
+            changeFreezeId?: string | null;
+            changeFreezeMode?: string | null;
+            /** Format: int32 */
+            restoredFromVersion?: number | null;
+            isBaseline: boolean;
+        };
+        /**
+         * @description A page of results plus an opaque cursor for the next page, or null when this is the last
+         *     page. Wire keys are frozen: `items` (already lowercase under the camelCase policy) and
+         *     `next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`).
+         */
+        PublicFlagVersionSummaryPagedResult: {
+            items: components["schemas"]["PublicFlagVersionSummary"][];
+            next_cursor?: string | null;
         };
         /**
          * @description A scheduled change that a person approved to land inside a change freeze. `stands` is whether the approval
@@ -11419,6 +12478,24 @@ export interface components {
             max: number;
         };
         /**
+         * @description A plan's caps. Null means unlimited. The environment and flag caps are per project, and an
+         *     archived flag does not count against the flag cap. These are the same caps a write is refused
+         *     by with a 403 `plan_limit_reached`, whose `plan_limit.resource` names the same
+         *     collections.
+         */
+        PublicPlanLimits: {
+            /** Format: int32 */
+            projects?: number | null;
+            /** Format: int32 */
+            environmentsPerProject?: number | null;
+            /** Format: int32 */
+            flagsPerProject?: number | null;
+            /** Format: int32 */
+            members?: number | null;
+            /** Format: int32 */
+            webhooks?: number | null;
+        };
+        /**
          * @description A single prerequisite entry on a flag's per-environment config. Maps 1:1 onto
          *     PrerequisiteDto (read side) and PrerequisiteInput (write side).
          */
@@ -11459,6 +12536,34 @@ export interface components {
          */
         PublicReorderRulesRequest: {
             ruleIds: string[];
+        };
+        /**
+         * @description Request body for `POST .../versions/{number}/restore`. Every field is optional, and so is the body: no
+         *     body at all previews, the same as `{}`. `dryRun` defaults to
+         *     true: the restore only previews unless it is `false`. `includeState` restores on/off too.
+         *     `expectedETag` is the preview's `targetETag`; an apply sending it is refused with 412
+         *     `precondition_failed` if the environment changed since.
+         */
+        PublicRestoreFlagVersionRequest: {
+            dryRun?: boolean | null;
+            includeState?: boolean | null;
+            expectedETag?: string | null;
+        };
+        /**
+         * @description Response of `POST .../versions/{number}/restore`, for a dry run and an apply alike. `before` is the
+         *     configuration as it is (as it was, on an apply) and `after` as the restore leaves it. `targetETag` is the
+         *     configuration's before a dry run and after an apply, so a dry run's is what the apply sends back as
+         *     `expectedETag`. `newVersion` is the version the apply wrote, null on a dry run and when nothing changed.
+         */
+        PublicRestoreFlagVersionResult: {
+            changed: boolean;
+            changedSections: string[];
+            before: components["schemas"]["PublicEnvironmentSnapshot"];
+            after: components["schemas"]["PublicEnvironmentSnapshot"];
+            targetETag: string;
+            warnings: components["schemas"]["PublicCopyWarning"][];
+            /** Format: int32 */
+            newVersion?: number | null;
         };
         /** @description A percentage-rollout rule's configured split beside a sample-ratio check of what it served. */
         PublicRolloutCheck: {
@@ -11527,6 +12632,10 @@ export interface components {
         PublicRolloutRampResponsePagedResult: {
             items: components["schemas"]["PublicRolloutRampResponse"][];
             next_cursor?: string | null;
+            /** @description Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it. */
+            _actions?: {
+                [key: string]: components["schemas"]["ActionCapability"];
+            };
         };
         /** @description A live rollout rule that no evaluations reached. */
         PublicRolloutUnreached: {

@@ -67,6 +67,21 @@ describe('copy_flag_config', () => {
     expect(calls[0].body).not.toHaveProperty('reason');
   });
 
+  it.each([
+    ['unquoted', 's1', 't1', '"s1"', '"t1"'],
+    ['weak', 'W/"s1"', 'W/"t1"', 'W/"s1"', 'W/"t1"'],
+  ])('copy_flag_config_body_etags_are_normalized_when_%s', async (_n, s1, t1, sentS, sentT) => {
+    const { api, calls } = mockApi([{ method: 'POST', path: COPY, json: result }]);
+    const client = await connectClient({ api, org: ORG });
+    await client.callTool({
+      name: 'copy_flag_config',
+      arguments: { ...copyArgs, dry_run: false, source_etag: s1, target_etag: t1 },
+    });
+    const body = calls[0].body as { expectedSourceETag: string; expectedTargetETag: string };
+    expect(body.expectedSourceETag).toBe(sentS);
+    expect(body.expectedTargetETag).toBe(sentT);
+  });
+
   it('copy_flag_config_stale_etag_says_preview_again', async () => {
     const { api } = mockApi([{ method: 'POST', path: COPY, status: 412, json: { error: 'precondition_failed', message: 'changed' } }]);
     const client = await connectClient({ api, org: ORG });

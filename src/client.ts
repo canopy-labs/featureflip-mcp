@@ -1,3 +1,5 @@
+import { PKG_VERSION } from './version.js';
+
 export interface ErrorEnvelope {
   error: string;
   message: string;
@@ -34,7 +36,7 @@ export interface RequestOptions {
 // ETags are quoted strings, and the quotes are part of the value. An agent copying the etag
 // out of JSON often drops them; the API then answers 412 for every write, which reads as a
 // concurrent change and sends the agent round a re-read loop that can never succeed.
-function quoteEtag(value: string): string {
+export function quoteEtag(value: string): string {
   return /^(W\/)?".*"$/.test(value) ? value : `"${value}"`;
 }
 
@@ -47,6 +49,14 @@ export function enc(segment: string): string {
 const TRANSIENT_STATUSES = new Set([502, 503, 504]);
 const IDEMPOTENT_METHODS = new Set(['GET', 'HEAD', 'PUT', 'DELETE']);
 const BACKOFF_MS = [250, 1000];
+
+// Same `featureflip-<name>/<version>` shape as every SDK and the CLI. The version comes from
+// package.json, which the publish workflow writes, so it can't drift from the release.
+const USER_AGENT = `featureflip-mcp/${PKG_VERSION}`;
+
+// Names this server as the caller, so a flag version written through it is recorded with source "mcp" rather
+// than "api". Its own header because the User-Agent product token is shared with every SDK and the CLI.
+const CLIENT_ID = `mcp/${PKG_VERSION}`;
 
 export class FeatureflipApi {
   private readonly fetchImpl: typeof fetch;
@@ -82,6 +92,10 @@ export class FeatureflipApi {
     const headers: Record<string, string> = {
       Authorization: `Bearer ${this.opts.token}`,
       Accept: 'application/json',
+      // Without this, Node's fetch sends a bare `node`, which an ad-hoc script sends too, so
+      // MCP traffic can't be told apart from it in request logs, traces or the audit log.
+      'User-Agent': USER_AGENT,
+      'X-Featureflip-Client': CLIENT_ID,
     };
     let body: string | undefined;
     if (options.body !== undefined) {

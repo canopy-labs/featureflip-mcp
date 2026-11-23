@@ -4,7 +4,7 @@ import { enc } from '../client.js';
 import { errorResult, okJson, run } from '../errors.js';
 import type { ToolContext } from './context.js';
 import { endpoint, oneOfOutputs, shape } from './outputs.js';
-import { flagParam, projectParam, reasonParam } from './params.js';
+import { flagParam, projectParam, reasonParam, freezeOverrideParam, freezeOverrideError } from './params.js';
 
 export function registerVariationTools(server: McpServer, ctx: ToolContext): void {
   server.registerTool(
@@ -13,7 +13,10 @@ export function registerVariationTools(server: McpServer, ctx: ToolContext): voi
       title: 'Add, update, or remove a variation',
       description:
         'Manage a flag\'s variations. action=add requires key + value; action=update/remove require variationId ' +
-        '(get ids via get_flag). Removing a variation fails with VARIATION_HAS_DEPENDENTS if other flags depend on it.',
+        '(get ids via get_flag). Removing a variation fails with VARIATION_HAS_DEPENDENTS if other flags depend on it. ' +
+        'A value change, add or remove is refused with change_frozen while a change freeze covers an environment that ' +
+        'serves the variation or splits a rule rollout over the flag\'s variations; an Owner/Admin can pass ' +
+        'freeze_override + reason to break it.',
       inputSchema: z.object({
         project: projectParam,
         flag: flagParam,
@@ -24,6 +27,7 @@ export function registerVariationTools(server: McpServer, ctx: ToolContext): voi
         value: z.string().optional().describe('Variation value serialized as a string; required for add'),
         description: z.string().optional().describe('What this variation means'),
         reason: reasonParam,
+        freeze_override: freezeOverrideParam,
       }),
       outputSchema: oneOfOutputs(
         endpoint('POST /api/v1/orgs/{org}/projects/{project}/flags/{flag}/variations'),
@@ -32,15 +36,18 @@ export function registerVariationTools(server: McpServer, ctx: ToolContext): voi
       ),
       annotations: { destructiveHint: true },
     },
-    async ({ project, flag, action, variationId, key, name, value, description, reason }) =>
+    async ({ project, flag, action, variationId, key, name, value, description, reason, freeze_override }) =>
       run(async () => {
+        const bad = freezeOverrideError(freeze_override, reason);
+        if (bad) return bad;
+        const freezeOverride = freeze_override;
         const base = `/api/v1/orgs/${enc(ctx.org)}/projects/${enc(project)}/flags/${enc(flag)}/variations`;
         if (action === 'add') {
           if (!key || value === undefined) {
             return errorResult(new Error('action=add requires key and value'));
           }
           // POST /variations returns 201 with the created variation body — pass it through.
-          return okJson(await ctx.api.request('POST', base, { body: { key, name, value, description }, reason }));
+          return okJson(await ctx.api.request('POST', base, { body: { key, name, value, description }, reason, freezeOverride }));
         }
         if (!variationId) {
           return errorResult(new Error(`action=${action} requires variationId (see get_flag for ids)`));
@@ -48,11 +55,11 @@ export function registerVariationTools(server: McpServer, ctx: ToolContext): voi
         if (action === 'update') {
           // PUT /variations/{id} returns 204 No Content — nothing to pass through, so confirm
           // the applied change instead of echoing an (undefined) response body.
-          await ctx.api.request('PUT', `${base}/${enc(variationId)}`, { body: { name, value, description }, reason });
+          await ctx.api.request('PUT', `${base}/${enc(variationId)}`, { body: { name, value, description }, reason, freezeOverride });
           return okJson({ updated: variationId });
         }
         // DELETE /variations/{id} returns 204 No Content.
-        await ctx.api.request('DELETE', `${base}/${enc(variationId)}`, { reason });
+        await ctx.api.request('DELETE', `${base}/${enc(variationId)}`, { reason, freezeOverride });
         return okJson({ removed: variationId });
       }),
   );

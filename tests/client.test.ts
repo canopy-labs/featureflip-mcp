@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { FeatureflipApi, ApiError, enc } from '../src/client.js';
+import pkg from '../package.json';
 
 const noSleep = async (_ms: number) => {};
 
@@ -23,6 +24,33 @@ describe('FeatureflipApi.request', () => {
     expect(init.headers['Authorization']).toBe('Bearer ffp_t');
     expect(init.headers['Accept']).toBe('application/json');
     expect(init.body).toBeUndefined();
+  });
+
+  it('identifies itself as featureflip-mcp/<package version> on every request', async () => {
+    const fetchImpl = vi.fn().mockImplementation(async () => jsonResponse(200, {}));
+    const api = new FeatureflipApi({ token: 'ffp_t', baseUrl: 'https://api.test', fetchImpl });
+
+    await api.request('GET', '/api/v1/orgs/acme/projects');
+    await api.request('POST', '/api/v1/orgs/a/projects/p/flags', { body: {}, idempotencyKey: 'k' });
+
+    // Read the version from the manifest the publish workflow writes, not from PKG_VERSION, so a
+    // regression to a hand-kept literal fails here instead of agreeing with itself.
+    const expected = `featureflip-mcp/${pkg.version}`;
+    expect(pkg.version).toMatch(/^\d+\.\d+\.\d+/);
+    for (const [, init] of fetchImpl.mock.calls) expect(init.headers['User-Agent']).toBe(expected);
+  });
+
+  it('sends X-Featureflip-Client: mcp/<package version> on every request', async () => {
+    const fetchImpl = vi.fn().mockImplementation(async () => jsonResponse(200, {}));
+    const api = new FeatureflipApi({ token: 'ffp_t', baseUrl: 'https://api.test', fetchImpl });
+
+    await api.request('GET', '/api/v1/orgs/acme/projects');
+    await api.request('POST', '/api/v1/orgs/a/projects/p/flags', { body: {}, idempotencyKey: 'k' });
+    await api.requestWithEtag('PUT', '/api/v1/orgs/a/projects/p/flags/f', { body: {}, ifMatch: '"1"' });
+
+    // The server records versions written through this header as source "mcp", not "api".
+    expect(fetchImpl.mock.calls).toHaveLength(3);
+    for (const [, init] of fetchImpl.mock.calls) expect(init.headers['X-Featureflip-Client']).toBe(`mcp/${pkg.version}`);
   });
 
   it('serializes bodies and sets Content-Type + Idempotency-Key', async () => {

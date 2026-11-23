@@ -21,6 +21,10 @@
     "POST /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/rules": "PublicTargetingRuleResponse",
     "GET /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/rules/{ruleId}": "PublicTargetingRuleResponse",
     "POST /api/v1/orgs/{org}/projects/{project}/flags/{flag}/variations": "PublicVariationResponse",
+    "GET /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/versions": "PublicFlagVersionSummaryPagedResult",
+    "GET /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/versions/{number}": "PublicFlagVersion",
+    "GET /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/versions/{number}/diff": "PublicFlagVersionDiff",
+    "POST /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/versions/{number}/restore": "PublicRestoreFlagVersionResult",
     "POST /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/triggers": "PublicFlagTriggerWithUrlResponse",
     "GET /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/triggers": "PublicFlagTriggerResponsePagedResult",
     "GET /api/v1/orgs/{org}/projects/{project}/flags/{flag}/environments/{env}/triggers/{trigger}": "PublicFlagTriggerResponse",
@@ -201,6 +205,16 @@
           "type": [
             "string",
             "null"
+          ]
+        },
+        "limits": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PublicPlanLimits"
+            },
+            {
+              "type": "null"
+            }
           ]
         }
       },
@@ -1856,6 +1870,28 @@
             "null"
           ]
         },
+        "fallthroughRolloutVariation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PublicKeyedRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fallthroughRolloutPercentage": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "fallthroughBucketBy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "rules": {
           "type": [
             "array",
@@ -1889,7 +1925,7 @@
           }
         }
       },
-      "description": "A flag's configuration in one environment, as a comparison or copy result reports it."
+      "description": "A flag's configuration in one environment, as a comparison, copy or version result reports it. The\n`fallthroughRollout*` fields describe the default rule's rollout and are null unless it rolls out\n(`fallthroughBucketBy` is then the attribute it hashes on, otherwise `user_id`)."
     },
     "PublicEvaluationSource": {
       "type": [
@@ -2878,6 +2914,23 @@
             "string",
             "null"
           ]
+        },
+        "_actions": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ActionCapability"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it."
         }
       },
       "description": "A page of results plus an opaque cursor for the next page, or null when this is the last\npage. Wire keys are frozen: `items` (already lowercase under the camelCase policy) and\n`next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`)."
@@ -2924,6 +2977,286 @@
         }
       },
       "description": "The only response that carries a trigger's secret: create and rotate. Fire it by POSTing to\nUrl, or to Endpoint with `Authorization: Bearer {Secret}`, which keeps\nthe secret out of the URL. Anyone holding either can fire the trigger, so store it as a secret in the\nmonitoring tool."
+    },
+    "PublicFlagVersion": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "version": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "createdAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "isEnabled": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "userName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "userEmail": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "systemActor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "intentReason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "changeFreezeId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "changeFreezeMode": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "restoredFromVersion": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "isBaseline": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "config": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PublicEnvironmentSnapshot"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "description": "One version in full: its summary fields and the configuration it captured."
+    },
+    "PublicFlagVersionDiff": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "version": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "against": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "changedSections": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "from": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PublicEnvironmentSnapshot"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "to": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PublicEnvironmentSnapshot"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fromRuleMatched": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          }
+        },
+        "toRuleMatched": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          }
+        }
+      },
+      "description": "`version` compared with `against`: `to` is `version`'s configuration, `from` is\n `against`'s. `changedSections` names what differs (`state`, `defaultVariation`,\n `strategy`, `rules`, `prerequisites`). The two rule lists say, per rule in evaluation order,\n whether the other side has an equal rule."
+    },
+    "PublicFlagVersionSummary": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "version": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "createdAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "isEnabled": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "userName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "userEmail": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "systemActor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "intentReason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "changeFreezeId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "changeFreezeMode": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "restoredFromVersion": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "isBaseline": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "description": "One entry in a flag environment's version history. `source` is lowercase: `dashboard`, `api`,\n`mcp`, `schedule` and so on. `userName`/`userEmail` are as captured with the version;\n`systemActor` names a non-user author instead. `restoredFromVersion` is set on a restore."
+    },
+    "PublicFlagVersionSummaryPagedResult": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "items": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicFlagVersionSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "A page of results plus an opaque cursor for the next page, or null when this is the last\npage. Wire keys are frozen: `items` (already lowercase under the camelCase policy) and\n`next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`)."
     },
     "PublicFreezeApprovalResponse": {
       "type": [
@@ -3063,6 +3396,45 @@
       },
       "description": "The cap behind a `plan_limit_reached` error. `resource` is the capped collection\n(`projects`, `environments`, `flags`, `webhooks`, `members`);\n`plan` is the plan's wire name, as `GET /api/v1/orgs/{org}` returns it; `max` is\nthe cap. The environment and flag caps are per project."
     },
+    "PublicPlanLimits": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "projects": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "environmentsPerProject": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "flagsPerProject": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "members": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "webhooks": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "description": "A plan's caps. Null means unlimited. The environment and flag caps are per project, and an\narchived flag does not count against the flag cap. These are the same caps a write is refused\nby with a 403 `plan_limit_reached`, whose `plan_limit.resource` names the same\ncollections."
+    },
     "PublicPrerequisiteDto": {
       "type": [
         "object",
@@ -3150,6 +3522,108 @@
         }
       },
       "description": "Request body for `PUT .../rules/reorder`. Must include every existing rule id exactly\nonce — `ReorderTargetingRulesCommandHandler` rejects duplicate, omitted, or unknown rule\nids with `BadRequestException`, surfaced as an HTTP 400 `bad_request` envelope\ncarrying the handler's message."
+    },
+    "PublicRestoreFlagVersionRequest": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "dryRun": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "includeState": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "expectedETag": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "Request body for `POST .../versions/{number}/restore`. Every field is optional, and so is the body: no\nbody at all previews, the same as `{}`. `dryRun` defaults to\ntrue: the restore only previews unless it is `false`. `includeState` restores on/off too.\n`expectedETag` is the preview's `targetETag`; an apply sending it is refused with 412\n`precondition_failed` if the environment changed since."
+    },
+    "PublicRestoreFlagVersionResult": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "changed": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "changedSections": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "before": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PublicEnvironmentSnapshot"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "after": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PublicEnvironmentSnapshot"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "targetETag": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "warnings": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PublicCopyWarning"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "newVersion": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "description": "Response of `POST .../versions/{number}/restore`, for a dry run and an apply alike. `before` is the\nconfiguration as it is (as it was, on an apply) and `after` as the restore leaves it. `targetETag` is the\nconfiguration's before a dry run and after an apply, so a dry run's is what the apply sends back as\n`expectedETag`. `newVersion` is the version the apply wrote, null on a dry run and when nothing changed."
     },
     "PublicRolloutCheck": {
       "type": [
@@ -3359,6 +3833,23 @@
             "string",
             "null"
           ]
+        },
+        "_actions": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ActionCapability"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": "Capability hints: which operations the authenticated caller may perform on this resource, each with allowed + optional reason. Computed from the caller's role and the resource's state. Injected at runtime; safe to ignore. Present only on top-level resource responses — nested occurrences (e.g. a rule inside a targeting-config response) do not carry it."
         }
       },
       "description": "A page of results plus an opaque cursor for the next page, or null when this is the last\npage. Wire keys are frozen: `items` (already lowercase under the camelCase policy) and\n`next_cursor` (pinned explicitly — the policy alone would emit `nextCursor`)."

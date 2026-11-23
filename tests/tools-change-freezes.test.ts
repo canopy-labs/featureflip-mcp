@@ -194,7 +194,7 @@ describe('freeze_override', () => {
   it('is accepted by every flag-state write tool', async () => {
     const client = await connectClient({ api: mockApi([]).api, org: ORG });
     const { tools } = await client.listTools();
-    for (const name of ['toggle_flag', 'update_targeting', 'manage_targeting_rule', 'update_flag_environment_config', 'copy_flag_config', 'manage_rollout_ramp']) {
+    for (const name of ['toggle_flag', 'update_targeting', 'manage_targeting_rule', 'update_flag_environment_config', 'copy_flag_config', 'restore_flag_version', 'manage_rollout_ramp']) {
       const props = tools.find((t) => t.name === name)?.inputSchema.properties as Record<string, unknown>;
       expect(props, name).toHaveProperty('freeze_override');
     }
@@ -244,5 +244,65 @@ describe('freeze_override header on each write tool', () => {
       });
     }
     expect(calls.map((c) => c.headers['X-Freeze-Override'])).toEqual(['true', 'true', 'true', undefined, undefined]);
+  });
+});
+
+describe('freeze_override on segment and variation edits (#5884)', () => {
+  const SEG = `/api/v1/orgs/${ORG}/projects/web/segments/beta`;
+  const VARS = `${FLAG}/variations`;
+  const o = { reason: 'INC-9', freeze_override: true };
+
+  it('manage_segment sends it on update, never on create or delete', async () => {
+    const { api, calls } = mockApi([
+      { method: 'GET', path: SEG, json: { name: 'Beta', description: null, conditions: [] }, headers: { ETag: '"s1"' } },
+      { method: 'PUT', path: SEG, status: 204 },
+      { method: 'POST', path: `/api/v1/orgs/${ORG}/projects/web/segments`, status: 201, json: { id: 's2' } },
+      { method: 'DELETE', path: SEG, status: 204 },
+    ]);
+    const client = await connectClient({ api, org: ORG });
+    await client.callTool({ name: 'manage_segment', arguments: { action: 'update', project: 'web', segment: 'beta', name: 'B', ...o } });
+    await client.callTool({ name: 'manage_segment', arguments: { action: 'create', project: 'web', key: 'b2', name: 'B2', ...o } });
+    await client.callTool({ name: 'manage_segment', arguments: { action: 'delete', project: 'web', segment: 'beta', ...o } });
+
+    const put = calls.find((c) => c.method === 'PUT')!;
+    expect(put.headers['X-Freeze-Override']).toBe('true');
+    expect(put.headers['X-Intent-Reason']).toBe('INC-9');
+    for (const c of calls.filter((c) => c.method === 'POST' || c.method === 'DELETE'))
+      expect(c.headers['X-Freeze-Override'], `${c.method} ${c.url}`).toBeUndefined();
+  });
+
+  it('manage_variation sends it on add, update and remove', async () => {
+    const { api, calls } = mockApi([
+      { method: 'POST', path: VARS, status: 201, json: { id: 'v3' } },
+      { method: 'PUT', path: `${VARS}/v1`, status: 204 },
+      { method: 'DELETE', path: `${VARS}/v2`, status: 204 },
+    ]);
+    const client = await connectClient({ api, org: ORG });
+    const at = { project: 'web', flag: 'checkout', ...o };
+    await client.callTool({ name: 'manage_variation', arguments: { action: 'add', key: 'c', value: 'c', ...at } });
+    await client.callTool({ name: 'manage_variation', arguments: { action: 'update', variationId: 'v1', value: 'x', ...at } });
+    await client.callTool({ name: 'manage_variation', arguments: { action: 'remove', variationId: 'v2', ...at } });
+
+    expect(calls).toHaveLength(3);
+    for (const c of calls) expect(c.headers['X-Freeze-Override'], `${c.method} ${c.url}`).toBe('true');
+  });
+
+  it('without a reason both are refused before any request', async () => {
+    const { api, calls } = mockApi([]);
+    const client = await connectClient({ api, org: ORG });
+    const seg = await client.callTool({
+      name: 'manage_segment',
+      arguments: { action: 'update', project: 'web', segment: 'beta', name: 'B', freeze_override: true },
+    });
+    const variation = await client.callTool({
+      name: 'manage_variation',
+      arguments: { action: 'remove', project: 'web', flag: 'checkout', variationId: 'v2', freeze_override: true },
+    });
+
+    expect(seg.isError).toBe(true);
+    expect(text(seg)).toContain('freeze_override requires reason');
+    expect(variation.isError).toBe(true);
+    expect(text(variation)).toContain('freeze_override requires reason');
+    expect(calls).toHaveLength(0);
   });
 });
