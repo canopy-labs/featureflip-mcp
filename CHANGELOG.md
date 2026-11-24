@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.12.1 — 2026-11-24
+
+### Fixed
+
+- The `set_flag_expiry`, `set_flag_permanent` and `set_default_flag_lifetime` descriptions no longer say these writes can be refused with `FEATURE_NOT_ENABLED`. Expiry dates, permanent flags and default lifetimes are available to every organization, so the API never sends that refusal for them (#5100).
+
 ## 0.12.0 — 2026-11-23
 
 ### Added

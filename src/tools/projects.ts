@@ -78,9 +78,8 @@ export function registerProjectTools(server: McpServer, ctx: ToolContext): void 
       description:
         'Set how many days a temporary flag with no expiry date of its own lives before it counts as expired, or ' +
         'pass days: null to remove the default. Advisory only: evaluation never changes. Pass preview: true first ' +
-        'to see how many flags would newly be, or stop being, past expiry without changing anything. Setting a ' +
-        'value is refused with FEATURE_NOT_ENABLED when the organization\'s plan lacks it; removal is always ' +
-        'allowed. The current value is defaultFlagLifetimeDays in list_projects.',
+        'to see how many flags would newly be, or stop being, past expiry without changing anything. ' +
+        'The current value is defaultFlagLifetimeDays in list_projects.',
       inputSchema: z.object({
         project: projectParam,
         days: z

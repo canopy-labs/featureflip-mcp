@@ -2254,8 +2254,7 @@ export interface paths {
          *     reported stale so it can be cleaned up. Requires at least Member. `expiresAtUtc` takes a
          *     date (`2026-12-01`), which means the end of that day in UTC, the same as picking it in the
          *     dashboard, or a full ISO-8601 timestamp, which is stored exactly. It must be in the future
-         *     (400 `EXPIRY_IN_PAST`), so today's date is accepted, and the flag-expiration feature must
-         *     be enabled (400 `FEATURE_NOT_ENABLED`). A permanent flag can't have a date
+         *     (400 `EXPIRY_IN_PAST`), so today's date is accepted. A permanent flag can't have a date
          *     (400 `PERMANENT_FLAG_HAS_EXPIRY`).
          */
         put: {
@@ -2364,8 +2363,7 @@ export interface paths {
         post?: never;
         /**
          * Removes the flag's expiry date.
-         * @description Requires at least Member. Always allowed, even when
-         *      the flag-expiration feature is disabled.
+         * @description Requires at least Member.
          */
         delete: {
             parameters: {
@@ -2686,7 +2684,7 @@ export interface paths {
          * Marks the flag permanent: a kill switch, ops toggle or entitlement gate that is meant to stay.
          * @description A permanent flag is never offered as a removal candidate and never reported past expiry.
          *     Requires at least Member. The flag can't have an expiry date (400 `PERMANENT_FLAG_HAS_EXPIRY`;
-         *     remove the date first) and the flag-permanence feature must be enabled (400 `FEATURE_NOT_ENABLED`).
+         *     remove the date first).
          */
         put: {
             parameters: {
@@ -2778,8 +2776,7 @@ export interface paths {
         post?: never;
         /**
          * Makes the flag temporary again.
-         * @description Requires at least Member. Always allowed, even when the
-         *      flag-permanence feature is disabled.
+         * @description Requires at least Member.
          */
         delete: {
             parameters: {
@@ -5071,6 +5068,8 @@ export interface paths {
                 header?: {
                     /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
                     "X-Intent-Reason"?: string;
+                    /** @description Owner/Admin only: `true` breaks an active change freeze for this one request; requires X-Intent-Reason. */
+                    "X-Freeze-Override"?: boolean;
                 };
                 path: {
                     org: string;
@@ -5169,6 +5168,18 @@ export interface paths {
                         "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
+                /** @description A change freeze covers an environment this edit reaches (error code change_frozen; the change_freeze object names the window, the frozen environment, when it ends and whether the caller may break it). A segment edit reaches the environments whose live, enabled flags use the segment; a variation edit reaches the environments that can serve the variation or whose rollouts it re-splits. An Owner or Admin can retry with X-Freeze-Override: true and an X-Intent-Reason. */
+                423: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
                 /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
                 429: {
                     headers: {
@@ -5209,6 +5220,8 @@ export interface paths {
                 header?: {
                     /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
                     "X-Intent-Reason"?: string;
+                    /** @description Owner/Admin only: `true` breaks an active change freeze for this one request; requires X-Intent-Reason. */
+                    "X-Freeze-Override"?: boolean;
                 };
                 path: {
                     org: string;
@@ -5306,6 +5319,18 @@ export interface paths {
                         "application/json": components["schemas"]["PublicApiErrorEnvelope"];
                     };
                 };
+                /** @description A change freeze covers an environment this edit reaches (error code change_frozen; the change_freeze object names the window, the frozen environment, when it ends and whether the caller may break it). A segment edit reaches the environments whose live, enabled flags use the segment; a variation edit reaches the environments that can serve the variation or whose rollouts it re-splits. An Owner or Admin can retry with X-Freeze-Override: true and an X-Intent-Reason. */
+                423: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
                 /** @description Rate limit exceeded. Retry after the interval indicated by the Retry-After header. */
                 429: {
                     headers: {
@@ -5338,6 +5363,8 @@ export interface paths {
                 header?: {
                     /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
                     "X-Intent-Reason"?: string;
+                    /** @description Owner/Admin only: `true` breaks an active change freeze for this one request; requires X-Intent-Reason. */
+                    "X-Freeze-Override"?: boolean;
                 };
                 path: {
                     org: string;
@@ -5409,6 +5436,18 @@ export interface paths {
                 };
                 /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
                 422: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description A change freeze covers an environment this edit reaches (error code change_frozen; the change_freeze object names the window, the frozen environment, when it ends and whether the caller may break it). A segment edit reaches the environments whose live, enabled flags use the segment; a variation edit reaches the environments that can serve the variation or whose rollouts it re-splits. An Owner or Admin can retry with X-Freeze-Override: true and an X-Intent-Reason. */
+                423: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -7386,8 +7425,7 @@ export interface paths {
          * @description Temporary
          *     flags with no expiry date of their own then expire that many days after they were created, reported
          *     as `expirySource: "project-default"`. Takes effect at the next hourly staleness run. Requires at
-         *     least Member, and the default-flag-lifetime feature to set one (400 `FEATURE_NOT_ENABLED`);
-         *     removing one is always allowed. `days` is required; send `{"days": null}` to remove.
+         *     least Member. `days` is required; send `{"days": null}` to remove.
          */
         put: {
             parameters: {
@@ -9667,6 +9705,8 @@ export interface paths {
                     "If-Match"?: string;
                     /** @description Why you are making this change, recorded in the audit log. Percent-encoded UTF-8 (encode it the way encodeURIComponent does); at most 2048 characters after decoding. Required when the target environment — or, for project-wide changes, any environment in the project — requires a change reason; without one the request is refused with 422 change_reason_required. */
                     "X-Intent-Reason"?: string;
+                    /** @description Owner/Admin only: `true` breaks an active change freeze for this one request; requires X-Intent-Reason. */
+                    "X-Freeze-Override"?: boolean;
                 };
                 path: {
                     org: string;
@@ -9767,6 +9807,18 @@ export interface paths {
                 };
                 /** @description A change reason is required: this change affects an environment that requires one (error code change_reason_required). Retry with the X-Intent-Reason header. */
                 422: {
+                    headers: {
+                        "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
+                        "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
+                        "X-RateLimit-Reset": components["headers"]["X-RateLimit-Reset"];
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PublicApiErrorEnvelope"];
+                    };
+                };
+                /** @description A change freeze covers an environment this edit reaches (error code change_frozen; the change_freeze object names the window, the frozen environment, when it ends and whether the caller may break it). A segment edit reaches the environments whose live, enabled flags use the segment; a variation edit reaches the environments that can serve the variation or whose rollouts it re-splits. An Owner or Admin can retry with X-Freeze-Override: true and an X-Intent-Reason. */
+                423: {
                     headers: {
                         "X-RateLimit-Limit": components["headers"]["X-RateLimit-Limit"];
                         "X-RateLimit-Remaining": components["headers"]["X-RateLimit-Remaining"];
@@ -11525,14 +11577,13 @@ export interface components {
          *     bare string (Boolean/String/Number/Json) rather than the domain enum — invalid values surface
          *     as the handler's own validation failure, not a controller-level 400. ExpiresAtUtc is
          *     optional and advisory; a bare date (`2026-12-01`) means the end of that day in UTC, and a full
-         *     timestamp is stored exactly. It must be in the future and requires the flag-expiration feature
-         *     (400 `EXPIRY_IN_PAST` / `FEATURE_NOT_ENABLED`). OwnerEmail optionally names
+         *     timestamp is stored exactly. It must be in the future (400 `EXPIRY_IN_PAST`).
+         *     OwnerEmail optionally names
          *     the owner (an active member, matched case-insensitively; requires a plan that includes flag owners,
          *     Pro and above — 400 `OWNER_NOT_MEMBER` / `PLAN_FEATURE_UNAVAILABLE`). Omitted, the owner is the caller when
          *     the caller is a member, so a service token creates an unowned flag. IsPermanent marks
          *     the flag permanent (a kill switch, ops toggle or entitlement that is meant to stay; never reported for
-         *     cleanup). It requires the flag-permanence feature and can't be combined with ExpiresAtUtc
-         *     (400 `FEATURE_NOT_ENABLED` / `PERMANENT_FLAG_HAS_EXPIRY`).
+         *     cleanup). It can't be combined with ExpiresAtUtc (400 `PERMANENT_FLAG_HAS_EXPIRY`).
          * @example {
          *       "key": "new-checkout-flow",
          *       "name": "New Checkout Flow",
